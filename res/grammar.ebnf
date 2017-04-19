@@ -1,7 +1,7 @@
    <script> -> <imports> <funcdecls>
   <imports> -> <import> <imports>
              | ε
-   <import> -> < id = string stmtend
+   <import> -> string -> id stmtend
 <funcdecls> -> <funcdecl> <funcdecls>
              | ε
  <funcdecl> -> id <argdecls> = <expr> stmtend
