@@ -1,0 +1,29 @@
+   <script> -> <imports> <funcdecls>
+  <imports> -> <import> <imports>
+             | ε
+   <import> -> < id = string stmtend
+<funcdecls> -> <funcdecl> <funcdecls>
+             | ε
+ <funcdecl> -> id <argdecls> = <expr> stmtend
+ <argdecls> -> id <argdecls>
+             | ε
+     <expr> -> id <args>
+             | { <exprs> }
+             | switch <expr> { <switches> }
+     <args> -> <arg> <args>
+             | ε
+      <arg> -> <single>
+             | ( <expr> )
+    <exprs> -> <expr> stmtend <exprs>
+             | ( <expr> ) <exprs>
+             | ε
+ <switches> -> <expr> = <expr> stmtend <switches>
+             | ε
+   <single> -> id
+             | number
+             | string
+             | nil
+             | <array>
+    <array> -> [ <exprs> ]
+
+# vim: et
