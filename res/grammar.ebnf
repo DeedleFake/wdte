@@ -22,6 +22,8 @@
    <single> -> <func>
              | number
              | string
+             | true
+             | false
              | nil
              | <array>
     <array> -> [ <exprs> ]
