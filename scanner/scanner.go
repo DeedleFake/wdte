@@ -171,7 +171,7 @@ func (s *Scanner) escape(r rune) stateFunc {
 }
 
 func (s *Scanner) id(r rune) stateFunc {
-	if !unicode.IsSpace(r) && (isKeyword(string(r)) || (s.tbuf.Len() == 0)) {
+	if !unicode.IsSpace(r) && (isKeyword(string(r)) && (s.tbuf.Len() == 0)) {
 		s.tbuf.WriteRune(r)
 		return s.id
 	}
