@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"io"
+	"strconv"
 	"unicode"
 )
 
@@ -37,6 +38,7 @@ func (s *Scanner) Scan() bool {
 		return false
 	}
 
+	s.tbuf.Reset()
 	state := s.whitespace
 	for (state != nil) && (s.err == nil) {
 		r, err := s.read()
@@ -88,6 +90,11 @@ func (s *Scanner) whitespace(r rune) stateFunc {
 		return s.whitespace
 	}
 
+	if r == '-' {
+		s.unread(r)
+		return s.negative
+	}
+
 	if unicode.IsDigit(r) {
 		s.unread(r)
 		return s.number
@@ -102,14 +109,88 @@ func (s *Scanner) whitespace(r rune) stateFunc {
 	return s.id
 }
 
+func (s *Scanner) negative(r rune) stateFunc {
+	if r == '-' {
+		s.tbuf.WriteRune(r)
+		return s.negative
+	}
+
+	if unicode.IsDigit(r) {
+		s.tbuf.WriteRune(r)
+		return s.number
+	}
+
+	s.unread(r)
+	return s.id
+}
+
 func (s *Scanner) number(r rune) stateFunc {
-	panic("Not implemented.")
+	if unicode.IsDigit(r) || (r == '.') {
+		s.tbuf.WriteRune(r)
+		return s.number
+	}
+
+	val, _ := strconv.ParseFloat(s.tbuf.String(), 64)
+	s.tok = Number{
+		Val: val,
+	}
+
+	s.unread(r)
+	return nil
 }
 
 func (s *Scanner) string(r rune) stateFunc {
-	panic("Not implemented.")
+	if r == '\\' {
+		return s.escape
+	}
+
+	if r != s.quote {
+		s.tbuf.WriteRune(r)
+		return s.string
+	}
+
+	s.tok = String{
+		Val: s.tbuf.String(),
+	}
+
+	return nil
+}
+
+func (s *Scanner) escape(r rune) stateFunc {
+	switch r {
+	case 'n':
+		s.tbuf.WriteRune('\n')
+	case 't':
+		s.tbuf.WriteRune('\t')
+	case '\n':
+	default:
+		s.tbuf.WriteRune(r)
+	}
+
+	return s.string
 }
 
 func (s *Scanner) id(r rune) stateFunc {
-	panic("Not implemented.")
+	if !unicode.IsSpace(r) && (isKeyword(string(r)) || (s.tbuf.Len() == 0)) {
+		s.tbuf.WriteRune(r)
+		return s.id
+	}
+
+	switch val := s.tbuf.String(); isKeyword(val) {
+	case true:
+		s.tok = Keyword{
+			Val: val,
+		}
+		if !isKeyword(string(r)) {
+			s.unread(r)
+		}
+
+	case false:
+		s.tok = ID{
+			Val: val,
+		}
+		s.unread(r)
+	}
+
+	return nil
 }
