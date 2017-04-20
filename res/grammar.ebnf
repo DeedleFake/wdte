@@ -1,10 +1,10 @@
    <script> -> <imports> <funcdecls>
   <imports> -> <import> <imports>
              | ε
-   <import> -> string -> id stmtend
+   <import> -> string -> id ;
 <funcdecls> -> <funcdecl> <funcdecls>
              | ε
- <funcdecl> -> id <argdecls> = <expr> stmtend
+ <funcdecl> -> id <argdecls> = <expr> ;
  <argdecls> -> id <argdecls>
              | ε
      <expr> -> <func> <args>
@@ -14,10 +14,10 @@
              | ε
       <arg> -> <single>
              | ( <expr> )
-    <exprs> -> <expr> stmtend <exprs>
+    <exprs> -> <expr> ; <exprs>
              | ( <expr> ) <exprs>
              | ε
- <switches> -> <expr> = <expr> stmtend <switches>
+ <switches> -> <expr> = <expr> ; <switches>
              | ε
    <single> -> <func>
              | number
