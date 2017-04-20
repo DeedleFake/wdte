@@ -7,7 +7,7 @@
  <funcdecl> -> id <argdecls> = <expr> stmtend
  <argdecls> -> id <argdecls>
              | ε
-     <expr> -> id <args>
+     <expr> -> <func> <args>
              | { <exprs> }
              | switch <expr> { <switches> }
      <args> -> <arg> <args>
@@ -19,11 +19,14 @@
              | ε
  <switches> -> <expr> = <expr> stmtend <switches>
              | ε
-   <single> -> id
+   <single> -> <func>
              | number
              | string
              | nil
              | <array>
     <array> -> [ <exprs> ]
+     <func> -> id <subfunc>
+  <subfunc> -> . id
+             | ε
 
 # vim: et
