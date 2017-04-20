@@ -42,6 +42,11 @@ func TestScanner(t *testing.T) {
 				}
 
 				assertTokensEqual(t, test.out[i], s.Tok())
+
+				t.Logf("Got %#v", s.Tok())
+			}
+			if err := s.Err(); err != nil {
+				t.Errorf("Scanner error: %v", err)
 			}
 		})
 	}
@@ -49,11 +54,16 @@ func TestScanner(t *testing.T) {
 
 func assertTokensEqual(t *testing.T, ex scanner.Token, got scanner.Token) {
 	if reflect.TypeOf(ex) != reflect.TypeOf(got) {
-		t.Errorf("Expected %T. Got %T.", ex, got)
+		t.Errorf("Unexpected token type:")
+		t.Errorf("\tExpected %#v.", ex)
+		t.Errorf("\tGot %#v.", got)
 		return
 	}
 
 	if !reflect.DeepEqual(ex, got) {
-		t.Errorf("Expected %#v. Got %#v.", ex, got)
+		t.Errorf("Unexpected token value:")
+		t.Errorf("\tExpected %#v.", ex)
+		t.Errorf("\tGot %#v.", got)
+		return
 	}
 }

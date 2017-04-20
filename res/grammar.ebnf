@@ -4,12 +4,13 @@
    <import> -> string -> id ;
 <funcdecls> -> <funcdecl> <funcdecls>
              | ε
- <funcdecl> -> id <argdecls> = <expr> ;
+ <funcdecl> -> id <argdecls> = <termexpr>
  <argdecls> -> id <argdecls>
              | ε
-     <expr> -> <func> <args>
+ <termexpr> -> <expr> ;
              | { <exprs> }
              | switch <expr> { <switches> }
+     <expr> -> <func> <args>
      <args> -> <arg> <args>
              | ε
       <arg> -> <single>
