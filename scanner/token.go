@@ -39,3 +39,9 @@ type ID struct {
 
 	Val string
 }
+
+type Keyword struct {
+	commonToken
+
+	Val string
+}
