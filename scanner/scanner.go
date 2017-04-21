@@ -38,7 +38,9 @@ func (s *Scanner) Scan() bool {
 		return false
 	}
 
+	s.tok = nil
 	s.tbuf.Reset()
+
 	state := s.whitespace
 	for (state != nil) && (s.err == nil) {
 		r, err := s.read()
@@ -51,6 +53,10 @@ func (s *Scanner) Scan() bool {
 		}
 
 		state = state(r)
+
+		if (s.err == io.EOF) && (s.tok == nil) {
+			return false
+		}
 	}
 
 	return true
