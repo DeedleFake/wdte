@@ -33,7 +33,6 @@ func New(r io.Reader) *Scanner {
 	return &Scanner{
 		r:    rr,
 		line: 1,
-		col:  1,
 	}
 }
 
@@ -79,13 +78,13 @@ func (s *Scanner) Err() error {
 
 func (s *Scanner) read() (r rune, err error) {
 	defer func() {
+		s.col++
+
 		if r == '\n' {
 			s.line++
 			s.pcol = s.col
 			s.col = 0
 		}
-
-		s.col++
 	}()
 
 	if len(s.rbuf) > 0 {
@@ -110,8 +109,8 @@ func (s *Scanner) unread(r rune) {
 
 func (s *Scanner) setTok(t TokenType, v interface{}) {
 	s.tok = Token{
-		Line: s.line,
-		Col:  s.col,
+		Line: s.tline,
+		Col:  s.tcol,
 		Type: t,
 		Val:  v,
 	}
@@ -142,8 +141,8 @@ func (s *Scanner) whitespace(r rune) stateFunc {
 		return s.string
 	}
 
-	s.tline, s.tcol = s.line, s.col
 	s.unread(r)
+	s.tline, s.tcol = s.line, s.col
 	return s.id
 }
 
