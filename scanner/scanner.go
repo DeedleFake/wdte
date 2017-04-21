@@ -42,7 +42,6 @@ func (s *Scanner) Scan() bool {
 		return false
 	}
 
-	s.tok = nil
 	s.tbuf.Reset()
 
 	state := s.whitespace
@@ -58,7 +57,7 @@ func (s *Scanner) Scan() bool {
 
 		state = state(r)
 
-		if (s.err == io.EOF) && (s.tok == nil) {
+		if (s.err == io.EOF) && (state != nil) {
 			return false
 		}
 	}
@@ -109,9 +108,13 @@ func (s *Scanner) unread(r rune) {
 	}
 }
 
-func (s *Scanner) setTok(t Token) {
-	t.setPos(s.tline, s.tcol)
-	s.tok = t
+func (s *Scanner) setTok(t TokenType, v interface{}) {
+	s.tok = Token{
+		Line: s.line,
+		Col:  s.col,
+		Type: t,
+		Val:  v,
+	}
 }
 
 type stateFunc func(rune) stateFunc
@@ -166,9 +169,7 @@ func (s *Scanner) number(r rune) stateFunc {
 	}
 
 	val, _ := strconv.ParseFloat(s.tbuf.String(), 64)
-	s.setTok(&Number{
-		Val: val,
-	})
+	s.setTok(Number, val)
 
 	s.unread(r)
 	return nil
@@ -184,9 +185,7 @@ func (s *Scanner) string(r rune) stateFunc {
 		return s.string
 	}
 
-	s.setTok(&String{
-		Val: s.tbuf.String(),
-	})
+	s.setTok(String, s.tbuf.String())
 
 	return nil
 }
@@ -214,9 +213,7 @@ func (s *Scanner) id(r rune) stateFunc {
 			// BUG: This only works so long as the set of keywords doesn't
 			// contain any which are contain other keywords as prefixes.
 			if len(val) == len(k) {
-				s.setTok(&Keyword{
-					Val: val,
-				})
+				s.setTok(Keyword, val)
 				return nil
 			}
 
@@ -224,9 +221,7 @@ func (s *Scanner) id(r rune) stateFunc {
 				s.unread(rune(k[i]))
 			}
 
-			s.setTok(&ID{
-				Val: val[:len(val)-len(k)],
-			})
+			s.setTok(ID, val[:len(val)-len(k)])
 			return nil
 		}
 
@@ -235,17 +230,13 @@ func (s *Scanner) id(r rune) stateFunc {
 
 	switch val := s.tbuf.String(); isKeyword(val) {
 	case true:
-		s.setTok(&Keyword{
-			Val: val,
-		})
+		s.setTok(Keyword, val)
 		if !isKeyword(string(r)) {
 			s.unread(r)
 		}
 
 	case false:
-		s.setTok(&ID{
-			Val: val,
-		})
+		s.setTok(ID, val)
 		s.unread(r)
 	}
 

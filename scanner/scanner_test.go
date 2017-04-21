@@ -18,17 +18,17 @@ func TestScanner(t *testing.T) {
 			name: "Simple",
 			in:   `"test" -> test; f = + test.other;`,
 			out: []scanner.Token{
-				&scanner.String{Val: "test"},
-				&scanner.Keyword{Val: "->"},
-				&scanner.ID{Val: "test"},
-				&scanner.Keyword{Val: ";"},
-				&scanner.ID{Val: "f"},
-				&scanner.Keyword{Val: "="},
-				&scanner.ID{Val: "+"},
-				&scanner.ID{Val: "test"},
-				&scanner.Keyword{Val: "."},
-				&scanner.ID{Val: "other"},
-				&scanner.Keyword{Val: ";"},
+				{Type: scanner.String, Val: "test"},
+				{Type: scanner.Keyword, Val: "->"},
+				{Type: scanner.ID, Val: "test"},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.ID, Val: "f"},
+				{Type: scanner.Keyword, Val: "="},
+				{Type: scanner.ID, Val: "+"},
+				{Type: scanner.ID, Val: "test"},
+				{Type: scanner.Keyword, Val: "."},
+				{Type: scanner.ID, Val: "other"},
+				{Type: scanner.Keyword, Val: ";"},
 			},
 		},
 	}
@@ -52,22 +52,6 @@ func TestScanner(t *testing.T) {
 	}
 }
 
-func tokenVal(t scanner.Token) (val interface{}) {
-	switch t := t.(type) {
-	case *scanner.Number:
-		val = t.Val
-	case *scanner.String:
-		val = t.Val
-	case *scanner.Nil:
-	case *scanner.ID:
-		val = t.Val
-	case *scanner.Keyword:
-		val = t.Val
-	}
-
-	return
-}
-
 func assertTokensEqual(t *testing.T, ex scanner.Token, got scanner.Token) {
 	if reflect.TypeOf(ex) != reflect.TypeOf(got) {
 		t.Errorf("Unexpected token type:")
@@ -76,7 +60,7 @@ func assertTokensEqual(t *testing.T, ex scanner.Token, got scanner.Token) {
 		return
 	}
 
-	if tokenVal(ex) != tokenVal(got) {
+	if ex.Val != got.Val {
 		t.Errorf("Unexpected token value:")
 		t.Errorf("\tExpected %#v.", ex)
 		t.Errorf("\tGot %#v.", got)
