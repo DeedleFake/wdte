@@ -1,6 +1,8 @@
 package scanner
 
 type Token interface {
+	setPos(line, col int)
+
 	Line() int
 	Col() int
 }
@@ -8,6 +10,10 @@ type Token interface {
 type commonToken struct {
 	line int
 	col  int
+}
+
+func (t *commonToken) setPos(line, col int) {
+	t.line, t.col = line, col
 }
 
 func (t commonToken) Line() int {

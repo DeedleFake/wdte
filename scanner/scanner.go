@@ -9,11 +9,13 @@ import (
 )
 
 type Scanner struct {
-	r    io.RuneReader
-	rbuf []rune
+	r               io.RuneReader
+	rbuf            []rune
+	line, col, pcol int
 
-	tok Token
-	err error
+	tok         Token
+	tline, tcol int
+	err         error
 
 	tbuf  bytes.Buffer
 	quote rune
@@ -29,7 +31,9 @@ func New(r io.Reader) *Scanner {
 	}
 
 	return &Scanner{
-		r: rr,
+		r:    rr,
+		line: 1,
+		col:  1,
 	}
 }
 
@@ -74,19 +78,40 @@ func (s *Scanner) Err() error {
 	return s.err
 }
 
-func (s *Scanner) read() (rune, error) {
+func (s *Scanner) read() (r rune, err error) {
+	defer func() {
+		if r == '\n' {
+			s.line++
+			s.pcol = s.col
+			s.col = 0
+		}
+
+		s.col++
+	}()
+
 	if len(s.rbuf) > 0 {
-		r := s.rbuf[len(s.rbuf)-1]
+		r = s.rbuf[len(s.rbuf)-1]
 		s.rbuf = s.rbuf[:len(s.rbuf)-1]
-		return r, nil
+		return
 	}
 
-	r, _, err := s.r.ReadRune()
-	return r, err
+	r, _, err = s.r.ReadRune()
+	return
 }
 
 func (s *Scanner) unread(r rune) {
 	s.rbuf = append(s.rbuf, r)
+
+	s.col--
+	if s.col == 0 {
+		s.line--
+		s.col = s.pcol
+	}
+}
+
+func (s *Scanner) setTok(t Token) {
+	t.setPos(s.tline, s.tcol)
+	s.tok = t
 }
 
 type stateFunc func(rune) stateFunc
@@ -97,20 +122,24 @@ func (s *Scanner) whitespace(r rune) stateFunc {
 	}
 
 	if r == '-' {
+		s.tline, s.tcol = s.line, s.col
 		s.unread(r)
 		return s.negative
 	}
 
 	if unicode.IsDigit(r) {
+		s.tline, s.tcol = s.line, s.col
 		s.unread(r)
 		return s.number
 	}
 
 	if isQuote(r) {
+		s.tline, s.tcol = s.line, s.col
 		s.quote = r
 		return s.string
 	}
 
+	s.tline, s.tcol = s.line, s.col
 	s.unread(r)
 	return s.id
 }
@@ -137,9 +166,9 @@ func (s *Scanner) number(r rune) stateFunc {
 	}
 
 	val, _ := strconv.ParseFloat(s.tbuf.String(), 64)
-	s.tok = Number{
+	s.setTok(&Number{
 		Val: val,
-	}
+	})
 
 	s.unread(r)
 	return nil
@@ -155,9 +184,9 @@ func (s *Scanner) string(r rune) stateFunc {
 		return s.string
 	}
 
-	s.tok = String{
+	s.setTok(&String{
 		Val: s.tbuf.String(),
-	}
+	})
 
 	return nil
 }
@@ -185,9 +214,9 @@ func (s *Scanner) id(r rune) stateFunc {
 			// BUG: This only works so long as the set of keywords doesn't
 			// contain any which are contain other keywords as prefixes.
 			if len(val) == len(k) {
-				s.tok = Keyword{
+				s.setTok(&Keyword{
 					Val: val,
-				}
+				})
 				return nil
 			}
 
@@ -195,9 +224,9 @@ func (s *Scanner) id(r rune) stateFunc {
 				s.unread(rune(k[i]))
 			}
 
-			s.tok = ID{
+			s.setTok(&ID{
 				Val: val[:len(val)-len(k)],
-			}
+			})
 			return nil
 		}
 
@@ -206,17 +235,17 @@ func (s *Scanner) id(r rune) stateFunc {
 
 	switch val := s.tbuf.String(); isKeyword(val) {
 	case true:
-		s.tok = Keyword{
+		s.setTok(&Keyword{
 			Val: val,
-		}
+		})
 		if !isKeyword(string(r)) {
 			s.unread(r)
 		}
 
 	case false:
-		s.tok = ID{
+		s.setTok(&ID{
 			Val: val,
-		}
+		})
 		s.unread(r)
 	}
 
