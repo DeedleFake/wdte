@@ -1,6 +1,7 @@
 package scanner_test
 
 import (
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -75,5 +76,20 @@ func assertTokensEqual(t *testing.T, ex scanner.Token, got scanner.Token) {
 		t.Errorf("\tExpected %#v.", ex)
 		t.Errorf("\tGot %#v.", got)
 		return
+	}
+}
+
+var (
+	// These are for examples to use.
+	r io.Reader
+)
+
+func ExampleScanner() {
+	s := scanner.New(r)
+	for s.Scan() {
+		/* Do something with s.Tok(). */
+	}
+	if err := s.Err(); err != nil {
+		panic(err)
 	}
 }
