@@ -101,7 +101,7 @@ func (s *Scanner) unread(r rune) {
 	s.rbuf = append(s.rbuf, r)
 
 	s.col--
-	if s.col == 0 {
+	if r == '\n' {
 		s.line--
 		s.col = s.pcol
 	}
@@ -207,6 +207,7 @@ func (s *Scanner) id(r rune) stateFunc {
 	if !unicode.IsSpace(r) {
 		s.tbuf.WriteRune(r)
 
+		// TODO: Find a way to do this without allocating and copying.
 		val := s.tbuf.String()
 		if k := getKeywordSuffix(val); k != "" {
 			// BUG: This only works so long as the set of keywords doesn't
@@ -227,17 +228,7 @@ func (s *Scanner) id(r rune) stateFunc {
 		return s.id
 	}
 
-	switch val := s.tbuf.String(); isKeyword(val) {
-	case true:
-		s.setTok(Keyword, val)
-		if !isKeyword(string(r)) {
-			s.unread(r)
-		}
-
-	case false:
-		s.setTok(ID, val)
-		s.unread(r)
-	}
-
+	s.setTok(ID, s.tbuf.String())
+	s.unread(r)
 	return nil
 }
