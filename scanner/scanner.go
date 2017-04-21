@@ -171,8 +171,30 @@ func (s *Scanner) escape(r rune) stateFunc {
 }
 
 func (s *Scanner) id(r rune) stateFunc {
-	if !unicode.IsSpace(r) && (isKeyword(string(r)) && (s.tbuf.Len() == 0)) {
+	if !unicode.IsSpace(r) {
 		s.tbuf.WriteRune(r)
+
+		val := s.tbuf.String()
+		if k := getKeywordSuffix(val); k != "" {
+			// BUG: This only works so long as the set of keywords doesn't
+			// contain any which are contain other keywords as prefixes.
+			if len(val) == len(k) {
+				s.tok = Keyword{
+					Val: val,
+				}
+				return nil
+			}
+
+			for i := len(k) - 1; i >= 0; i-- {
+				s.unread(rune(k[i]))
+			}
+
+			s.tok = ID{
+				Val: val[:len(val)-len(k)],
+			}
+			return nil
+		}
+
 		return s.id
 	}
 
