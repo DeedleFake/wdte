@@ -112,6 +112,8 @@ func part(str string) interface{} {
 		return Term{Type: scanner.String}
 	case "id":
 		return Term{Type: scanner.ID}
+	case "stmtend":
+		return Term{Type: scanner.StmtEnd}
 	}
 
 	return Term{
