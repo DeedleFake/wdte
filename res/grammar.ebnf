@@ -1,32 +1,27 @@
    <script> -> <imports> <funcdecls>
   <imports> -> <import> <imports>
              | ε
-   <import> -> string -> id ;
+   <import> -> string -> id stmtend
 <funcdecls> -> <funcdecl> <funcdecls>
              | ε
- <funcdecl> -> id <argdecls> = <termexpr>
+ <funcdecl> -> id <argdecls> := <expr> stmtend
  <argdecls> -> id <argdecls>
              | ε
- <termexpr> -> <expr> ;
+     <expr> -> <func> <args>
              | { <exprs> }
              | switch <expr> { <switches> }
-     <expr> -> <func> <args>
-     <args> -> <arg> <args>
+     <args> -> <single> <args>
              | ε
-      <arg> -> <single>
-             | ( <expr> )
-    <exprs> -> <expr> ; <exprs>
-             | ( <expr> ) <exprs>
+    <exprs> -> <expr> stmtend <exprs>
              | ε
- <switches> -> <expr> = <expr> ; <switches>
+ <switches> -> <expr> := <expr> stmtend <switches>
+             | default := <expr> stmtend <switches>
              | ε
    <single> -> <func>
              | number
              | string
-             | true
-             | false
-             | nil
              | <array>
+             | { <exprs> }
     <array> -> [ <exprs> ]
      <func> -> id <subfunc>
   <subfunc> -> . id
