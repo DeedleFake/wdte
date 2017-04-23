@@ -4,18 +4,18 @@
    <import> -> string -> id stmtend
 <funcdecls> -> <funcdecl> <funcdecls>
              | ε
- <funcdecl> -> id <argdecls> := <expr> stmtend
+ <funcdecl> -> id <argdecls> := <expr>
  <argdecls> -> id <argdecls>
              | ε
-     <expr> -> <func> <args>
-             | { <exprs> }
+     <expr> -> <func> <args> stmtend
+             | { <exprs> } stmtend
              | switch <expr> { <switches> }
      <args> -> <single> <args>
              | ε
-    <exprs> -> <expr> stmtend <exprs>
+    <exprs> -> <expr> <exprs>
              | ε
- <switches> -> <expr> := <expr> stmtend <switches>
-             | default := <expr> stmtend <switches>
+ <switches> -> <expr> := <expr> <switches>
+             | default := <expr> <switches>
              | ε
    <single> -> <func>
              | number
