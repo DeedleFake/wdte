@@ -3,17 +3,20 @@ package scanner
 import "strings"
 
 var (
-	keywords = map[string]struct{}{
+	symbols = map[string]struct{}{
 		".":  struct{}{},
 		"->": struct{}{},
-		"(":  struct{}{},
-		")":  struct{}{},
 		"{":  struct{}{},
 		"}":  struct{}{},
 		"[":  struct{}{},
 		"]":  struct{}{},
-		"=":  struct{}{},
+		":=": struct{}{},
 		";":  struct{}{},
+	}
+
+	keywords = map[string]struct{}{
+		"switch":  struct{}{},
+		"default": struct{}{},
 	}
 )
 
@@ -22,8 +25,8 @@ func isKeyword(str string) bool {
 	return ok
 }
 
-func getKeywordSuffix(str string) string {
-	for k := range keywords {
+func symbolicSuffix(str string) string {
+	for k := range symbols {
 		if strings.HasSuffix(str, k) {
 			return k
 		}

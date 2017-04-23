@@ -128,6 +128,17 @@ type stateFunc func(rune) stateFunc
 
 func (s *Scanner) whitespace(r rune) stateFunc {
 	if unicode.IsSpace(r) {
+		if r == '\n' {
+			switch s.tok.Type {
+			case Keyword:
+				switch s.tok.Val {
+				case ":=", "{", "[":
+					s.setTok(StmtEnd, string(r))
+					return nil
+				}
+			}
+		}
+
 		return s.whitespace
 	}
 
@@ -217,11 +228,16 @@ func (s *Scanner) id(r rune) stateFunc {
 
 		// TODO: Find a way to do this without allocating and copying.
 		val := s.tbuf.String()
-		if k := getKeywordSuffix(val); k != "" {
+		if k := symbolicSuffix(val); k != "" {
 			// BUG: This only works so long as the set of keywords doesn't
-			// contain any which are contain other keywords as prefixes.
+			// contain any which contain other keywords as prefixes.
 			if len(val) == len(k) {
-				s.setTok(Keyword, val)
+				t := Keyword
+				if k == ";" {
+					t = StmtEnd
+				}
+
+				s.setTok(t, val)
 				return nil
 			}
 
@@ -229,7 +245,11 @@ func (s *Scanner) id(r rune) stateFunc {
 				s.unread(rune(k[i]))
 			}
 
-			s.setTok(ID, val[:len(val)-len(k)])
+			t, val := ID, val[:len(val)-len(k)]
+			if isKeyword(val) {
+				t = Keyword
+			}
+			s.setTok(t, val)
 			return nil
 		}
 

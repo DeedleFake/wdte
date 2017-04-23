@@ -16,4 +16,5 @@ const (
 	String
 	ID
 	Keyword
+	StmtEnd
 )
