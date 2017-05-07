@@ -18,6 +18,7 @@ func TestScanner(t *testing.T) {
 			name: "Simple",
 			in: `"test" => test;
 f => + test.other 3 -5.2;
+# This is a comment.
 o => print "double\n" 'single\\';`,
 			out: []scanner.Token{
 				{Type: scanner.String, Val: "test"},

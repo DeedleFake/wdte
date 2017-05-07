@@ -127,6 +127,10 @@ func (s *Scanner) setTok(t TokenType, v interface{}) {
 type stateFunc func(rune) stateFunc
 
 func (s *Scanner) whitespace(r rune) stateFunc {
+	if r == '#' {
+		return s.comment
+	}
+
 	if unicode.IsSpace(r) {
 		return s.whitespace
 	}
@@ -152,6 +156,14 @@ func (s *Scanner) whitespace(r rune) stateFunc {
 	s.unread(r)
 	s.tline, s.tcol = s.line, s.col
 	return s.id
+}
+
+func (s *Scanner) comment(r rune) stateFunc {
+	if r == '\n' {
+		return s.whitespace
+	}
+
+	return s.comment
 }
 
 func (s *Scanner) negative(r rune) stateFunc {
