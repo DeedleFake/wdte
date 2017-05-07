@@ -26,7 +26,7 @@ func LoadGrammar(r io.Reader) (g Grammar, err error) {
 		}
 
 		parts := strings.SplitN(line, "->", 2)
-		if len(parts) < 2 {
+		if line[0] == '|' {
 			parts = strings.SplitN(line, "|", 2)
 			parts[0] = string(cur)
 		}
@@ -112,8 +112,6 @@ func part(str string) interface{} {
 		return Term{Type: scanner.String}
 	case "id":
 		return Term{Type: scanner.ID}
-	case "stmtend":
-		return Term{Type: scanner.StmtEnd}
 	}
 
 	return Term{
