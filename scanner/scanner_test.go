@@ -2,7 +2,6 @@ package scanner_test
 
 import (
 	"io"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -17,16 +16,16 @@ func TestScanner(t *testing.T) {
 	}{
 		{
 			name: "Simple",
-			in: `"test" -> test;
-f = + test.other 3 -5.2;
-o = print "double\n" 'single\\';`,
+			in: `"test" => test;
+f => + test.other 3 -5.2;
+o => print "double\n" 'single\\';`,
 			out: []scanner.Token{
 				{Type: scanner.String, Val: "test"},
-				{Type: scanner.Keyword, Val: "->"},
+				{Type: scanner.Keyword, Val: "=>"},
 				{Type: scanner.ID, Val: "test"},
 				{Type: scanner.Keyword, Val: ";"},
 				{Type: scanner.ID, Val: "f"},
-				{Type: scanner.Keyword, Val: "="},
+				{Type: scanner.Keyword, Val: "=>"},
 				{Type: scanner.ID, Val: "+"},
 				{Type: scanner.ID, Val: "test"},
 				{Type: scanner.Keyword, Val: "."},
@@ -35,7 +34,7 @@ o = print "double\n" 'single\\';`,
 				{Type: scanner.Number, Val: float64(-5.2)},
 				{Type: scanner.Keyword, Val: ";"},
 				{Type: scanner.ID, Val: "o"},
-				{Type: scanner.Keyword, Val: "="},
+				{Type: scanner.Keyword, Val: "=>"},
 				{Type: scanner.ID, Val: "print"},
 				{Type: scanner.String, Val: "double\n"},
 				{Type: scanner.String, Val: "single\\"},
@@ -64,7 +63,7 @@ o = print "double\n" 'single\\';`,
 }
 
 func assertTokensEqual(t *testing.T, ex scanner.Token, got scanner.Token) {
-	if reflect.TypeOf(ex) != reflect.TypeOf(got) {
+	if ex.Type != got.Type {
 		t.Errorf("Unexpected token type:")
 		t.Errorf("\tExpected %#v.", ex)
 		t.Errorf("\tGot %#v.", got)

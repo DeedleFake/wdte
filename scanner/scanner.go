@@ -128,17 +128,6 @@ type stateFunc func(rune) stateFunc
 
 func (s *Scanner) whitespace(r rune) stateFunc {
 	if unicode.IsSpace(r) {
-		if r == '\n' {
-			switch s.tok.Type {
-			case Keyword:
-				switch s.tok.Val {
-				case ":=", "{", "[":
-					s.setTok(StmtEnd, string(r))
-					return nil
-				}
-			}
-		}
-
 		return s.whitespace
 	}
 
@@ -233,10 +222,6 @@ func (s *Scanner) id(r rune) stateFunc {
 			// contain any which contain other keywords as prefixes.
 			if len(val) == len(k) {
 				t := Keyword
-				if k == ";" {
-					t = StmtEnd
-				}
-
 				s.setTok(t, val)
 				return nil
 			}
