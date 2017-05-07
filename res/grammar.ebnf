@@ -1,30 +1,34 @@
    <script> -> <imports> <funcdecls>
   <imports> -> <import> <imports>
              | ε
-   <import> -> string -> id stmtend
+   <import> -> string => id ;
 <funcdecls> -> <funcdecl> <funcdecls>
              | ε
- <funcdecl> -> id <argdecls> := <expr>
+ <funcdecl> -> id <argdecls> => <expr> ;
  <argdecls> -> id <argdecls>
              | ε
-     <expr> -> <func> <args> stmtend
-             | { <exprs> } stmtend
-             | switch <expr> { <switches> }
+     <expr> -> <single> <args> <chain>
+    <chain> -> -> <expr> <chain>
      <args> -> <single> <args>
              | ε
-    <exprs> -> <expr> <exprs>
+    <exprs> -> <expr> ; <exprs>
              | ε
- <switches> -> <expr> := <expr> <switches>
-             | default := <expr> <switches>
+ <switches> -> <expr> => <expr> <switches>
+             | default => <expr> <switches>
              | ε
    <single> -> <func>
+             | <array>
+             | <switch>
+             | <compound>
              | number
              | string
-             | <array>
-             | { <exprs> }
-    <array> -> [ <exprs> ]
+    <array> -> [ <exprs> <optend> ]
+   <switch> -> switch <expr> { <switches> }
+ <compound> -> { <exprs> <optend> }
      <func> -> id <subfunc>
   <subfunc> -> . id
              | ε
+   <optend> -> ;
+             | ε
 
-# vim: et
+# vim: ts=2 sw=2 et
