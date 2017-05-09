@@ -140,7 +140,35 @@ func fromArray(array *ast.NTerm, m *Module, scope map[ID]int) Func {
 }
 
 func fromSwitch(s *ast.NTerm, m *Module, scope map[ID]int) Func {
-	panic("Not implemented.")
+	check := fromExpr(s.Children()[1].(*ast.NTerm), m, scope)
+	switches := fromSwitches(flatten(s.Children()[3].(*ast.NTerm), 4, 0, 2), m, scope)
+
+	return &Switch{
+		Check: check,
+		Cases: switches,
+	}
+}
+
+func fromSwitches(switches []ast.Node, m *Module, scope map[ID]int) [][2]Func {
+	cases := make([][2]Func, 0, len(switches)/2)
+loop:
+	for i := 0; i < len(switches); i += 2 {
+		switch c := switches[i].(type) {
+		case *ast.Term:
+			cases = append(cases, [...]Func{
+				nil,
+				fromExpr(switches[i+1].(*ast.NTerm), m, scope),
+			})
+			break loop
+
+		case *ast.NTerm:
+			cases = append(cases, [...]Func{
+				fromExpr(c, m, scope),
+				fromExpr(switches[i+1].(*ast.NTerm), m, scope),
+			})
+		}
+	}
+	return cases
 }
 
 func fromCompound(compound *ast.NTerm, m *Module, scope map[ID]int) Func {

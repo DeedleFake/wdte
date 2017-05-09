@@ -9,10 +9,8 @@ import (
 
 func TestModule(t *testing.T) {
 	const test = `
-'test' => test;
-
 fib n => switch n {
-	0 => 0;
+	0 => 10;
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 
