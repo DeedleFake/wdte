@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-
-	"github.com/DeedleFake/wdte/scanner"
 )
 
 type Grammar map[NTerm][]Rule
@@ -156,7 +154,7 @@ func (g Grammar) followWithout(nt NTerm, ignore []NTerm) TokenSet {
 	return ts
 }
 
-type Rule []interface{}
+type Rule []Token
 
 func (r Rule) Epsilon() bool {
 	return (len(r) == 1) && (isEpsilon(r[0]))
@@ -173,25 +171,10 @@ func NewToken(str string) Token {
 		return Epsilon{}
 	}
 
-	switch str {
-	case "number":
-		return Term{Type: scanner.Number}
-	case "string":
-		return Term{Type: scanner.String}
-	case "id":
-		return Term{Type: scanner.ID}
-	}
-
-	return Term{
-		Type:    scanner.Keyword,
-		Keyword: str,
-	}
+	return Term(str)
 }
 
-type Term struct {
-	Type    scanner.TokenType
-	Keyword string
-}
+type Term string
 
 type NTerm string
 

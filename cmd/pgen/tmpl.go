@@ -14,7 +14,7 @@ func init() {
 	token := func(t Token) string {
 		switch t := t.(type) {
 		case Term:
-			return fmt.Sprintf("newTerm(%q, %q)", t.Type, t.Keyword)
+			return fmt.Sprintf("newTerm(%q)", t)
 
 		case NTerm:
 			return fmt.Sprintf("newNTerm(%q)", t[1:len(t)-1])
@@ -31,7 +31,7 @@ func init() {
 		"token":     token,
 		"rule": func(r Rule) string {
 			var buf bytes.Buffer
-			buf.WriteString("Rule{")
+			buf.WriteString("newRule(")
 
 			var s string
 			for _, t := range r {
@@ -40,7 +40,7 @@ func init() {
 				s = ", "
 			}
 
-			buf.WriteRune('}')
+			buf.WriteRune(')')
 			return buf.String()
 		},
 	})
@@ -56,6 +56,8 @@ type Lookup struct {
 }
 
 type Token interface{}
+
+type Rule []Token
 
 var Table = map[Lookup]Rule{
 	{{ range $nterm, $_ := . }}
