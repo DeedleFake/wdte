@@ -35,6 +35,10 @@ type NTerm struct {
 	c  []Node
 }
 
+func (nt NTerm) Name() string {
+	return string(nt.nt)
+}
+
 func (nt NTerm) Parent() Node {
 	return nt.p
 }

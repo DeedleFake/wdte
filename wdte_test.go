@@ -18,5 +18,14 @@ add x y => + x y;
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(m)
+
+	t.Log("Imports:")
+	for i := range m.Imports {
+		t.Logf("\t%q", i)
+	}
+
+	t.Log("Funcs:")
+	for f := range m.Funcs {
+		t.Logf("\t%q", f)
+	}
 }
