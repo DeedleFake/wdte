@@ -70,7 +70,7 @@ var Table = map[Lookup]Rule{
 		{{- if $.Nullable $nterm -}}
 		{{- range $term, $from := $.Follow $nterm -}}
 			{{- if isEpsilon $term | not -}}
-				{Term: {{ $term | token }}, NTerm: {{ $nterm | token -}} }: {{ $from | rule }},
+				{Term: {{ $term | token }}, NTerm: {{ $nterm | token -}} }: newRule(newEpsilon()),
 			{{ end -}}
 		{{ end -}}
 		{{ end -}}
