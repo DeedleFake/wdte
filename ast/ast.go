@@ -38,7 +38,7 @@ func Parse(r io.Reader) (ast Node, err error) {
 		switch gtok := gtok.(type) {
 		case pgen.Term:
 			if !tokensEqual(s.Tok(), gtok) {
-				return nil, parseError(s, fmt.Errorf("Unexpected token: %v", s.Tok().Type))
+				return nil, parseError(s, fmt.Errorf("Expected %v, but found %v", gtok, s.Tok().Val))
 			}
 
 			val := s.Tok().Val
