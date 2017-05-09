@@ -12,9 +12,6 @@
              | ε
     <chain> -> -> <single> <args> <chain>
              | ε
- <switches> -> <expr> => <expr> ; <switches>
-             | default => <expr> ; <switches>
-             | ε
    <single> -> number
              | string
              | <func>
@@ -30,6 +27,9 @@
  <exprlist> -> <expr> <exprs> <optend>
              | ε
     <exprs> -> ; <expr> <exprs>
+             | ε
+ <switches> -> <expr> => <expr> ; <switches>
+             | default => <expr> ; <switches>
              | ε
    <optend> -> ;
              | ε
