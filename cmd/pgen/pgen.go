@@ -8,8 +8,12 @@ import (
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %v <file.ebnf>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %v [options] <file.ebnf>\n", os.Args[0])
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintln(os.Stderr, "Options:")
+		flag.PrintDefaults()
 	}
+	output := flag.String("out", "", "File to output to, or stdout if blank.")
 	flag.Parse()
 
 	if flag.NArg() != 1 {
@@ -31,6 +35,17 @@ func main() {
 	}
 
 	out := &formatter{w: os.Stdout}
+	if *output != "" {
+		file, err := os.Create(*output)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating %q: %v", *output, err)
+			os.Exit(1)
+		}
+		defer file.Close()
+
+		out.w = file
+	}
+
 	err = tmpl.Execute(out, g)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error printing code: %v", err)
