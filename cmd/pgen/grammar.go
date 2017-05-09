@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"io"
-	"math"
 	"strings"
 
 	"github.com/DeedleFake/wdte/scanner"
@@ -16,7 +15,7 @@ type Grammar struct {
 
 func LoadGrammar(r io.Reader) (g Grammar, err error) {
 	var cur NTerm
-	rules := make(map[NTerm][][]interface{})
+	rules := make(map[NTerm][]Rule)
 
 	s := bufio.NewScanner(r)
 	for s.Scan() {
@@ -34,7 +33,8 @@ func LoadGrammar(r io.Reader) (g Grammar, err error) {
 
 		parts = strings.Fields(parts[1])
 
-		rule := make([]interface{}, 0, len(parts))
+		rule := make(Rule, 0, 1+len(parts))
+		rule = append(rule, cur)
 		for _, p := range parts {
 			rule = append(rule, part(p))
 		}
@@ -57,7 +57,7 @@ func LoadGrammar(r io.Reader) (g Grammar, err error) {
 	return g, nil
 }
 
-func (g *Grammar) first(nt NTerm, rules map[NTerm][][]interface{}) TermSet {
+func (g *Grammar) first(nt NTerm, rules map[NTerm][]Rule) TermSet {
 	if s, ok := g.First[nt]; ok {
 		return s
 	}
@@ -65,20 +65,18 @@ func (g *Grammar) first(nt NTerm, rules map[NTerm][][]interface{}) TermSet {
 
 	for _, rule := range rules[nt] {
 	loop:
-		for _, p := range rule {
+		for _, p := range rule[1:] {
 			switch p := p.(type) {
 			case Term:
-				g.First[nt].Add(p)
+				g.First[nt].Add(p, rule)
+				break loop
 
 			case NTerm:
-				g.First[nt].AddAll(g.first(p, rules))
+				g.First[nt].AddAll(g.first(p, rules), rule)
 
 				if !g.nullable(p, rules) {
 					break loop
 				}
-
-			case Epsilon:
-				g.First[nt].Add(Term{Type: EpsilonToken})
 			}
 		}
 	}
@@ -86,14 +84,34 @@ func (g *Grammar) first(nt NTerm, rules map[NTerm][][]interface{}) TermSet {
 	return g.First[nt]
 }
 
-func (g *Grammar) follow(nt NTerm, rules map[NTerm][][]interface{}) TermSet {
+func (g *Grammar) follow(nt NTerm, rules map[NTerm][]Rule) TermSet {
 	g.Follow = make(map[NTerm]TermSet)
 
 	panic("Not implemented.")
 }
 
-func (g *Grammar) nullable(nt NTerm, rules map[NTerm][][]interface{}) bool {
-	return g.first(nt, rules).Contains(Term{Type: EpsilonToken})
+func (g *Grammar) nullable(nt NTerm, rules map[NTerm][]Rule) bool {
+outer:
+	for _, rule := range rules[nt] {
+		for _, p := range rule[1:] {
+			switch p := p.(type) {
+			case Term:
+				continue outer
+
+			case NTerm:
+				if p == nt {
+					continue
+				}
+
+			case Epsilon:
+				continue
+			}
+
+			return true
+		}
+	}
+
+	return false
 }
 
 func part(str string) interface{} {
@@ -120,7 +138,7 @@ func part(str string) interface{} {
 	}
 }
 
-const EpsilonToken scanner.TokenType = scanner.TokenType(math.MaxUint32)
+type Rule []interface{}
 
 type Term struct {
 	Type    scanner.TokenType
@@ -131,15 +149,19 @@ type NTerm string
 
 type Epsilon struct{}
 
-type TermSet map[Term]struct{}
+type TermSet map[Term]Rule
 
-func (s TermSet) Add(t Term) {
-	s[t] = struct{}{}
+func (s TermSet) Add(t Term, r Rule) {
+	if _, ok := s[t]; ok {
+		return
+	}
+
+	s[t] = r
 }
 
-func (s TermSet) AddAll(o TermSet) {
+func (s TermSet) AddAll(o TermSet, r Rule) {
 	for t := range o {
-		s.Add(t)
+		s.Add(t, r)
 	}
 }
 
