@@ -10,6 +10,8 @@ var (
 		"}":  struct{}{},
 		"[":  struct{}{},
 		"]":  struct{}{},
+		"(":  struct{}{},
+		")":  struct{}{},
 		"=>": struct{}{},
 		";":  struct{}{},
 	}
