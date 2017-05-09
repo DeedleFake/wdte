@@ -43,6 +43,24 @@ o => print "double\n" 'single\\';`,
 				{Type: scanner.EOF, Val: nil},
 			},
 		},
+		{
+			name: "Switch",
+			in:   `test => switch n {case => r;};`,
+			out: []scanner.Token{
+				{Type: scanner.ID, Val: "test"},
+				{Type: scanner.Keyword, Val: "=>"},
+				{Type: scanner.Keyword, Val: "switch"},
+				{Type: scanner.ID, Val: "n"},
+				{Type: scanner.Keyword, Val: "{"},
+				{Type: scanner.ID, Val: "case"},
+				{Type: scanner.Keyword, Val: "=>"},
+				{Type: scanner.ID, Val: "r"},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.Keyword, Val: "}"},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.EOF, Val: nil},
+			},
+		},
 	}
 
 	for _, test := range tests {
