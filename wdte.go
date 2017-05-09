@@ -37,6 +37,7 @@ func (f ImportFunc) Import(from string) (*Module, error) {
 type ID string
 
 type Func interface {
+	// TODO: Handle errors.
 	Call(args ...Func) Func
 }
 
@@ -64,14 +65,65 @@ func (f DeclFunc) Call(args ...Func) Func {
 	return f.Expr.Call(append(f.Stored, args...)...)
 }
 
+type Expr struct {
+	Func Func
+	Args []Func
+}
+
+func (f Expr) Call(args ...Func) Func {
+	return f.Func.Call(f.Args...)
+}
+
+type Chain struct {
+	Func Func
+	Args []Func
+	Prev Func
+}
+
+func (f Chain) Call(args ...Func) Func {
+	return f.Func.Call(f.Args...).Call(f.Prev.Call())
+}
+
 type String string
 
 func (s String) Call(args ...Func) Func {
-	panic("Not implemented.")
+	// TODO: Use the arguments for something. Probably concatenation.
+	return s
 }
 
 type Number float64
 
 func (n Number) Call(args ...Func) Func {
-	panic("Not implemented.")
+	// TODO: Use the arguments for something, perhaps.
+	return n
+}
+
+type External struct {
+	Module *Module
+	Import ID
+	Func   ID
+}
+
+func (e External) Call(args ...Func) Func {
+	return e.Module.Imports[e.Import].Funcs[e.Func].Call(args...)
+}
+
+type Local struct {
+	Module *Module
+	Func   ID
+}
+
+func (local Local) Call(args ...Func) Func {
+	return local.Module.Funcs[local.Func].Call(args...)
+}
+
+type Compound []Func
+
+func (c Compound) Call(args ...Func) Func {
+	var last Func
+	for _, f := range c {
+		last = f.Call()
+	}
+
+	return last
 }
