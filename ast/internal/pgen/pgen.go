@@ -46,7 +46,5 @@ func newEpsilon() Epsilon {
 }
 
 func newRule(tokens ...Token) (r Rule) {
-	r = make(Rule, len(tokens))
-	copy(r, tokens)
-	return
+	return Rule(tokens)
 }
