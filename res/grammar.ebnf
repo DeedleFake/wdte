@@ -1,9 +1,7 @@
-   <script> -> <imports> <funcdecls>
-  <imports> -> <import> <imports>
-             | ε
+   <script> -> <decl> <script>
+     <decl> -> <import>
+             | <funcdecl>
    <import> -> string => id ;
-<funcdecls> -> <funcdecl> <funcdecls>
-             | ε
  <funcdecl> -> id <argdecls> => <expr> ;
  <argdecls> -> id <argdecls>
              | ε
