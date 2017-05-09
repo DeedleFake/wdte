@@ -258,7 +258,11 @@ func (s *Scanner) id(r rune) stateFunc {
 		return s.id
 	}
 
-	s.setTok(ID, s.tbuf.String())
+	t, val := ID, s.tbuf.String()
+	if isKeyword(val) {
+		t = Keyword
+	}
+	s.setTok(t, val)
 	s.unread(r)
 	return nil
 }
