@@ -53,6 +53,20 @@ func newEpsilon() Epsilon {
 	return Epsilon{}
 }
 
+func (e Epsilon) String() string {
+	return "ε"
+}
+
+type EOF struct{}
+
+func (e EOF) String() string {
+	return "Ω"
+}
+
+func newEOF() EOF {
+	return EOF{}
+}
+
 func newRule(tokens ...Token) (r Rule) {
 	return Rule(tokens)
 }

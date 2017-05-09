@@ -11,17 +11,18 @@ import (
 func Parse(r io.Reader) (ast Node, err error) {
 	ast = &NTerm{NTerm: "script"}
 	s := scanner.New(r)
-	g := tokenStack{"EOF", pgen.NTerm("script")}
+	g := tokenStack{pgen.NTerm("script")}
 
 	more := s.Scan()
 	cur := ast.(*NTerm)
 	for len(g) > 0 {
+		fmt.Printf("%v, %v\n", g, s.Tok().Val)
 		gtok := g.Pop()
 		if gtok == nil {
 			cur = cur.Parent().(*NTerm)
 			continue
 		}
-		if gtok == "EOF" {
+		if _, ok := gtok.(pgen.EOF); ok {
 			if more {
 				return nil, parseError(s, fmt.Errorf("EOF expected, but found %v", s.Tok().Type))
 			}
@@ -83,10 +84,13 @@ func tokensEqual(stok scanner.Token, gtok pgen.Token) bool {
 	panic(fmt.Errorf("Tried to compare non-terminal: %#v", gtok))
 }
 
-func toPGenTerm(tok scanner.Token) pgen.Term {
+func toPGenTerm(tok scanner.Token) pgen.Token {
 	var keyword string
-	if tok.Type == scanner.Keyword {
+	switch tok.Type {
+	case scanner.Keyword:
 		keyword = fmt.Sprintf("%v", tok.Val)
+	case scanner.EOF:
+		return pgen.EOF{}
 	}
 
 	return pgen.Term{

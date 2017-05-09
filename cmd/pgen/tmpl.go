@@ -21,6 +21,9 @@ func init() {
 
 		case Epsilon:
 			return "newEpsilon()"
+
+		case EOF:
+			return "newEOF()"
 		}
 
 		panic(fmt.Errorf("Unexpected token type: %T", t))

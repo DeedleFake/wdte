@@ -38,21 +38,6 @@ func LoadGrammar(r io.Reader) (g Grammar, err error) {
 	return g, s.Err()
 }
 
-func (g Grammar) Terms() TokenSet {
-	ts := make(TokenSet)
-	for _, rules := range g {
-		for _, rule := range rules {
-			for _, p := range rule {
-				if p, ok := p.(Term); ok {
-					ts.Add(p, nil)
-				}
-			}
-		}
-	}
-
-	return ts
-}
-
 func (g Grammar) Nullable(tok Token) bool {
 	switch tok := tok.(type) {
 	case Term:
@@ -78,6 +63,9 @@ func (g Grammar) Nullable(tok Token) bool {
 
 	case Epsilon:
 		return true
+
+	case EOF:
+		return false
 	}
 
 	panic(fmt.Errorf("Unexpected token type: %T", tok))
@@ -157,7 +145,7 @@ func (g Grammar) followWithout(nt NTerm, ignore []NTerm) TokenSet {
 type Rule []Token
 
 func (r Rule) Epsilon() bool {
-	return (len(r) == 1) && (isEpsilon(r[0]))
+	return (len(r) == 1) && isEpsilon(r[0])
 }
 
 type Token interface{}
@@ -167,8 +155,11 @@ func NewToken(str string) Token {
 		return NTerm(str)
 	}
 
-	if str == "ε" {
+	switch str {
+	case "ε":
 		return Epsilon{}
+	case "Ω":
+		return EOF{}
 	}
 
 	return Term(str)
@@ -180,10 +171,12 @@ type NTerm string
 
 type Epsilon struct{}
 
-func isEpsilon(t interface{}) bool {
+func isEpsilon(t Token) bool {
 	_, ok := t.(Epsilon)
 	return ok
 }
+
+type EOF struct{}
 
 type TokenSet map[Token]Rule
 
