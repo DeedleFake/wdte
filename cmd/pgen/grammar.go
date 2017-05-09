@@ -75,7 +75,7 @@ func (g Grammar) First(tok Token) TokenSet {
 	ts := make(TokenSet)
 
 	switch tok := tok.(type) {
-	case Term, Epsilon:
+	case Term, Epsilon, EOF:
 		ts.Add(tok, nil)
 
 	case NTerm:

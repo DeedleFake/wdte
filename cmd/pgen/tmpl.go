@@ -54,11 +54,9 @@ func init() {
 package pgen
 
 type Lookup struct {
-	Term Term
+	Term Token
 	NTerm NTerm
 }
-
-type Token interface{}
 
 type Rule []Token
 
