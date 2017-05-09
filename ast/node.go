@@ -40,6 +40,10 @@ func (nt NTerm) Parent() Node {
 }
 
 func (nt *NTerm) AddChild(n Node) {
+	if nt == nil {
+		return
+	}
+
 	nt.c = append(nt.c, n)
 }
 

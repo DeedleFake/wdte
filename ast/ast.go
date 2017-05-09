@@ -9,12 +9,11 @@ import (
 )
 
 func Parse(r io.Reader) (ast Node, err error) {
-	ast = &NTerm{nt: "script"}
 	s := scanner.New(r)
 	g := tokenStack{pgen.NTerm("script")}
 
 	more := s.Scan()
-	cur := ast.(*NTerm)
+	var cur *NTerm
 	for {
 		gtok := g.Pop()
 		if gtok == nil {
@@ -64,11 +63,10 @@ func Parse(r io.Reader) (ast Node, err error) {
 			})
 
 		case pgen.EOF:
-			more = s.Scan()
-			if more {
+			if s.Tok().Type != scanner.EOF {
 				return nil, parseError(s, fmt.Errorf("EOF expected, but found %v", s.Tok().Type))
 			}
-			return ast, nil
+			return cur, nil
 		}
 	}
 }
