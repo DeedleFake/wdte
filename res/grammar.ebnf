@@ -8,26 +8,26 @@
  <argdecls> -> id <argdecls>
              | ε
      <expr> -> <single> <args> <chain>
-    <chain> -> -> <single> <args> <chain>
-             | ε
      <args> -> <single> <args>
              | ε
-    <exprs> -> <expr> ; <exprs>
+    <chain> -> -> <single> <args> <chain>
              | ε
  <switches> -> <expr> => <expr> ; <switches>
              | default => <expr> ; <switches>
              | ε
-   <single> -> <func>
+   <single> -> number
+             | string
+             | <func>
              | <array>
              | <switch>
              | <compound>
-             | number
-             | string
+     <func> -> id <subfunc>
+  <subfunc> -> . id
+             | ε
     <array> -> [ <exprs> ]
    <switch> -> switch <expr> { <switches> }
  <compound> -> ( <exprs> )
-     <func> -> id <subfunc>
-  <subfunc> -> . id
+    <exprs> -> <expr> ; <exprs>
              | ε
 
 # vim: ts=2 sw=2 et
