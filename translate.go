@@ -27,10 +27,14 @@ func fromDecls(decls []ast.Node, im Importer) (*Module, error) {
 			if err != nil {
 				return nil, err
 			}
-			m.Imports[ID(id)] = sub
+			m.Imports[id] = sub
 
 		case "funcdecl":
-			panic("Not implemented.")
+			id, def, err := fromFuncDecl(d.Children()[0].(*ast.NTerm), m)
+			if err != nil {
+				return nil, err
+			}
+			m.Funcs[id] = def
 
 		default:
 			return nil, fmt.Errorf("Unexpected decl type: %q", dtype)
@@ -40,12 +44,40 @@ func fromDecls(decls []ast.Node, im Importer) (*Module, error) {
 	return m, nil
 }
 
-func fromImport(i *ast.NTerm, im Importer) (string, *Module, error) {
+func fromImport(i *ast.NTerm, im Importer) (ID, *Module, error) {
 	name := i.Children()[0].(*ast.Term).Tok().Val.(string)
-	id := i.Children()[2].(*ast.Term).Tok().Val.(string)
+	id := ID(i.Children()[2].(*ast.Term).Tok().Val.(string))
 
 	m, err := im.Import(name)
 	return id, m, err
+}
+
+func fromFuncDecl(decl *ast.NTerm, m *Module) (ID, Func, error) {
+	id := ID(decl.Children()[0].(*ast.Term).Tok().Val.(string))
+	args := fromArgDecls(flatten(decl.Children()[1].(*ast.NTerm), 1, 0))
+
+	expr, err := fromExpr(decl.Children()[3].(*ast.NTerm), m, args)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return id, &DeclFunc{
+		Expr: expr,
+		Args: len(args),
+	}, nil
+}
+
+func fromExpr(expr *ast.NTerm, m *Module, args []ID) (Func, error) {
+	panic("Not implemented.")
+}
+
+func fromArgDecls(argdecls []ast.Node) []ID {
+	ids := make([]ID, 0, len(argdecls))
+	for _, arg := range argdecls {
+		ids = append(ids, ID(arg.(*ast.Term).Tok().Val.(string)))
+	}
+
+	return ids
 }
 
 func flatten(top *ast.NTerm, rec int, get ...int) []ast.Node {

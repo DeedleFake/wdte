@@ -37,7 +37,7 @@ func (f ImportFunc) Import(from string) (*Module, error) {
 type ID string
 
 type Func interface {
-	Call(args ...Func) Value
+	Call(args ...Func) Func
 }
 
 type GoFunc func(args ...Func) Func
@@ -46,4 +46,32 @@ func (f GoFunc) Call(args ...Func) Func {
 	return f(args...)
 }
 
-type Value interface{}
+type DeclFunc struct {
+	Expr   Func
+	Args   int
+	Stored []Func
+}
+
+func (f DeclFunc) Call(args ...Func) Func {
+	if len(args) < f.Args {
+		return &DeclFunc{
+			Expr:   f,
+			Args:   f.Args - len(args),
+			Stored: args,
+		}
+	}
+
+	return f.Expr.Call(append(f.Stored, args...)...)
+}
+
+type String string
+
+func (s String) Call(args ...Func) Func {
+	panic("Not implemented.")
+}
+
+type Number float64
+
+func (n Number) Call(args ...Func) Func {
+	panic("Not implemented.")
+}
