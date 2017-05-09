@@ -1,5 +1,5 @@
    <script> -> <decl> <script>
-             | ε
+             | Ω
      <decl> -> <import>
              | <funcdecl>
    <import> -> string => id ;
