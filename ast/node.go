@@ -11,10 +11,15 @@ type Term struct {
 	pgen.Term
 
 	p Node
+	v interface{}
 }
 
 func (t Term) Parent() Node {
 	return t.p
+}
+
+func (t Term) Val() interface{} {
+	return t.v
 }
 
 func (t Term) Children() []Node {

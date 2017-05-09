@@ -23,7 +23,7 @@ func Parse(r io.Reader) (ast Node, err error) {
 		}
 		if gtok == "EOF" {
 			if more {
-				return nil, parseError(s, fmt.Errorf("EOF expected"))
+				return nil, parseError(s, fmt.Errorf("EOF expected, but found %v", s.Tok().Type))
 			}
 			break
 		}
@@ -41,19 +41,21 @@ func Parse(r io.Reader) (ast Node, err error) {
 				return nil, parseError(s, fmt.Errorf("Unexpected token: %v", s.Tok().Type))
 			}
 
+			val := s.Tok().Val
 			cur.AddChild(&Term{
 				Term: gtok,
 				p:    cur,
+				v:    val,
 			})
 			more = s.Scan()
 
 		case pgen.NTerm:
 			rule := pgen.Table[pgen.Lookup{Term: toPGenTerm(s.Tok()), NTerm: gtok}]
 			if rule == nil {
-				return nil, parseError(s, fmt.Errorf("No rule for non-terminal at position: <%v>", gtok))
+				return nil, parseError(s, fmt.Errorf("No rule for (%v, <%v>)", toPGenTerm(s.Tok()), gtok))
 			}
 
-			g.Push(rule)
+			g.PushRule(rule)
 
 			child := &NTerm{
 				NTerm: gtok,
@@ -74,7 +76,7 @@ func Parse(r io.Reader) (ast Node, err error) {
 
 func tokensEqual(stok scanner.Token, gtok pgen.Token) bool {
 	switch gtok := gtok.(type) {
-	case Term:
+	case pgen.Term:
 		return (gtok.Type == stok.Type) && ((stok.Type != scanner.Keyword) || (gtok.Keyword == stok.Val))
 	}
 
@@ -82,9 +84,14 @@ func tokensEqual(stok scanner.Token, gtok pgen.Token) bool {
 }
 
 func toPGenTerm(tok scanner.Token) pgen.Term {
+	var keyword string
+	if tok.Type == scanner.Keyword {
+		keyword = fmt.Sprintf("%v", tok.Val)
+	}
+
 	return pgen.Term{
 		Type:    tok.Type,
-		Keyword: fmt.Sprintf("%v", tok.Val),
+		Keyword: keyword,
 	}
 }
 

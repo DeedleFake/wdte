@@ -9,6 +9,14 @@ type Term struct {
 	Keyword string
 }
 
+func (t Term) String() string {
+	if t.Type == scanner.Keyword {
+		return t.Keyword
+	}
+
+	return t.Type.String()
+}
+
 func newTerm(t string) Term {
 	switch t {
 	case "id":
