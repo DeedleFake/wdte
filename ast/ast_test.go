@@ -36,10 +36,10 @@ func TestParse(t *testing.T) {
 
 fib n => switch n {
 	0 => 0;
-	default => + (fib (- n 1)) (fib (- n 2));
+	default => + (fib (- n 1;);) (fib (- n 2;););
 };
 
-main => print (fib 5);
+main => print (fib 5;);
 `
 
 	root, err := ast.Parse(strings.NewReader(test))
