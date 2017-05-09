@@ -40,6 +40,21 @@ func LoadGrammar(r io.Reader) (g Grammar, err error) {
 	return g, s.Err()
 }
 
+func (g Grammar) Terms() TokenSet {
+	ts := make(TokenSet)
+	for _, rules := range g {
+		for _, rule := range rules {
+			for _, p := range rule {
+				if p, ok := p.(Term); ok {
+					ts.Add(p, nil)
+				}
+			}
+		}
+	}
+
+	return ts
+}
+
 func (g Grammar) Nullable(tok Token) bool {
 	switch tok := tok.(type) {
 	case Term:
@@ -72,6 +87,7 @@ func (g Grammar) Nullable(tok Token) bool {
 
 func (g Grammar) First(tok Token) TokenSet {
 	ts := make(TokenSet)
+
 	switch tok := tok.(type) {
 	case Term, Epsilon:
 		ts.Add(tok, nil)
@@ -90,8 +106,54 @@ func (g Grammar) First(tok Token) TokenSet {
 	return ts
 }
 
-func (g Grammar) Follow(tok Token) TokenSet {
-	panic("Not implemented.")
+func (g Grammar) Follow(nt NTerm) TokenSet {
+	return g.followWithout(nt, nil)
+}
+
+func (g Grammar) followWithout(nt NTerm, ignore []NTerm) TokenSet {
+	isIgnored := func(nt NTerm) bool {
+		for _, i := range ignore {
+			if i == nt {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	ts := make(TokenSet)
+
+	for name, rules := range g {
+		for _, rule := range rules {
+			for i, tok := range rule {
+				if tok == nt {
+					if i == len(rule)-1 {
+						if !isIgnored(name) {
+							ts.AddAll(g.followWithout(name, append(ignore, nt)), rule)
+						}
+						continue
+					}
+
+					for i := i + 1; i < len(rule); i++ {
+						ts.AddAll(g.First(rule[i]), rule)
+						if !g.Nullable(rule[i]) {
+							break
+						}
+
+						if i == len(rule)-1 {
+							if !isIgnored(name) {
+								ts.AddAll(g.followWithout(name, append(ignore, nt)), rule)
+							}
+							continue
+						}
+					}
+				}
+			}
+		}
+	}
+
+	ts.Remove(Epsilon{})
+	return ts
 }
 
 type Rule []interface{}
@@ -159,4 +221,8 @@ func (s TokenSet) AddAll(o TokenSet, r Rule) {
 func (s TokenSet) Contains(t Token) bool {
 	_, ok := s[t]
 	return ok
+}
+
+func (s TokenSet) Remove(t Token) {
+	delete(s, t)
 }
