@@ -23,22 +23,22 @@ func Parse(r io.Reader) (ast Node, err error) {
 		}
 		if gtok == "EOF" {
 			if more {
-				panic("Not implemented.")
+				return nil, parseError(s, fmt.Errorf("EOF expected"))
 			}
 			break
 		}
 		if !more {
 			if err = s.Err(); err != nil {
-				return nil, err
+				return nil, parseError(s, err)
 			}
 
-			panic("Not implemented.")
+			return nil, parseError(s, fmt.Errorf("Unexpected EOF"))
 		}
 
 		switch gtok := gtok.(type) {
 		case pgen.Term:
 			if !tokensEqual(s.Tok(), gtok) {
-				panic("Not implemented.")
+				return nil, parseError(s, fmt.Errorf("Unexpected token: %v", s.Tok().Type))
 			}
 
 			cur.AddChild(&Term{
@@ -50,7 +50,7 @@ func Parse(r io.Reader) (ast Node, err error) {
 		case pgen.NTerm:
 			rule := pgen.Table[pgen.Lookup{Term: toPGenTerm(s.Tok()), NTerm: gtok}]
 			if rule == nil {
-				panic("Not implemented.")
+				return nil, parseError(s, fmt.Errorf("No rule for non-terminal at position: <%v>", gtok))
 			}
 
 			g.Push(rule)
@@ -86,4 +86,21 @@ func toPGenTerm(tok scanner.Token) pgen.Term {
 		Type:    tok.Type,
 		Keyword: fmt.Sprintf("%v", tok.Val),
 	}
+}
+
+type ParseError struct {
+	Line, Col int
+	Err       error
+}
+
+func parseError(s *scanner.Scanner, err error) ParseError {
+	line, col := s.Pos()
+	return ParseError{
+		Line: line, Col: col,
+		Err: err,
+	}
+}
+
+func (err ParseError) Error() string {
+	return fmt.Sprintf("%v:%v: %v", err.Line, err.Col, err.Err)
 }
