@@ -14,8 +14,8 @@
              | ε
     <exprs> -> <expr> ; <exprs>
              | ε
- <switches> -> <expr> => <expr> <switches>
-             | default => <expr> <switches>
+ <switches> -> <expr> => <expr> ; <switches>
+             | default => <expr> ; <switches>
              | ε
    <single> -> <func>
              | <array>
@@ -23,13 +23,11 @@
              | <compound>
              | number
              | string
-    <array> -> [ <exprs> <optend> ]
+    <array> -> [ <exprs> ]
    <switch> -> switch <expr> { <switches> }
- <compound> -> ( <exprs> <optend> )
+ <compound> -> ( <exprs> )
      <func> -> id <subfunc>
   <subfunc> -> . id
-             | ε
-   <optend> -> ;
              | ε
 
 # vim: ts=2 sw=2 et
