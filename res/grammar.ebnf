@@ -23,7 +23,7 @@
              | string
     <array> -> [ <exprs> <optend> ]
    <switch> -> switch <expr> { <switches> }
- <compound> -> { <exprs> <optend> }
+ <compound> -> ( <exprs> <optend> )
      <func> -> id <subfunc>
   <subfunc> -> . id
              | ε
