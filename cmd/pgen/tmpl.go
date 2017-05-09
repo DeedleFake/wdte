@@ -14,20 +14,21 @@ func init() {
 	token := func(t Token) string {
 		switch t := t.(type) {
 		case Term:
-			return fmt.Sprintf("Term{Type: %q, Keyword: %q}", t.Type, t.Keyword)
+			return fmt.Sprintf("newTerm(%q, %q)", t.Type, t.Keyword)
 
 		case NTerm:
-			return fmt.Sprintf("NTerm(%q)", t[1:len(t)-1])
+			return fmt.Sprintf("newNTerm(%q)", t[1:len(t)-1])
 
 		case Epsilon:
-			return "Epsilon{}"
+			return "newEpsilon()"
 		}
 
 		panic(fmt.Errorf("Unexpected token type: %T", t))
 	}
 
 	tmpl.Funcs(template.FuncMap{
-		"token": token,
+		"isEpsilon": isEpsilon,
+		"token":     token,
 		"rule": func(r Rule) string {
 			var buf bytes.Buffer
 			buf.WriteString("Rule{")
@@ -56,19 +57,12 @@ type Lookup struct {
 
 type Token interface{}
 
-type Term struct {
-	Type string
-	Keyword string
-}
-
-type NTerm string
-
-type Epsilon struct{}
-
 var Table = map[Lookup]Rule{
 	{{ range $nterm, $_ := . }}
 		{{- range $term, $from := $.First $nterm -}}
-			{Term: {{ $term | token }}, NTerm: {{ $nterm | token -}} }: {{ $from | rule }},
+			{{- if isEpsilon $term | not -}}
+				{Term: {{ $term | token }}, NTerm: {{ $nterm | token -}} }: {{ $from | rule }},
+			{{ end -}}
 		{{ end -}}
 	{{ end }}
 }`))
