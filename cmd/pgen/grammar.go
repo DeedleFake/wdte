@@ -2,20 +2,18 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"strings"
 
 	"github.com/DeedleFake/wdte/scanner"
 )
 
-type Grammar struct {
-	First  map[NTerm]TermSet
-	Follow map[NTerm]TermSet
-}
+type Grammar map[NTerm][]Rule
 
 func LoadGrammar(r io.Reader) (g Grammar, err error) {
 	var cur NTerm
-	rules := make(map[NTerm][]Rule)
+	g = make(map[NTerm][]Rule)
 
 	s := bufio.NewScanner(r)
 	for s.Scan() {
@@ -34,87 +32,77 @@ func LoadGrammar(r io.Reader) (g Grammar, err error) {
 		parts = strings.Fields(parts[1])
 
 		rule := make(Rule, 0, 1+len(parts))
-		rule = append(rule, cur)
 		for _, p := range parts {
-			rule = append(rule, part(p))
+			rule = append(rule, NewToken(p))
 		}
-		rules[cur] = append(rules[cur], rule)
+		g[cur] = append(g[cur], rule)
 	}
-	if s.Err() != nil {
-		return g, s.Err()
-	}
-
-	g.First = make(map[NTerm]TermSet)
-	for nt := range rules {
-		g.first(nt, rules)
-	}
-
-	g.Follow = make(map[NTerm]TermSet)
-	for nt := range rules {
-		g.follow(nt, rules)
-	}
-
-	return g, nil
+	return g, s.Err()
 }
 
-func (g *Grammar) first(nt NTerm, rules map[NTerm][]Rule) TermSet {
-	if s, ok := g.First[nt]; ok {
-		return s
-	}
-	g.First[nt] = make(TermSet)
+func (g Grammar) Nullable(tok Token) bool {
+	switch tok := tok.(type) {
+	case Term:
+		return false
 
-	for _, rule := range rules[nt] {
-	loop:
-		for _, p := range rule[1:] {
-			switch p := p.(type) {
-			case Term:
-				g.First[nt].Add(p, rule)
-				break loop
-
-			case NTerm:
-				g.First[nt].AddAll(g.first(p, rules), rule)
-
-				if !g.nullable(p, rules) {
-					break loop
-				}
+	case NTerm:
+	rules:
+		for _, rule := range g[tok] {
+			if rule.Epsilon() {
+				return true
 			}
-		}
-	}
 
-	return g.First[nt]
-}
-
-func (g *Grammar) follow(nt NTerm, rules map[NTerm][]Rule) TermSet {
-	g.Follow = make(map[NTerm]TermSet)
-
-	panic("Not implemented.")
-}
-
-func (g *Grammar) nullable(nt NTerm, rules map[NTerm][]Rule) bool {
-outer:
-	for _, rule := range rules[nt] {
-		for _, p := range rule[1:] {
-			switch p := p.(type) {
-			case Term:
-				continue outer
-
-			case NTerm:
-				if p == nt {
-					continue
+			for _, p := range rule {
+				if !g.Nullable(p) {
+					continue rules
 				}
-
-			case Epsilon:
-				continue
 			}
 
 			return true
 		}
+
+		return false
+
+	case Epsilon:
+		return true
 	}
 
-	return false
+	panic(fmt.Errorf("Unexpected token type: %T", tok))
 }
 
-func part(str string) interface{} {
+func (g Grammar) First(tok Token) TokenSet {
+	ts := make(TokenSet)
+	switch tok := tok.(type) {
+	case Term, Epsilon:
+		ts.Add(tok, nil)
+
+	case NTerm:
+		for _, rule := range g[tok] {
+			for _, p := range rule {
+				ts.AddAll(g.First(p), rule)
+				if !g.Nullable(p) {
+					break
+				}
+			}
+		}
+	}
+
+	return ts
+}
+
+func (g Grammar) Follow(tok Token) TokenSet {
+	panic("Not implemented.")
+}
+
+type Rule []interface{}
+
+func (r Rule) Epsilon() bool {
+	return (len(r) == 1) && (isEpsilon(r[0]))
+}
+
+type Token interface{}
+
+func NewToken(str string) Token {
 	if (str[0] == '<') && (str[len(str)-1] == '>') {
 		return NTerm(str)
 	}
@@ -138,8 +126,6 @@ func part(str string) interface{} {
 	}
 }
 
-type Rule []interface{}
-
 type Term struct {
 	Type    scanner.TokenType
 	Keyword string
@@ -149,9 +135,14 @@ type NTerm string
 
 type Epsilon struct{}
 
-type TermSet map[Term]Rule
+func isEpsilon(t interface{}) bool {
+	_, ok := t.(Epsilon)
+	return ok
+}
 
-func (s TermSet) Add(t Term, r Rule) {
+type TokenSet map[Token]Rule
+
+func (s TokenSet) Add(t Token, r Rule) {
 	if _, ok := s[t]; ok {
 		return
 	}
@@ -159,13 +150,13 @@ func (s TermSet) Add(t Term, r Rule) {
 	s[t] = r
 }
 
-func (s TermSet) AddAll(o TermSet, r Rule) {
+func (s TokenSet) AddAll(o TokenSet, r Rule) {
 	for t := range o {
 		s.Add(t, r)
 	}
 }
 
-func (s TermSet) Contains(t Term) bool {
+func (s TokenSet) Contains(t Token) bool {
 	_, ok := s[t]
 	return ok
 }
