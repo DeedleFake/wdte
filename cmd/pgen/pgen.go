@@ -30,9 +30,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = tmpl.Execute(os.Stderr, g)
+	out := &formatter{w: os.Stdout}
+	err = tmpl.Execute(out, g)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error printing code: %v", err)
+		os.Exit(1)
+	}
+
+	err = out.Close()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error formatting code: %v", err)
 		os.Exit(1)
 	}
 }
