@@ -15,18 +15,11 @@ func Parse(r io.Reader) (ast Node, err error) {
 
 	more := s.Scan()
 	cur := ast.(*NTerm)
-	for len(g) > 0 {
-		fmt.Printf("%v, %v\n", g, s.Tok().Val)
+	for {
 		gtok := g.Pop()
 		if gtok == nil {
 			cur = cur.Parent().(*NTerm)
 			continue
-		}
-		if _, ok := gtok.(pgen.EOF); ok {
-			if more {
-				return nil, parseError(s, fmt.Errorf("EOF expected, but found %v", s.Tok().Type))
-			}
-			break
 		}
 		if !more {
 			if err = s.Err(); err != nil {
@@ -69,10 +62,15 @@ func Parse(r io.Reader) (ast Node, err error) {
 			cur.AddChild(&Epsilon{
 				p: cur,
 			})
+
+		case pgen.EOF:
+			more = s.Scan()
+			if more {
+				return nil, parseError(s, fmt.Errorf("EOF expected, but found %v", s.Tok().Type))
+			}
+			return ast, nil
 		}
 	}
-
-	return ast, nil
 }
 
 func tokensEqual(stok scanner.Token, gtok pgen.Token) bool {
