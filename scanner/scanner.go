@@ -62,7 +62,8 @@ func (s *Scanner) Scan() bool {
 		state = state(r)
 
 		if (s.err == io.EOF) && (state != nil) {
-			return false
+			s.setTok(EOF, nil)
+			return true
 		}
 	}
 

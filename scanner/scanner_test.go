@@ -40,6 +40,7 @@ o => print "double\n" 'single\\';`,
 				{Type: scanner.String, Val: "double\n"},
 				{Type: scanner.String, Val: "single\\"},
 				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.EOF, Val: nil},
 			},
 		},
 	}

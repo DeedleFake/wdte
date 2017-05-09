@@ -20,6 +20,7 @@ const (
 	String
 	ID
 	Keyword
+	EOF
 )
 
 func (t TokenType) String() string {
@@ -34,6 +35,8 @@ func (t TokenType) String() string {
 		return "id"
 	case Keyword:
 		return "keyword"
+	case EOF:
+		return "EOF"
 	}
 
 	panic(fmt.Errorf("Invalid token type: %v", uint(t)))
