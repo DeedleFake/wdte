@@ -117,9 +117,9 @@ func fromFunc(f *ast.NTerm, m *Module, scope map[ID]int) Func {
 		}
 	}
 
-	//if arg, ok := scope[id]; ok {
-	//	panic("Not implemented.")
-	//}
+	if arg, ok := scope[id]; ok {
+		return Arg(arg)
+	}
 
 	return &Local{
 		Module: m,

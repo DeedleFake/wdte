@@ -21,15 +21,15 @@ main => add 3 -5;
 		t.Fatal(err)
 	}
 
-	m.Funcs["+"] = wdte.GoFunc(func(args ...wdte.Func) wdte.Func {
-		a1 := args[0].Call()
-		a2 := args[1].Call()
+	m.Funcs["+"] = wdte.GoFunc(func(scope []wdte.Func, args ...wdte.Func) wdte.Func {
+		a1 := args[0].Call(scope)
+		a2 := args[1].Call(scope)
 
 		return a1.(wdte.Number) + a2.(wdte.Number)
 	})
 
-	m.Funcs["print"] = wdte.GoFunc(func(args ...wdte.Func) wdte.Func {
-		a := args[0].Call()
+	m.Funcs["print"] = wdte.GoFunc(func(scope []wdte.Func, args ...wdte.Func) wdte.Func {
+		a := args[0].Call(scope)
 		t.Logf("%v", a)
 		return a
 	})
@@ -44,5 +44,5 @@ main => add 3 -5;
 		t.Logf("\t%q", f)
 	}
 
-	m.Funcs["main"].Call()
+	m.Funcs["main"].Call(nil)
 }
