@@ -24,10 +24,14 @@
      <func> -> id <subfunc>
   <subfunc> -> . id
              | ε
-    <array> -> [ <exprs> ]
+    <array> -> [ <exprlist> ]
    <switch> -> switch <expr> { <switches> }
- <compound> -> ( <exprs> )
-    <exprs> -> <expr> ; <exprs>
+ <compound> -> ( <exprlist> )
+ <exprlist> -> <expr> <exprs> <optend>
+             | ε
+    <exprs> -> ; <expr> <exprs>
+             | ε
+   <optend> -> ;
              | ε
 
 # vim: ts=2 sw=2 et
