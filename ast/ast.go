@@ -25,7 +25,8 @@ func Parse(r io.Reader) (ast Node, err error) {
 			if more {
 				return nil, parseError(s, fmt.Errorf("EOF expected, but found %v", s.Tok().Type))
 			}
-			break
+
+			return ast, nil
 		}
 		if !more {
 			if err = s.Err(); err != nil {
@@ -71,7 +72,7 @@ func Parse(r io.Reader) (ast Node, err error) {
 		}
 	}
 
-	return ast, nil
+	panic("This should be unreachable.")
 }
 
 func tokensEqual(stok scanner.Token, gtok pgen.Token) bool {
