@@ -66,6 +66,14 @@ var Table = map[Lookup]Rule{
 				{Term: {{ $term | token }}, NTerm: {{ $nterm | token -}} }: {{ $from | rule }},
 			{{ end -}}
 		{{ end -}}
+
+		{{- if $.Nullable $nterm -}}
+		{{- range $term, $from := $.Follow $nterm -}}
+			{{- if isEpsilon $term | not -}}
+				{Term: {{ $term | token }}, NTerm: {{ $nterm | token -}} }: {{ $from | rule }},
+			{{ end -}}
+		{{ end -}}
+		{{ end -}}
 	{{ end }}
 }`))
 }
