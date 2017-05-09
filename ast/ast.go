@@ -32,7 +32,7 @@ func Parse(r io.Reader) (ast Node, err error) {
 				return nil, parseError(s, err)
 			}
 
-			return nil, parseError(s, fmt.Errorf("Unexpected EOF"))
+			return nil, parseError(s, fmt.Errorf("Expected %v, but found EOF", gtok))
 		}
 
 		switch gtok := gtok.(type) {
