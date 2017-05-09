@@ -13,10 +13,10 @@ func TestModule(t *testing.T) {
 
 fib n => switch n {
 	0 => 0;
-	default => + (fib (- n 1)) (fib (- n 2));
+	default => + (fib (- n 1;);) (fib (- n 2;););
 };
 
-main => print (fib 5);
+main => print (fib 5;);
 `
 
 	m, err := wdte.Parse(strings.NewReader(test), nil)
