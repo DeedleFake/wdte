@@ -9,7 +9,7 @@ import (
 )
 
 func Parse(r io.Reader) (ast Node, err error) {
-	ast = &NTerm{NTerm: "script"}
+	ast = &NTerm{nt: "script"}
 	s := scanner.New(r)
 	g := tokenStack{pgen.NTerm("script")}
 
@@ -32,14 +32,14 @@ func Parse(r io.Reader) (ast Node, err error) {
 		switch gtok := gtok.(type) {
 		case pgen.Term:
 			if !tokensEqual(s.Tok(), gtok) {
-				return nil, parseError(s, fmt.Errorf("Expected %v (<%v>), but found %v", gtok, cur.NTerm, s.Tok().Val))
+				return nil, parseError(s, fmt.Errorf("Expected %v (<%v>), but found %v", gtok, cur.nt, s.Tok().Val))
 			}
 
-			val := s.Tok().Val
 			cur.AddChild(&Term{
-				Term: gtok,
-				p:    cur,
-				v:    val,
+				tok: s.Tok(),
+
+				t: gtok,
+				p: cur,
 			})
 			more = s.Scan()
 
@@ -52,8 +52,8 @@ func Parse(r io.Reader) (ast Node, err error) {
 			g.PushRule(rule)
 
 			child := &NTerm{
-				NTerm: gtok,
-				p:     cur,
+				nt: gtok,
+				p:  cur,
 			}
 			cur.AddChild(child)
 			cur = child

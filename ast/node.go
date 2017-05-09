@@ -1,6 +1,9 @@
 package ast
 
-import "github.com/DeedleFake/wdte/ast/internal/pgen"
+import (
+	"github.com/DeedleFake/wdte/ast/internal/pgen"
+	"github.com/DeedleFake/wdte/scanner"
+)
 
 type Node interface {
 	Parent() Node
@@ -8,18 +11,18 @@ type Node interface {
 }
 
 type Term struct {
-	pgen.Term
+	tok scanner.Token
 
+	t pgen.Term
 	p Node
-	v interface{}
 }
 
 func (t Term) Parent() Node {
 	return t.p
 }
 
-func (t Term) Val() interface{} {
-	return t.v
+func (t Term) Tok() scanner.Token {
+	return t.tok
 }
 
 func (t Term) Children() []Node {
@@ -27,10 +30,9 @@ func (t Term) Children() []Node {
 }
 
 type NTerm struct {
-	pgen.NTerm
-
-	p Node
-	c []Node
+	nt pgen.NTerm
+	p  Node
+	c  []Node
 }
 
 func (nt NTerm) Parent() Node {
