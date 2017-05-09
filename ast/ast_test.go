@@ -29,7 +29,20 @@ func printTree(t *testing.T, cur ast.Node, depth int) {
 }
 
 func TestParse(t *testing.T) {
-	root, err := ast.Parse(strings.NewReader(`"test" => t; + x y => nil;`))
+	//const test = `"test" => t; + x y => nil;`
+
+	const test = `
+'test' => test;
+
+fib n => switch n {
+	0 => 0;
+	default => + (fib (- n 1)) (fib (- n 2));
+};
+
+main => print (fib 5);
+`
+
+	root, err := ast.Parse(strings.NewReader(test))
 	if err != nil {
 		t.Fatal(err)
 	}
