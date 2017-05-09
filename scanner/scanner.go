@@ -84,6 +84,10 @@ func (s *Scanner) Err() error {
 	return s.err
 }
 
+func (s *Scanner) Pos() (line, col int) {
+	return s.line, s.col
+}
+
 func (s *Scanner) read() (r rune, err error) {
 	defer func() {
 		s.col++
