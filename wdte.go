@@ -144,7 +144,19 @@ func (f DeclFunc) Call(frame []Func, args ...Func) Func {
 		}
 	}
 
-	next := append(f.Stored, args...)
+	next := make([]Func, 0, len(f.Stored)+len(args))
+	for _, arg := range f.Stored {
+		next = append(next, &FramedExpr{
+			Expr:  arg,
+			Frame: frame,
+		})
+	}
+	for _, arg := range args {
+		next = append(next, &FramedExpr{
+			Expr:  arg,
+			Frame: frame,
+		})
+	}
 	return f.Expr.Call(next, next...)
 }
 
@@ -287,24 +299,6 @@ func (c Compound) Equals(other Func) bool {
 	panic("Not implemented.")
 }
 
-// Arg represents an argument in the current frame. It is the opposite
-// end from DeclFunc of the frame argument that gets passed around all
-// over the place.
-type Arg int
-
-func (a Arg) Call(frame []Func, args ...Func) Func {
-	if int(a) >= len(frame) {
-		// TODO: Handle this properly.
-		panic("Argument out of frame.")
-	}
-
-	return frame[a].Call(frame, args...)
-}
-
-func (a Arg) Equals(other Func) bool {
-	panic("Not implemented.")
-}
-
 // Switch represents a switch expression.
 type Switch struct {
 	// Check is the condition at the front of the switch.
@@ -334,5 +328,36 @@ func (s Switch) Call(frame []Func, args ...Func) Func {
 }
 
 func (s Switch) Equals(other Func) bool {
+	panic("Not implemented.")
+}
+
+// Arg represents an argument in the current frame. It is the opposite
+// end from DeclFunc of the frame argument that gets passed around all
+// over the place.
+type Arg int
+
+func (a Arg) Call(frame []Func, args ...Func) Func {
+	if int(a) >= len(frame) {
+		// TODO: Handle this properly.
+		panic("Argument out of frame.")
+	}
+
+	return frame[a].Call(frame, args...)
+}
+
+func (a Arg) Equals(other Func) bool {
+	panic("Not implemented.")
+}
+
+type FramedExpr struct {
+	Expr  Func
+	Frame []Func
+}
+
+func (f FramedExpr) Call(frame []Func, args ...Func) Func {
+	return f.Expr.Call(f.Frame, args...)
+}
+
+func (f FramedExpr) Equals(other Func) bool {
 	panic("Not implemented.")
 }

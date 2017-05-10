@@ -11,10 +11,11 @@ func TestModule(t *testing.T) {
 	const test = `
 fib n => switch n {
 	0 => 0;
+	1 => 1;
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 
-main => print (fib 5);
+main => print (fib 10);
 `
 
 	m, err := wdte.Parse(strings.NewReader(test), nil)
