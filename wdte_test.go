@@ -9,12 +9,15 @@ import (
 
 func TestModule(t *testing.T) {
 	const test = `
-fib n => switch n {
-	0 => 0;
-	default => + (fib (- n 1)) (fib (- n 2));
-};
+#fib n => switch n {
+#	0 => 0;
+#	default => + (fib (- n 1)) (fib (- n 2));
+#};
 
-main => print (fib 5);
+test a => a;
+fib n => test n;
+
+main => fib 5 -> print;
 `
 
 	m, err := wdte.Parse(strings.NewReader(test), nil)
@@ -37,20 +40,24 @@ main => print (fib 5);
 	})
 
 	m.Funcs["print"] = wdte.GoFunc(func(scope []wdte.Func, args ...wdte.Func) wdte.Func {
+		if len(args) < 1 {
+			return m.Funcs["print"]
+		}
+
 		a := args[0].Call(scope)
 		t.Logf("%v", a)
 		return a
 	})
 
-	t.Log("Imports:")
-	for i := range m.Imports {
-		t.Logf("\t%q", i)
-	}
+	//t.Log("Imports:")
+	//for i := range m.Imports {
+	//	t.Logf("\t%q", i)
+	//}
 
-	t.Log("Funcs:")
-	for f := range m.Funcs {
-		t.Logf("\t%q", f)
-	}
+	//t.Log("Funcs:")
+	//for f := range m.Funcs {
+	//	t.Logf("\t%q", f)
+	//}
 
 	m.Funcs["main"].Call(nil)
 }

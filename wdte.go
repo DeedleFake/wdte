@@ -140,12 +140,30 @@ func (f DeclFunc) Call(frame []Func, args ...Func) Func {
 		}
 	}
 
-	frame = append(f.Stored, args...)
-	return f.Expr.Call(frame, frame...)
+	next := append(f.Stored, args...)
+	for i, arg := range next {
+		if arg, ok := arg.(argSaver); ok {
+			next[i] = arg.saveArgs(frame)
+		}
+	}
+	return f.Expr.Call(next, next...)
 }
 
 func (f DeclFunc) Equals(other Func) bool {
 	panic("Not implemented.")
+}
+
+func (f DeclFunc) saveArgs(frame []Func) Func {
+	if expr, ok := f.Expr.(argSaver); ok {
+		f.Expr = expr.saveArgs(frame)
+	}
+	for i, arg := range f.Stored {
+		if arg, ok := arg.(argSaver); ok {
+			f.Stored[i] = arg.saveArgs(frame)
+		}
+	}
+
+	return f
 }
 
 // An Expr is an unevaluated expression. This is usually the
@@ -167,10 +185,28 @@ func (f Expr) Equals(other Func) bool {
 	panic("Not implemented.")
 }
 
+func (f Expr) saveArgs(frame []Func) Func {
+	if end, ok := f.Func.(argSaver); ok {
+		f.Func = end.saveArgs(frame)
+	}
+	for i, arg := range f.Args {
+		if arg, ok := arg.(argSaver); ok {
+			f.Args[i] = arg.saveArgs(frame)
+		}
+	}
+
+	return f
+}
+
 // Chain is an unevaluated chain expression.
 type Chain struct {
+	// Func is the expression at the current part of the chain.
 	Func Func
+
+	// Args is the arguments to Func.
 	Args []Func
+
+	// Prev is the previous part of the chain.
 	Prev Func
 }
 
@@ -180,6 +216,22 @@ func (f Chain) Call(frame []Func, args ...Func) Func {
 
 func (f Chain) Equals(other Func) bool {
 	panic("Not implemented.")
+}
+
+func (f Chain) saveArgs(frame []Func) Func {
+	if end, ok := f.Func.(argSaver); ok {
+		f.Func = end.saveArgs(frame)
+	}
+	for i, arg := range f.Args {
+		if arg, ok := arg.(argSaver); ok {
+			f.Args[i] = arg.saveArgs(frame)
+		}
+	}
+	if prev, ok := f.Prev.(argSaver); ok {
+		f.Prev = prev.saveArgs(frame)
+	}
+
+	return f
 }
 
 // A String is a string, as parsed from a string literal. That's about
@@ -278,6 +330,15 @@ func (c Compound) Equals(other Func) bool {
 	panic("Not implemented.")
 }
 
+func (c Compound) saveArgs(frame []Func) Func {
+	for i, p := range c {
+		if p, ok := p.(argSaver); ok {
+			c[i] = p.saveArgs(frame)
+		}
+	}
+	return c
+}
+
 // Arg represents an argument in the current frame. It is the opposite
 // end from DeclFunc of the frame argument that gets passed around all
 // over the place.
@@ -294,6 +355,19 @@ func (a Arg) Call(frame []Func, args ...Func) Func {
 
 func (a Arg) Equals(other Func) bool {
 	panic("Not implemented.")
+}
+
+func (a Arg) saveArgs(frame []Func) Func {
+	if int(a) >= len(frame) {
+		// TODO: Handle this properly.
+		panic("Argument out of frame.")
+	}
+
+	return frame[a]
+}
+
+type argSaver interface {
+	saveArgs(frame []Func) Func
 }
 
 // Switch represents a switch expression.
@@ -326,4 +400,21 @@ func (s Switch) Call(frame []Func, args ...Func) Func {
 
 func (s Switch) Equals(other Func) bool {
 	panic("Not implemented.")
+}
+
+func (s Switch) saveArgs(frame []Func) Func {
+	if check, ok := s.Check.(argSaver); ok {
+		s.Check = check.saveArgs(frame)
+	}
+	for i, c := range s.Cases {
+		if p, ok := c[0].(argSaver); ok {
+			c[0] = p.saveArgs(frame)
+		}
+		if p, ok := c[1].(argSaver); ok {
+			c[1] = p.saveArgs(frame)
+		}
+		s.Cases[i] = c
+	}
+
+	return s
 }
