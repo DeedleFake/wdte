@@ -1,6 +1,8 @@
 package std
 
 import (
+	"math"
+
 	"github.com/DeedleFake/wdte"
 )
 
@@ -82,6 +84,23 @@ func Div(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	return a1 / a2
 }
 
+// Mod returns args[0] % args[1]. If called with only 1 argument, it
+// returns a function which divides its own argument by the original
+// argument.
+func Mod(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Mod)
+
+	case 1:
+		return save(wdte.GoFunc(Mod), args[0])
+	}
+
+	a1 := args[0].Call(frame).(wdte.Number)
+	a2 := args[1].Call(frame).(wdte.Number)
+	return wdte.Number(math.Mod(float64(a1), float64(a2)))
+}
+
 // Insert adds the functions in this package to m. It maps them to the
 // cooresponding mathematical operators. For example, Add() becomes
 // `+`, Sub() becomes `-`, and so on.
@@ -90,4 +109,5 @@ func Insert(m *wdte.Module) {
 	m.Funcs["-"] = wdte.GoFunc(Sub)
 	m.Funcs["*"] = wdte.GoFunc(Mult)
 	m.Funcs["/"] = wdte.GoFunc(Div)
+	m.Funcs["%"] = wdte.GoFunc(Mod)
 }
