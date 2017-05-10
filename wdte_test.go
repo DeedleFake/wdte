@@ -9,15 +9,12 @@ import (
 
 func TestModule(t *testing.T) {
 	const test = `
-#fib n => switch n {
-#	0 => 0;
-#	default => + (fib (- n 1)) (fib (- n 2));
-#};
+fib n => switch n {
+	0 => 0;
+	default => + (fib (- n 1)) (fib (- n 2));
+};
 
-test a => a;
-fib n => test n;
-
-main => fib 5 -> print;
+main => print (fib 5);
 `
 
 	m, err := wdte.Parse(strings.NewReader(test), nil)

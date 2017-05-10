@@ -31,8 +31,8 @@ func fromDecls(decls []ast.Node, im Importer) (*Module, error) {
 			m.Imports[id] = sub
 
 		case "funcdecl":
-			id, def := fromFuncDecl(d.Children()[0].(*ast.NTerm), m)
-			m.Funcs[id] = def
+			def := fromFuncDecl(d.Children()[0].(*ast.NTerm), m)
+			m.Funcs[def.ID] = def
 
 		default:
 			panic(fmt.Errorf("Malformed AST with bad <decl>: %q", dtype))
@@ -50,12 +50,13 @@ func fromImport(i *ast.NTerm, im Importer) (ID, *Module, error) {
 	return id, m, err
 }
 
-func fromFuncDecl(decl *ast.NTerm, m *Module) (ID, Func) {
+func fromFuncDecl(decl *ast.NTerm, m *Module) *DeclFunc {
 	id := ID(decl.Children()[0].(*ast.Term).Tok().Val.(string))
 	args := fromArgDecls(flatten(decl.Children()[1].(*ast.NTerm), 1, 0))
 	expr := fromExpr(decl.Children()[3].(*ast.NTerm), m, scopeMap(args))
 
-	return id, &DeclFunc{
+	return &DeclFunc{
+		ID:   id,
 		Expr: expr,
 		Args: len(args),
 	}
