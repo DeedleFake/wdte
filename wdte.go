@@ -19,7 +19,8 @@ type Module struct {
 }
 
 // Parse parses an AST from r and then translates it into a module. im
-// is used to handle import statements.
+// is used to handle import statements. If im is nil, a no-op importer
+// is used.
 func Parse(r io.Reader, im Importer) (*Module, error) {
 	root, err := ast.Parse(r)
 	if err != nil {
@@ -30,7 +31,7 @@ func Parse(r io.Reader, im Importer) (*Module, error) {
 }
 
 // FromAST translates an AST into a module. im is used to handle
-// import statements.
+// import statements. If im is nil, a no-op importer is used.
 func FromAST(root ast.Node, im Importer) (*Module, error) {
 	return fromScript(root.(*ast.NTerm), im)
 }
