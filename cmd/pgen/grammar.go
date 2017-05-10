@@ -7,8 +7,10 @@ import (
 	"strings"
 )
 
+// A Grammar is a map from non-terminals to lists of rules.
 type Grammar map[NTerm][]Rule
 
+// LoadGrammar loads a grammar from an io.Reader.
 func LoadGrammar(r io.Reader) (g Grammar, err error) {
 	var cur NTerm
 	g = make(map[NTerm][]Rule)
@@ -38,6 +40,8 @@ func LoadGrammar(r io.Reader) (g Grammar, err error) {
 	return g, s.Err()
 }
 
+// Nullable returns true if the given token is nullable according to
+// the grammar.
 func (g Grammar) Nullable(tok Token) bool {
 	switch tok := tok.(type) {
 	case Term:
@@ -71,6 +75,10 @@ func (g Grammar) Nullable(tok Token) bool {
 	panic(fmt.Errorf("Unexpected token type: %T", tok))
 }
 
+// First returns the first set of the given token. For terminals, the
+// first set only contains the terminal in question. For
+// non-terminals, the first set is the set of all terminals which can
+// appear first in rules that the non-terminal maps to, including ε.
 func (g Grammar) First(tok Token) TokenSet {
 	ts := make(TokenSet)
 
@@ -92,6 +100,9 @@ func (g Grammar) First(tok Token) TokenSet {
 	return ts
 }
 
+// Follow returns the follow set of the given non-terminal. The follow
+// set consists of every terminal which can appear immedietely after
+// the non-terminal in the grammar, excluding ε.
 func (g Grammar) Follow(nt NTerm) TokenSet {
 	return g.followWithout(nt, nil)
 }
@@ -142,14 +153,23 @@ func (g Grammar) followWithout(nt NTerm, ignore []NTerm) TokenSet {
 	return ts
 }
 
+// A Rule is an ordered list of tokens.
 type Rule []Token
 
+// Epsilon returns true if the rule contains only a single ε.
 func (r Rule) Epsilon() bool {
 	return (len(r) == 1) && isEpsilon(r[0])
 }
 
+// A Token represnts one of four things:
+// * A terminal, which is anything that the scanner sends to the parser.
+// * A non-terminal, which is structure in the grammar's definition.
+// * Epsilon, written as ε, which represents a non-action.
+// * EOF, written as Ω.
 type Token interface{}
 
+// NewToken determines the type of a token from the given string and
+// returns the appropriate token.
 func NewToken(str string) Token {
 	if (str[0] == '<') && (str[len(str)-1] == '>') {
 		return NTerm(str)
@@ -165,10 +185,13 @@ func NewToken(str string) Token {
 	return Term(str)
 }
 
+// Term is a terminal token.
 type Term string
 
+// NTerm is a non-terminal token.
 type NTerm string
 
+// Epsilon is an ε token.
 type Epsilon struct{}
 
 func isEpsilon(t Token) bool {
@@ -176,10 +199,15 @@ func isEpsilon(t Token) bool {
 	return ok
 }
 
+// EOF is an Ω token.
 type EOF struct{}
 
+// A TokenSet is an unordered set of tokens mapped to the rules that
+// put them there.
 type TokenSet map[Token]Rule
 
+// Add adds a token to the token set, mapping it to the given rule. If
+// the token is already in the token set, this is a no-op.
 func (s TokenSet) Add(t Token, r Rule) {
 	if _, ok := s[t]; ok {
 		return
@@ -188,17 +216,21 @@ func (s TokenSet) Add(t Token, r Rule) {
 	s[t] = r
 }
 
+// AddAll adds all of the tokens from another token set to this one,
+// mapping all of them to the given rule.
 func (s TokenSet) AddAll(o TokenSet, r Rule) {
 	for t := range o {
 		s.Add(t, r)
 	}
 }
 
+// Contains returns true if t is in s.
 func (s TokenSet) Contains(t Token) bool {
 	_, ok := s[t]
 	return ok
 }
 
+// Remove removes t from s.
 func (s TokenSet) Remove(t Token) {
 	delete(s, t)
 }
