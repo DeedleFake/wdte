@@ -85,6 +85,8 @@ func (s *Scanner) Err() error {
 	return s.err
 }
 
+// Pos returns the line and column of the input that the scanner is
+// currently on.
 func (s *Scanner) Pos() (line, col int) {
 	return s.line, s.col
 }
