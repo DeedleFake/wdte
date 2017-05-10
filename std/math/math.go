@@ -43,11 +43,11 @@ func Tan(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	return wdte.Number(math.Tan(float64(a)))
 }
 
-// Import returns a module that contains the functions in this
+// Module returns a module that contains the functions in this
 // package. This can be used by an Importer to import them more
 // easily. The functions in the returned module have the same names as
 // those in this package except that they are lowercase.
-func Import() *wdte.Module {
+func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
 			"pi": wdte.GoFunc(Pi),
