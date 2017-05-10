@@ -4,21 +4,21 @@ import "strings"
 
 var (
 	symbols = map[string]struct{}{
-		".":  struct{}{},
-		"->": struct{}{},
-		"{":  struct{}{},
-		"}":  struct{}{},
-		"[":  struct{}{},
-		"]":  struct{}{},
-		"(":  struct{}{},
-		")":  struct{}{},
-		"=>": struct{}{},
-		";":  struct{}{},
+		".":  {},
+		"->": {},
+		"{":  {},
+		"}":  {},
+		"[":  {},
+		"]":  {},
+		"(":  {},
+		")":  {},
+		"=>": {},
+		";":  {},
 	}
 
 	keywords = map[string]struct{}{
-		"switch":  struct{}{},
-		"default": struct{}{},
+		"switch":  {},
+		"default": {},
 	}
 )
 
