@@ -101,7 +101,7 @@ func (g Grammar) First(tok Token) TokenSet {
 }
 
 // Follow returns the follow set of the given non-terminal. The follow
-// set consists of every terminal which can appear immedietely after
+// set consists of every terminal which can appear immediately after
 // the non-terminal in the grammar, excluding ε.
 func (g Grammar) Follow(nt NTerm) TokenSet {
 	return g.followWithout(nt, nil)
