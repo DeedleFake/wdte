@@ -146,14 +146,14 @@ func (f DeclFunc) Call(frame []Func, args ...Func) Func {
 
 	next := make([]Func, 0, len(f.Stored)+len(args))
 	for _, arg := range f.Stored {
-		next = append(next, &FramedExpr{
-			Expr:  arg,
+		next = append(next, &FramedFunc{
+			Func:  arg,
 			Frame: frame,
 		})
 	}
 	for _, arg := range args {
-		next = append(next, &FramedExpr{
-			Expr:  arg,
+		next = append(next, &FramedFunc{
+			Func:  arg,
 			Frame: frame,
 		})
 	}
@@ -349,19 +349,27 @@ func (a Arg) Equals(other Func) bool {
 	panic("Not implemented.")
 }
 
-type FramedExpr struct {
-	Expr  Func
+// A FramedFunc is a function which keeps track of its own calling
+// frame.
+type FramedFunc struct {
+	// Func is the actual function.
+	Func Func
+
+	// Frame is the function to call Func with.
 	Frame []Func
 }
 
-func (f FramedExpr) Call(frame []Func, args ...Func) Func {
-	return f.Expr.Call(f.Frame, args...)
+func (f FramedFunc) Call(frame []Func, args ...Func) Func {
+	return f.Func.Call(f.Frame, args...)
 }
 
-func (f FramedExpr) Equals(other Func) bool {
+func (f FramedFunc) Equals(other Func) bool {
 	panic("Not implemented.")
 }
 
+// An Array represents a WDTE array type. It's similar to a Compound,
+// but doesn't evaluate its own members. Instead, evaluation simply
+// returns itself, much like strings and numbers.
 type Array []Func
 
 func (a Array) Call(frame []Func, args ...Func) Func {
