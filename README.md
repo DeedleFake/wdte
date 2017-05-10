@@ -89,7 +89,7 @@ func main() {
 Documentation
 -------------
 
-For an overview of the languages design and features, see [the GitHub wiki](wiki/Overview).
+For an overview of the languages design and features, see [the GitHub wiki](https://github.com/DeedleFake/wdte/wiki/Overview).
 
 Status
 ------
