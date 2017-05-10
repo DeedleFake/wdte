@@ -10,7 +10,7 @@ import (
 func TestModule(t *testing.T) {
 	const test = `
 fib n => switch n {
-	0 => 10;
+	0 => 0;
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 

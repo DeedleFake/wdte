@@ -38,14 +38,14 @@ type ID string
 
 type Func interface {
 	// TODO: Handle errors.
-	Call(scope []Func, args ...Func) Func
+	Call(frame []Func, args ...Func) Func
 	Equals(other Func) bool
 }
 
-type GoFunc func(scope []Func, args ...Func) Func
+type GoFunc func(frame []Func, args ...Func) Func
 
-func (f GoFunc) Call(scope []Func, args ...Func) Func {
-	return f(scope, args...)
+func (f GoFunc) Call(frame []Func, args ...Func) Func {
+	return f(frame, args...)
 }
 
 func (f GoFunc) Equals(other Func) bool {
@@ -58,7 +58,7 @@ type DeclFunc struct {
 	Stored []Func
 }
 
-func (f DeclFunc) Call(scope []Func, args ...Func) Func {
+func (f DeclFunc) Call(frame []Func, args ...Func) Func {
 	if len(args) < f.Args {
 		return &DeclFunc{
 			Expr:   f,
@@ -67,8 +67,8 @@ func (f DeclFunc) Call(scope []Func, args ...Func) Func {
 		}
 	}
 
-	scope = append(f.Stored, args...)
-	return f.Expr.Call(scope, scope...)
+	frame = append(f.Stored, args...)
+	return f.Expr.Call(frame, frame...)
 }
 
 func (f DeclFunc) Equals(other Func) bool {
@@ -80,8 +80,8 @@ type Expr struct {
 	Args []Func
 }
 
-func (f Expr) Call(scope []Func, args ...Func) Func {
-	return f.Func.Call(scope, f.Args...)
+func (f Expr) Call(frame []Func, args ...Func) Func {
+	return f.Func.Call(frame, f.Args...)
 }
 
 func (f Expr) Equals(other Func) bool {
@@ -94,8 +94,8 @@ type Chain struct {
 	Prev Func
 }
 
-func (f Chain) Call(scope []Func, args ...Func) Func {
-	return f.Func.Call(scope, f.Args...).Call(scope, f.Prev.Call(scope))
+func (f Chain) Call(frame []Func, args ...Func) Func {
+	return f.Func.Call(frame, f.Args...).Call(frame, f.Prev.Call(frame))
 }
 
 func (f Chain) Equals(other Func) bool {
@@ -104,7 +104,7 @@ func (f Chain) Equals(other Func) bool {
 
 type String string
 
-func (s String) Call(scope []Func, args ...Func) Func {
+func (s String) Call(frame []Func, args ...Func) Func {
 	// TODO: Use the arguments for something. Probably concatenation.
 	return s
 }
@@ -116,7 +116,7 @@ func (s String) Equals(other Func) bool {
 
 type Number float64
 
-func (n Number) Call(scope []Func, args ...Func) Func {
+func (n Number) Call(frame []Func, args ...Func) Func {
 	// TODO: Use the arguments for something, perhaps.
 	return n
 }
@@ -132,8 +132,8 @@ type External struct {
 	Func   ID
 }
 
-func (e External) Call(scope []Func, args ...Func) Func {
-	return e.Module.Imports[e.Import].Funcs[e.Func].Call(scope, args...)
+func (e External) Call(frame []Func, args ...Func) Func {
+	return e.Module.Imports[e.Import].Funcs[e.Func].Call(frame, args...)
 }
 
 func (e External) Equals(other Func) bool {
@@ -146,8 +146,8 @@ type Local struct {
 	Func   ID
 }
 
-func (local Local) Call(scope []Func, args ...Func) Func {
-	return local.Module.Funcs[local.Func].Call(scope, args...)
+func (local Local) Call(frame []Func, args ...Func) Func {
+	return local.Module.Funcs[local.Func].Call(frame, args...)
 }
 
 func (local Local) Equals(other Func) bool {
@@ -157,10 +157,10 @@ func (local Local) Equals(other Func) bool {
 
 type Compound []Func
 
-func (c Compound) Call(scope []Func, args ...Func) Func {
+func (c Compound) Call(frame []Func, args ...Func) Func {
 	var last Func
 	for _, f := range c {
-		last = f.Call(scope)
+		last = f.Call(frame)
 	}
 
 	return last
@@ -172,13 +172,13 @@ func (c Compound) Equals(other Func) bool {
 
 type Arg int
 
-func (a Arg) Call(scope []Func, args ...Func) Func {
-	if int(a) >= len(scope) {
+func (a Arg) Call(frame []Func, args ...Func) Func {
+	if int(a) >= len(frame) {
 		// TODO: Handle this properly.
-		panic("Argument out of scope.")
+		panic("Argument out of frame.")
 	}
 
-	return scope[a].Call(scope, args...)
+	return frame[a].Call(frame, args...)
 }
 
 func (a Arg) Equals(other Func) bool {
@@ -190,11 +190,11 @@ type Switch struct {
 	Cases [][2]Func
 }
 
-func (s Switch) Call(scope []Func, args ...Func) Func {
-	check := s.Check.Call(scope)
+func (s Switch) Call(frame []Func, args ...Func) Func {
+	check := s.Check.Call(frame)
 	for _, c := range s.Cases {
-		if (c[0] == nil) || (check.Equals(c[0].Call(scope))) {
-			return c[1].Call(scope)
+		if (c[0] == nil) || (check.Equals(c[0].Call(frame))) {
+			return c[1].Call(frame)
 		}
 	}
 
