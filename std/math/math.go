@@ -43,6 +43,36 @@ func Tan(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	return wdte.Number(math.Tan(float64(a)))
 }
 
+// Floor returns ⌊args[0]⌋.
+func Floor(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+	if len(args) == 0 {
+		return wdte.GoFunc(Floor)
+	}
+
+	a := args[0].Call(frame).(wdte.Number)
+	return wdte.Number(math.Floor(float64(a)))
+}
+
+// Ceil returns ⌈args[0]⌉.
+func Ceil(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+	if len(args) == 0 {
+		return wdte.GoFunc(Ceil)
+	}
+
+	a := args[0].Call(frame).(wdte.Number)
+	return wdte.Number(math.Ceil(float64(a)))
+}
+
+// Abs returns |args[0]|.
+func Abs(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+	if len(args) == 0 {
+		return wdte.GoFunc(Abs)
+	}
+
+	a := args[0].Call(frame).(wdte.Number)
+	return wdte.Number(math.Abs(float64(a)))
+}
+
 // Module returns a module that contains the functions in this
 // package. This can be used by an Importer to import them more
 // easily. The functions in the returned module have the same names as
@@ -55,6 +85,10 @@ func Module() *wdte.Module {
 			"sin": wdte.GoFunc(Sin),
 			"cos": wdte.GoFunc(Cos),
 			"tan": wdte.GoFunc(Tan),
+
+			"floor": wdte.GoFunc(Floor),
+			"ceil":  wdte.GoFunc(Ceil),
+			"abs":   wdte.GoFunc(Abs),
 		},
 	}
 }
