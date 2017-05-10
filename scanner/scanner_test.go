@@ -61,6 +61,27 @@ o => print "double\n" 'single\\';`,
 				{Type: scanner.EOF, Val: nil},
 			},
 		},
+		{
+			name: "Compound",
+			in:   `test => (a); test => (a;);`,
+			out: []scanner.Token{
+				{Type: scanner.ID, Val: "test"},
+				{Type: scanner.Keyword, Val: "=>"},
+				{Type: scanner.Keyword, Val: "("},
+				{Type: scanner.ID, Val: "a"},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.Keyword, Val: ")"},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.ID, Val: "test"},
+				{Type: scanner.Keyword, Val: "=>"},
+				{Type: scanner.Keyword, Val: "("},
+				{Type: scanner.ID, Val: "a"},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.Keyword, Val: ")"},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.EOF, Val: nil},
+			},
+		},
 	}
 
 	for _, test := range tests {

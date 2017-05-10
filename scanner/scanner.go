@@ -123,6 +123,16 @@ func (s *Scanner) unread(r rune) {
 }
 
 func (s *Scanner) setTok(t TokenType, v interface{}) {
+	if t == Keyword {
+		switch v {
+		case ")", "]":
+			if (s.tok.Type != Keyword) || (s.tok.Val != ";") {
+				s.unread(rune(v.(string)[0]))
+				v = ";"
+			}
+		}
+	}
+
 	s.tok = Token{
 		Line: s.tline,
 		Col:  s.tcol,
