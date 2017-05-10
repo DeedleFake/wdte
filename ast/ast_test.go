@@ -39,7 +39,10 @@ fib n => switch n {
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 
-main => print (fib 5);
+main => (
+	print (fib 5);
+	print 3;
+);
 `
 
 	root, err := ast.Parse(strings.NewReader(test))
