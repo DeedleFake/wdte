@@ -94,4 +94,4 @@ For an overview of the languages design and features, see [the GitHub wiki](http
 Status
 ------
 
-WDTE is in a very, very pre-alpha state. It is filled with bugs, parts of it are simply not implemented yet, and large amounts of stuff are subject to change without warning. That being said, if you're interested in anything, feel free to submit a pull request and get things fixed and/or implemented faster.
+WDTE is in a pre-alpha state. It is filled with bugs and large amounts of stuff are subject to change without warning. That being said, if you're interested in anything, feel free to submit a pull request and get things fixed and/or implemented faster.
