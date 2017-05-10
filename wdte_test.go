@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std"
 )
 
 func TestModule(t *testing.T) {
@@ -32,28 +33,7 @@ main => (
 		t.Fatal(err)
 	}
 
-	// This could probably be done cleaner, but it works.
-	m.Funcs["+"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
-		if len(args) == 1 {
-			s := args[0].Call(frame).(wdte.Number)
-			return wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
-				a := args[0].Call(frame).(wdte.Number)
-				return s + a
-			})
-		}
-
-		a1 := args[0].Call(frame).(wdte.Number)
-		a2 := args[1].Call(frame).(wdte.Number)
-
-		return a1 + a2
-	})
-
-	m.Funcs["-"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
-		a1 := args[0].Call(frame).(wdte.Number)
-		a2 := args[1].Call(frame).(wdte.Number)
-
-		return a1 - a2
-	})
+	std.Insert(m)
 
 	m.Funcs["range"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 		a := args[0].Call(frame).(wdte.Number)
