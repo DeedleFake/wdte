@@ -173,20 +173,7 @@ loop:
 }
 
 func fromCompound(compound *ast.NTerm, m *Module, scope map[ID]int) Func {
-	return Compound(fromExprList(compound.Children()[1].(*ast.NTerm), m, scope))
-}
-
-func fromExprList(exprlist *ast.NTerm, m *Module, scope map[ID]int) []Func {
-	if _, ok := exprlist.Children()[0].(*ast.Epsilon); ok {
-		return nil
-	}
-
-	first := fromExpr(exprlist.Children()[0].(*ast.NTerm), m, scope)
-	exprs := flatten(exprlist.Children()[1].(*ast.NTerm), 2, 1)
-
-	funcs := make([]Func, 0, 1+len(exprs))
-	funcs = append(funcs, first)
-	return append(funcs, fromExprs(exprs, m, scope)...)
+	return Compound(fromExprs(flatten(compound.Children()[1].(*ast.NTerm), 2, 0), m, scope))
 }
 
 func fromExprs(exprs []ast.Node, m *Module, scope map[ID]int) []Func {
