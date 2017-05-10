@@ -1,37 +1,33 @@
-   <script> -> <decls> Ω
-    <decls> -> <decl> <decls>
-             | ε
-     <decl> -> <import>
-             | <funcdecl>
-   <import> -> string => id ;
- <funcdecl> -> id <argdecls> => <expr> ;
- <argdecls> -> id <argdecls>
-             | ε
-     <expr> -> <single> <args> <chain>
-     <args> -> <single> <args>
-             | ε
-    <chain> -> -> <single> <args> <chain>
-             | ε
-   <single> -> number
-             | string
-             | <func>
-             | <array>
-             | <switch>
-             | <compound>
-     <func> -> id <subfunc>
-  <subfunc> -> . id
-             | ε
-    <array> -> [ <exprlist> ]
-   <switch> -> switch <expr> { <switches> }
- <compound> -> ( <exprlist> )
- <exprlist> -> <expr> <exprs> <optend>
-             | ε
-    <exprs> -> ; <expr> <exprs>
-             | ε
- <switches> -> <expr> => <expr> ; <switches>
-             | default => <expr> ; <switches>
-             | ε
-   <optend> -> ;
-             | ε
+     <script> -> <decls> Ω
+      <decls> -> <decl> <decls>
+               | ε
+       <decl> -> <import>
+               | <funcdecl>
+     <import> -> string => id ;
+   <funcdecl> -> id <argdecls> => <expr> ;
+   <argdecls> -> id <argdecls>
+               | ε
+       <expr> -> <single> <args> <chain>
+       <args> -> <single> <args>
+               | ε
+      <chain> -> -> <single> <args> <chain>
+               | ε
+     <single> -> number
+               | string
+               | <func>
+               | <array>
+               | <switch>
+               | <compound>
+       <func> -> id <subfunc>
+    <subfunc> -> . id
+               | ε
+      <array> -> [ <exprs> ]
+     <switch> -> switch <expr> { <switches> }
+   <compound> -> ( <exprs> )
+      <exprs> -> <expr> ; <exprs>
+               | ε
+   <switches> -> <expr> => <expr> ; <switches>
+               | default => <expr> ; <switches>
+               | ε
 
 # vim: ts=2 sw=2 et
