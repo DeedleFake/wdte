@@ -361,3 +361,24 @@ func (f FramedExpr) Call(frame []Func, args ...Func) Func {
 func (f FramedExpr) Equals(other Func) bool {
 	panic("Not implemented.")
 }
+
+type Array []Func
+
+func (a Array) Call(frame []Func, args ...Func) Func {
+	return a
+}
+
+func (a Array) Equals(other Func) bool {
+	o, ok := other.(Array)
+	if !ok || (len(a) != len(o)) {
+		return false
+	}
+
+	for i := range a {
+		if !a[i].Equals(o[i]) {
+			return false
+		}
+	}
+
+	return true
+}

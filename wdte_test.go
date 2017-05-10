@@ -15,7 +15,16 @@ fib n => switch n {
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 
-main => print (fib 10);
+main => (
+	range 15
+    -> map fib
+	  -> print
+	;
+	[5; 2; (fib 7)]
+	  -> map (+ 2)
+		-> print
+	;
+);
 `
 
 	m, err := wdte.Parse(strings.NewReader(test), nil)
@@ -23,26 +32,59 @@ main => print (fib 10);
 		t.Fatal(err)
 	}
 
-	m.Funcs["+"] = wdte.GoFunc(func(scope []wdte.Func, args ...wdte.Func) wdte.Func {
-		a1 := args[0].Call(scope)
-		a2 := args[1].Call(scope)
+	// This could probably be done cleaner, but it works.
+	m.Funcs["+"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+		if len(args) == 1 {
+			s := args[0].Call(frame).(wdte.Number)
+			return wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+				a := args[0].Call(frame).(wdte.Number)
+				return s + a
+			})
+		}
 
-		return a1.(wdte.Number) + a2.(wdte.Number)
+		a1 := args[0].Call(frame).(wdte.Number)
+		a2 := args[1].Call(frame).(wdte.Number)
+
+		return a1 + a2
 	})
 
-	m.Funcs["-"] = wdte.GoFunc(func(scope []wdte.Func, args ...wdte.Func) wdte.Func {
-		a1 := args[0].Call(scope)
-		a2 := args[1].Call(scope)
+	m.Funcs["-"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+		a1 := args[0].Call(frame).(wdte.Number)
+		a2 := args[1].Call(frame).(wdte.Number)
 
-		return a1.(wdte.Number) - a2.(wdte.Number)
+		return a1 - a2
 	})
 
-	m.Funcs["print"] = wdte.GoFunc(func(scope []wdte.Func, args ...wdte.Func) wdte.Func {
+	m.Funcs["range"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+		a := args[0].Call(frame).(wdte.Number)
+
+		r := make(wdte.Array, int(a))
+		for i := range r {
+			r[i] = wdte.Number(i)
+		}
+
+		return r
+	})
+
+	m.Funcs["map"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+		m := args[0].Call(frame)
+		return wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+			a := args[0].Call(frame).(wdte.Array)
+
+			r := make(wdte.Array, len(a))
+			for i := range r {
+				r[i] = m.Call(frame, a[i].Call(frame))
+			}
+			return r
+		})
+	})
+
+	m.Funcs["print"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 		if len(args) < 1 {
 			return m.Funcs["print"]
 		}
 
-		a := args[0].Call(scope)
+		a := args[0].Call(frame)
 		t.Logf("%v", a)
 		return a
 	})

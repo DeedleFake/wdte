@@ -137,7 +137,7 @@ func fromSubfunc(subfunc *ast.NTerm) ID {
 }
 
 func fromArray(array *ast.NTerm, m *Module, scope map[ID]int) Func {
-	panic("Not implemented.")
+	return Array(fromExprs(flatten(array.Children()[1].(*ast.NTerm), 2, 0), m, scope))
 }
 
 func fromSwitch(s *ast.NTerm, m *Module, scope map[ID]int) Func {
