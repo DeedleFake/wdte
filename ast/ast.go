@@ -95,6 +95,7 @@ func toPGenTerm(tok scanner.Token) pgen.Token {
 	}
 }
 
+// A ParseError is returned if an error happens during parsing.
 type ParseError struct {
 	Line, Col int
 	Err       error
