@@ -1,10 +1,12 @@
 package std
 
-import "github.com/DeedleFake/wdte"
+import (
+	"github.com/DeedleFake/wdte"
+)
 
 func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
 	return wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
-		return f(frame, append(saved, args...))
+		return f.Call(frame, append(saved, args...)...)
 	})
 }
 
@@ -14,10 +16,10 @@ func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
 func Add(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
-		return Add
+		return wdte.GoFunc(Add)
 
 	case 1:
-		return save(Add, args[0])
+		return save(wdte.GoFunc(Add), args[0])
 	}
 
 	var sum wdte.Number
@@ -33,10 +35,10 @@ func Add(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 func Sub(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
-		return Sub
+		return wdte.GoFunc(Sub)
 
 	case 1:
-		return save(Sub, args[0])
+		return save(wdte.GoFunc(Sub), args[0])
 	}
 
 	a1 := args[0].Call(frame).(wdte.Number)
@@ -50,10 +52,10 @@ func Sub(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 func Mult(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
-		return Mult
+		return wdte.GoFunc(Mult)
 
 	case 1:
-		return save(Mult, args[0])
+		return save(wdte.GoFunc(Mult), args[0])
 	}
 
 	p := wdte.Number(1)
@@ -69,10 +71,10 @@ func Mult(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 func Div(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
-		return Div
+		return wdte.GoFunc(Div)
 
 	case 1:
-		return save(Div, args[0])
+		return save(wdte.GoFunc(Div), args[0])
 	}
 
 	a1 := args[0].Call(frame).(wdte.Number)
