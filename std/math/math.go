@@ -20,7 +20,7 @@ func Sin(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	}
 
 	a := args[0].Call(frame).(wdte.Number)
-	return wdte.Number(math.Sin(a))
+	return wdte.Number(math.Sin(float64(a)))
 }
 
 // Cos returns cos(args[0]).
@@ -30,7 +30,7 @@ func Cos(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	}
 
 	a := args[0].Call(frame).(wdte.Number)
-	return wdte.Number(math.Cos(a))
+	return wdte.Number(math.Cos(float64(a)))
 }
 
 // Tan returns tan(args[0]).
@@ -40,7 +40,7 @@ func Tan(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	}
 
 	a := args[0].Call(frame).(wdte.Number)
-	return wdte.Number(math.Tan(a))
+	return wdte.Number(math.Tan(float64(a)))
 }
 
 // Import returns a module that contains the functions in this
