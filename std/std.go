@@ -102,7 +102,7 @@ func Mod(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 }
 
 // Insert adds the functions in this package to m. It maps them to the
-// cooresponding mathematical operators. For example, Add() becomes
+// corresponding mathematical operators. For example, Add() becomes
 // `+`, Sub() becomes `-`, and so on.
 func Insert(m *wdte.Module) {
 	m.Funcs["+"] = wdte.GoFunc(Add)
