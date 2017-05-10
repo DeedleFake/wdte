@@ -2,7 +2,7 @@ package pgen
 
 import "github.com/DeedleFake/wdte/scanner"
 
-//go:generate pgen -out table.go ../../../res/grammar.ebnf
+//go:generate pgen -out table.go ../../../res/grammar.cfg
 type Token interface{}
 
 type Term struct {

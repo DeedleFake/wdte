@@ -13,7 +13,7 @@ Good question. In fact, I found myself asking the same thing, hence the name.
 
 I had a number of design goals in mind when I started working on this project:
 
-* Extremely simple. Entire grammar is less than 20-30 lines of EBNF specification.
+* Extremely simple. Entire grammar is less than 20-30 lines of specification.
 * Grammar is LL(1) parseable.
 * Functional-ish, but not particularly strict about it.
 * Designed primarily for embedding. No command-line interpreter by default.

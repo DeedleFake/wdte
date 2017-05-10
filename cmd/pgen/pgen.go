@@ -8,7 +8,7 @@ import (
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %v [options] <file.ebnf>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %v [options] <file.cfg>\n", os.Args[0])
 		fmt.Fprintln(os.Stderr)
 		fmt.Fprintln(os.Stderr, "Options:")
 		flag.PrintDefaults()
