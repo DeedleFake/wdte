@@ -36,6 +36,8 @@ main => (
 	std.Insert(m)
 
 	m.Funcs["range"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		frame = frame.WithID("range")
+
 		a := args[0].Call(frame).(wdte.Number)
 
 		r := make(wdte.Array, int(a))
@@ -47,6 +49,8 @@ main => (
 	})
 
 	m.Funcs["map"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		frame = frame.WithID("map")
+
 		m := args[0].Call(frame)
 		return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			a := args[0].Call(frame).(wdte.Array)
@@ -54,12 +58,17 @@ main => (
 			r := make(wdte.Array, len(a))
 			for i := range r {
 				r[i] = m.Call(frame, a[i].Call(frame))
+				if _, ok := r[i].(error); ok {
+					return r[i]
+				}
 			}
 			return r
 		})
 	})
 
 	m.Funcs["print"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		frame = frame.WithID("print")
+
 		if len(args) < 1 {
 			return m.Funcs["print"]
 		}
