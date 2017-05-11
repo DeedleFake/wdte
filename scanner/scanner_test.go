@@ -82,6 +82,20 @@ o => print "double\n" 'single\\';`,
 				{Type: scanner.EOF, Val: nil},
 			},
 		},
+		{
+			name: "FuncMods",
+			in:   `memo test => ();`,
+			out: []scanner.Token{
+				{Type: scanner.Keyword, Val: "memo"},
+				{Type: scanner.ID, Val: "test"},
+				{Type: scanner.Keyword, Val: "=>"},
+				{Type: scanner.Keyword, Val: "("},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.Keyword, Val: ")"},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.EOF, Val: nil},
+			},
+		},
 	}
 
 	for _, test := range tests {

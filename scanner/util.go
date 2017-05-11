@@ -19,6 +19,7 @@ var (
 	keywords = map[string]struct{}{
 		"switch":  {},
 		"default": {},
+		"memo":    {},
 	}
 )
 
