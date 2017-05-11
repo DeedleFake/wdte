@@ -102,7 +102,7 @@ func main() {
 			a := make([]interface{}, 0, len(args))
 			for _, arg := range args {
 				arg = arg.Call(frame)
-				if arg, ok := arg.(wdte.Error); ok {
+				if _, ok := arg.(error); ok {
 					return arg
 				}
 				a = append(a, arg)
