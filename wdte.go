@@ -12,9 +12,13 @@ import (
 	"github.com/gopherjs/gopherjs/js"
 )
 
-const initial = `# Welcome to the WDTE playground, a browser based
-# evaluation environment for WDTE. This playground's features includes
-# the standard function set as well as a number of importable modules.
+const initial = `# Welcome to the WDTE playground, a browser based evaluation
+# environment for WDTE. This playground's features includes the
+# standard function set as well as a number of importable modules.
+#
+# If you have never seen WDTE before and are completely confused at
+# the moment trying reading the overview on the WDTE wiki:
+# https://github.com/DeedleFake/wdte/wiki
 #
 # For documentation on the standard function set, see
 # https://godoc.org/github.com/DeedleFake/wdte/std
