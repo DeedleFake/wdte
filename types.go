@@ -1,11 +1,13 @@
 package wdte
 
+import "fmt"
+
 // A String is a string, as parsed from a string literal. That's about
 // it. Like everything else, it's a function. It simply returns itself
 // when called.
 type String string
 
-func (s String) Call(frame []Func, args ...Func) Func {
+func (s String) Call(frame Frame, args ...Func) Func {
 	// TODO: Use the arguments for something. Probably concatenation.
 	return s
 }
@@ -20,7 +22,7 @@ func (s String) Equals(other Func) bool {
 // when called.
 type Number float64
 
-func (n Number) Call(frame []Func, args ...Func) Func {
+func (n Number) Call(frame Frame, args ...Func) Func {
 	// TODO: Use the arguments for something, perhaps.
 	return n
 }
@@ -35,7 +37,7 @@ func (n Number) Equals(other Func) bool {
 // yields the array, much like how strings and numbers work.
 type Array []Func
 
-func (a Array) Call(frame []Func, args ...Func) Func {
+func (a Array) Call(frame Frame, args ...Func) Func {
 	return a
 }
 
@@ -52,4 +54,23 @@ func (a Array) Equals(other Func) bool {
 	}
 
 	return true
+}
+
+// An Error is returned by any of the built-in functions when they run
+// into an error.
+type Error struct {
+	// Cause is the cause of the error.
+	Cause error
+}
+
+func (e Error) Call(frame Frame, args ...Func) Func {
+	return e
+}
+
+func (e Error) Equals(other Func) bool {
+	panic("Not implemented.")
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("WDTE error: %v", e.Cause)
 }

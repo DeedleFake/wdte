@@ -73,7 +73,7 @@ type Func interface {
 	// return value. frame represents the current call frame. This is
 	// used to keep track of function arguments during the evaluation of
 	// expressions, and can largely be ignored by clients.
-	Call(frame []Func, args ...Func) Func
+	Call(frame Frame, args ...Func) Func
 
 	// Equals returns true if one function equals another one. This is
 	// meaningless for the majority of implementations, and should
@@ -84,6 +84,39 @@ type Func interface {
 	Equals(other Func) bool
 }
 
+// A Frame tracks information about the current function call.
+type Frame struct {
+	id   ID
+	args []Func
+}
+
+// New creates a new frame from a previous frame. id should be the ID
+// of the function that generated the frame, and args should be the
+// arguments given to that function.
+func (f Frame) New(id ID, args []Func) Frame {
+	return Frame{
+		id:   id,
+		args: args,
+	}
+}
+
+// WithID is a convienence function for creating a frame with a new ID
+// but the same arguments as the previous frame.
+func (f Frame) WithID(id ID) Frame {
+	return f.New(id, f.args)
+}
+
+// ID returns the ID of the frame. This is generally the function that
+// created the frame.
+func (f Frame) ID() ID {
+	return f.id
+}
+
+// Args returns the arguments of the frame.
+func (f Frame) Args() []Func {
+	return f.args
+}
+
 // A GoFunc is an implementation of Func that calls a Go function.
 // This is the easiest way to implement lower-level systems for WDTE
 // scripts to make use of.
@@ -91,7 +124,7 @@ type Func interface {
 // For example, to implement a simple, non-type-safe addition
 // function:
 //
-//    module.Funcs["+"] = GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+//    module.Funcs["+"] = GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //      var sum wdte.Number
 //      for _, arg := range(args) {
 //        sum += arg.Call(frame).(wdte.Number)
@@ -107,9 +140,9 @@ type Func interface {
 // frame when evaluating them. Failing to do so without knowing what
 // you're doing can cause unexpected behavior, including sending the
 // evaluation system into infinite loops or causing panics.
-type GoFunc func(frame []Func, args ...Func) Func
+type GoFunc func(frame Frame, args ...Func) Func
 
-func (f GoFunc) Call(frame []Func, args ...Func) (r Func) {
+func (f GoFunc) Call(frame Frame, args ...Func) (r Func) {
 	defer func() {
 		if err, ok := recover().(error); ok {
 			r = Error{err}
@@ -143,7 +176,7 @@ type DeclFunc struct {
 	Stored []Func
 }
 
-func (f DeclFunc) Call(frame []Func, args ...Func) Func {
+func (f DeclFunc) Call(frame Frame, args ...Func) Func {
 	if len(args) < f.Args {
 		return &DeclFunc{
 			Expr:   f,
@@ -165,7 +198,8 @@ func (f DeclFunc) Call(frame []Func, args ...Func) Func {
 			Frame: frame,
 		})
 	}
-	return f.Expr.Call(next, next...)
+
+	return f.Expr.Call(frame.New(f.ID, next), next...)
 }
 
 func (f DeclFunc) Equals(other Func) bool {
@@ -183,7 +217,7 @@ type Expr struct {
 	Args []Func
 }
 
-func (f Expr) Call(frame []Func, args ...Func) Func {
+func (f Expr) Call(frame Frame, args ...Func) Func {
 	return f.Func.Call(frame, f.Args...)
 }
 
@@ -203,7 +237,7 @@ type Chain struct {
 	Prev Func
 }
 
-func (f Chain) Call(frame []Func, args ...Func) Func {
+func (f Chain) Call(frame Frame, args ...Func) Func {
 	return f.Func.Call(frame, f.Args...).Call(frame, f.Prev.Call(frame))
 }
 
@@ -229,7 +263,7 @@ type External struct {
 	Func ID
 }
 
-func (e External) Call(frame []Func, args ...Func) Func {
+func (e External) Call(frame Frame, args ...Func) Func {
 	i, ok := e.Module.Imports[e.Import]
 	if !ok {
 		return Error{fmt.Errorf("Import %q does not exist", e.Import)}
@@ -259,7 +293,7 @@ type Local struct {
 	Func ID
 }
 
-func (local Local) Call(frame []Func, args ...Func) Func {
+func (local Local) Call(frame Frame, args ...Func) Func {
 	f, ok := local.Module.Funcs[local.Func]
 	if !ok {
 		return Error{fmt.Errorf("Function %q does not exist", local.Func)}
@@ -278,7 +312,7 @@ func (local Local) Equals(other Func) bool {
 // one. If the compound is empty, nil is returned.
 type Compound []Func
 
-func (c Compound) Call(frame []Func, args ...Func) Func {
+func (c Compound) Call(frame Frame, args ...Func) Func {
 	var last Func
 	for _, f := range c {
 		last = f.Call(frame)
@@ -311,7 +345,7 @@ type Switch struct {
 	Cases [][2]Func
 }
 
-func (s Switch) Call(frame []Func, args ...Func) Func {
+func (s Switch) Call(frame Frame, args ...Func) Func {
 	check := s.Check.Call(frame)
 	if check, ok := check.(Error); ok {
 		return check
@@ -344,12 +378,19 @@ func (s Switch) Equals(other Func) bool {
 // over the place.
 type Arg int
 
-func (a Arg) Call(frame []Func, args ...Func) Func {
-	if int(a) >= len(frame) {
-		return Error{fmt.Errorf("Attempted to access %vth argument in a frame containing %v", a, len(frame))}
+func (a Arg) Call(frame Frame, args ...Func) Func {
+	if int(a) >= len(frame.Args()) {
+		// I don't think this can happen normally, but some GoFunc
+		// somewhere could generate an Arg for some bizarre reason and
+		// cause this.
+		return Error{fmt.Errorf(
+			"Attempted to access %vth argument in a frame containing %v",
+			a,
+			len(frame.Args()),
+		)}
 	}
 
-	return frame[a].Call(frame, args...)
+	return frame.Args()[a].Call(frame, args...)
 }
 
 func (a Arg) Equals(other Func) bool {
@@ -362,33 +403,14 @@ type FramedFunc struct {
 	// Func is the actual function.
 	Func Func
 
-	// Frame is the function to call Func with.
-	Frame []Func
+	// Frame is the frame to call Func with.
+	Frame Frame
 }
 
-func (f FramedFunc) Call(frame []Func, args ...Func) Func {
+func (f FramedFunc) Call(frame Frame, args ...Func) Func {
 	return f.Func.Call(f.Frame, args...)
 }
 
 func (f FramedFunc) Equals(other Func) bool {
 	panic("Not implemented.")
-}
-
-// An Error is returned by any of the built-in functions when they run
-// into an error.
-type Error struct {
-	// Cause is the cause of the error.
-	Cause error
-}
-
-func (e Error) Call(frame []Func, args ...Func) Func {
-	return e
-}
-
-func (e Error) Equals(other Func) bool {
-	panic("Not implemented.")
-}
-
-func (e Error) Error() string {
-	return fmt.Sprintf("WDTE error: %v", e.Cause)
 }
