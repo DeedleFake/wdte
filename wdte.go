@@ -312,6 +312,9 @@ func (c Compound) Call(frame []Func, args ...Func) Func {
 	var last Func
 	for _, f := range c {
 		last = f.Call(frame)
+		if last, ok := last.(Error); ok {
+			return last
+		}
 	}
 
 	return last
