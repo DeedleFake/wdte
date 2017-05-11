@@ -10,14 +10,14 @@ type Stream interface {
 
 	// Next returns the next value and true, or an undefined value and
 	// false if the stream is empty.
-	Next(frame []wdte.Func) (wdte.Func, bool)
+	Next(frame wdte.Frame) (wdte.Func, bool)
 }
 
 // A NextFunc wraps a Go function, making it possible to use it as a
 // Stream. When called as a WDTE function, the function simply returns itself.
-type NextFunc func(frame []wdte.Func) (wdte.Func, bool)
+type NextFunc func(frame wdte.Frame) (wdte.Func, bool)
 
-func (n NextFunc) Call(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func (n NextFunc) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return n
 }
 
@@ -25,7 +25,7 @@ func (n NextFunc) Equals(other wdte.Func) bool {
 	panic("Not implemented.")
 }
 
-func (n NextFunc) Next(frame []wdte.Func) (wdte.Func, bool) {
+func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) {
 	return n(frame)
 }
 
@@ -39,7 +39,7 @@ type array struct {
 // is an array, it iterates over the values of the array. If given
 // more than one argument or the first argument is not an array, it
 // iterates over its arguments.
-func New(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(New)
@@ -53,7 +53,7 @@ func New(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	return &array{a: args}
 }
 
-func (a *array) Call(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func (a *array) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return a
 }
 
@@ -61,7 +61,7 @@ func (a *array) Equals(other wdte.Func) bool {
 	panic("Not implemented.")
 }
 
-func (a *array) Next(frame []wdte.Func) (wdte.Func, bool) {
+func (a *array) Next(frame wdte.Frame) (wdte.Func, bool) {
 	if a.i >= len(a.a) {
 		return nil, false
 	}
@@ -89,7 +89,7 @@ type rng struct {
 // arguments, the range is the same as with two arguments, but the
 // step in between numbers yielded is the third argument, rather than
 // 1.
-func Range(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Range)
@@ -115,7 +115,7 @@ func Range(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	}
 }
 
-func (r *rng) Call(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func (r *rng) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return r
 }
 
@@ -123,7 +123,7 @@ func (r *rng) Equals(other wdte.Func) bool {
 	panic("Not implemented.")
 }
 
-func (r *rng) Next(frame []wdte.Func) (wdte.Func, bool) {
+func (r *rng) Next(frame wdte.Frame) (wdte.Func, bool) {
 	if r.i >= r.m {
 		return nil, false
 	}
@@ -140,8 +140,15 @@ type mapper struct {
 	m wdte.Func
 }
 
-// Map returns a Stream which
-func Map(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+// Map returns a function that takes a Stream and wraps the Stream in
+// a new Stream that calls the function originally given to Map on
+// each element before passing it on.
+//
+// Wow, that sound horrible. It's not too bad, though. It works like
+// this. Call Map with some function `f` and get a new function. Then,
+// call that returned function on a Stream to get a new Stream that
+// calls `f` on each element when Next is called.
+func Map(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Map)
@@ -150,11 +157,11 @@ func Map(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 	return &mapper{m: args[0].Call(frame)}
 }
 
-func (m *mapper) Call(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 1:
 		if a, ok := args[0].Call(frame).(Stream); ok {
-			return NextFunc(func(frame []wdte.Func) (wdte.Func, bool) {
+			return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
 				n, ok := a.Next(frame)
 				if !ok {
 					return nil, false
@@ -173,7 +180,7 @@ func (m *mapper) Equals(other wdte.Func) bool {
 }
 
 // Collect converts a Stream into an array.
-func Collect(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Collect)
