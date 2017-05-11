@@ -19,7 +19,7 @@ I had a number of design goals in mind when I started working on this project:
 * Designed primarily for embedding. No command-line interpreter by default.
 * Extremely easy to use from the binding side. In this case, that's primarily Go.
 
-If you want to try the language yourself, feel free to take a look at [the playground][playground].
+If you want to try the language yourself, feel free to take a look at [the playground][playground]. It shows not only some of the features of the language in terms of actually writing code in it, but also how embeddable it is. The playground runs entirely in the browser *on the client's end* thanks to [GopherJS][gopherjs].
 
 Example
 -------
