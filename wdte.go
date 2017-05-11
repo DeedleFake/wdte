@@ -111,7 +111,7 @@ type GoFunc func(frame []Func, args ...Func) Func
 
 func (f GoFunc) Call(frame []Func, args ...Func) (r Func) {
 	defer func() {
-		if err := recover(); err != nil {
+		if err, ok := recover().(error); ok {
 			r = Error{err}
 		}
 	}()
@@ -260,7 +260,16 @@ type External struct {
 }
 
 func (e External) Call(frame []Func, args ...Func) Func {
-	return e.Module.Imports[e.Import].Funcs[e.Func].Call(frame, args...)
+	i, ok := e.Module.Imports[e.Import]
+	if !ok {
+		return Error{fmt.Errorf("Import %q does not exist", e.Import)}
+	}
+	f, ok := i.Funcs[e.Func]
+	if !ok {
+		return Error{fmt.Errorf("Function %q does not exist in import %q", e.Func, e.Import)}
+	}
+
+	return f.Call(frame, args...)
 }
 
 func (e External) Equals(other Func) bool {
@@ -281,7 +290,12 @@ type Local struct {
 }
 
 func (local Local) Call(frame []Func, args ...Func) Func {
-	return local.Module.Funcs[local.Func].Call(frame, args...)
+	f, ok := local.Module.Funcs[local.Func]
+	if !ok {
+		return Error{fmt.Errorf("Function %q does not exist", local.Func)}
+	}
+
+	return f.Call(frame, args...)
 }
 
 func (local Local) Equals(other Func) bool {
@@ -346,8 +360,7 @@ type Arg int
 
 func (a Arg) Call(frame []Func, args ...Func) Func {
 	if int(a) >= len(frame) {
-		// TODO: Handle this properly.
-		panic("Argument out of frame.")
+		return Error{fmt.Errorf("Attempted to access %vth argument in a frame containing %v", a, len(frame))}
 	}
 
 	return frame[a].Call(frame, args...)
@@ -403,7 +416,7 @@ func (a Array) Equals(other Func) bool {
 // into an error.
 type Error struct {
 	// Cause is the cause of the error.
-	Cause interface{}
+	Cause error
 }
 
 func (e Error) Call(frame []Func, args ...Func) Func {
