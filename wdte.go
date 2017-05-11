@@ -151,7 +151,12 @@ type GoFunc func(frame Frame, args ...Func) Func
 func (f GoFunc) Call(frame Frame, args ...Func) (r Func) {
 	defer func() {
 		if err, ok := recover().(error); ok {
-			r = Error{err}
+			r = Error{
+				Err: err,
+
+				// Hmmm...
+				Frame: frame.WithID("panic in GoFunc"),
+			}
 		}
 	}()
 
@@ -272,11 +277,17 @@ type External struct {
 func (e External) Call(frame Frame, args ...Func) Func {
 	i, ok := e.Module.Imports[e.Import]
 	if !ok {
-		return Error{fmt.Errorf("Import %q does not exist", e.Import)}
+		return Error{
+			Err:   fmt.Errorf("Import %q does not exist", e.Import),
+			Frame: frame,
+		}
 	}
 	f, ok := i.Funcs[e.Func]
 	if !ok {
-		return Error{fmt.Errorf("Function %q does not exist in import %q", e.Func, e.Import)}
+		return Error{
+			Err:   fmt.Errorf("Function %q does not exist in import %q", e.Func, e.Import),
+			Frame: frame,
+		}
 	}
 
 	return f.Call(frame, args...)
@@ -302,7 +313,10 @@ type Local struct {
 func (local Local) Call(frame Frame, args ...Func) Func {
 	f, ok := local.Module.Funcs[local.Func]
 	if !ok {
-		return Error{fmt.Errorf("Function %q does not exist", local.Func)}
+		return Error{
+			Err:   fmt.Errorf("Function %q does not exist", local.Func),
+			Frame: frame,
+		}
 	}
 
 	return f.Call(frame, args...)
@@ -389,11 +403,14 @@ func (a Arg) Call(frame Frame, args ...Func) Func {
 		// I don't think this can happen normally, but some GoFunc
 		// somewhere could generate an Arg for some bizarre reason and
 		// cause this.
-		return Error{fmt.Errorf(
-			"Attempted to access %vth argument in a frame containing %v",
-			a,
-			len(frame.Args()),
-		)}
+		return Error{
+			Err: fmt.Errorf(
+				"Attempted to access %vth argument in a frame containing %v",
+				a,
+				len(frame.Args()),
+			),
+			Frame: frame,
+		}
 	}
 
 	return frame.Args()[a].Call(frame, args...)

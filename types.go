@@ -59,8 +59,13 @@ func (a Array) Equals(other Func) bool {
 // An Error is returned by any of the built-in functions when they run
 // into an error.
 type Error struct {
-	// Cause is the cause of the error.
-	Cause error
+	// Err is the error that generated the Error. In a lot of cases,
+	// this is just a simple error message.
+	Err error
+
+	// Frame is the frame of the function that the error was first
+	// generated in.
+	Frame Frame
 }
 
 func (e Error) Call(frame Frame, args ...Func) Func {
@@ -72,5 +77,5 @@ func (e Error) Equals(other Func) bool {
 }
 
 func (e Error) Error() string {
-	return fmt.Sprintf("WDTE error: %v", e.Cause)
+	return fmt.Sprintf("Error in %v: %v", e.Frame.ID(), e.Err)
 }
