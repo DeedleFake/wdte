@@ -51,14 +51,44 @@ func fromImport(i *ast.NTerm, im Importer) (ID, *Module, error) {
 }
 
 func fromFuncDecl(decl *ast.NTerm, m *Module) *DeclFunc {
-	id := ID(decl.Children()[0].(*ast.Term).Tok().Val.(string))
-	args := fromArgDecls(flatten(decl.Children()[1].(*ast.NTerm), 1, 0))
-	expr := fromExpr(decl.Children()[3].(*ast.NTerm), m, scopeMap(args))
+	mods := fromFuncMods(decl.Children()[0].(*ast.NTerm))
+	id := ID(decl.Children()[1].(*ast.Term).Tok().Val.(string))
+	args := fromArgDecls(flatten(decl.Children()[2].(*ast.NTerm), 1, 0))
+	expr := fromExpr(decl.Children()[4].(*ast.NTerm), m, scopeMap(args))
+
+	if mods&funcModMemo != 0 {
+		expr = &Memo{
+			Func: expr,
+		}
+	}
 
 	return &DeclFunc{
 		ID:   id,
 		Expr: expr,
 		Args: len(args),
+	}
+}
+
+func fromFuncMods(funcMods *ast.NTerm) funcMod {
+	switch mod := funcMods.Children()[0].(type) {
+	case *ast.NTerm:
+		return fromFuncMod(mod) | fromFuncMods(funcMods.Children()[1].(*ast.NTerm))
+
+	case *ast.Epsilon:
+		return 0
+
+	default:
+		panic(fmt.Errorf("Malformed AST with bad <funcmods>: %T", mod))
+	}
+}
+
+func fromFuncMod(funcMod *ast.NTerm) funcMod {
+	switch mod := funcMod.Children()[0].(*ast.Term).Tok().Val; mod {
+	case "memo":
+		return funcModMemo
+
+	default:
+		panic(fmt.Errorf("Malformed AST with bad <funcmod>: %v", mod))
 	}
 }
 
@@ -236,3 +266,9 @@ func defaultImporter(from string) (*Module, error) {
 	// TODO: This should probably do something else.
 	return nil, nil
 }
+
+type funcMod uint
+
+const (
+	funcModMemo funcMod = 1 << iota
+)

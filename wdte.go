@@ -1,6 +1,7 @@
 package wdte
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
@@ -480,4 +481,46 @@ func (f FramedFunc) Call(frame Frame, args ...Func) Func {
 
 func (f FramedFunc) Equals(other Func) bool {
 	panic("Not implemented.")
+}
+
+type Memo struct {
+	Func Func
+
+	cache memoCache
+}
+
+func (m *Memo) Call(frame Frame, args ...Func) Func {
+	if m.cache == nil {
+		m.cache = make(memoCache)
+	}
+
+	for i := range args {
+		args[i] = args[i].Call(frame)
+	}
+
+	key := m.cache.Key(args)
+
+	cached, ok := m.cache[key]
+	if ok {
+		return cached
+	}
+
+	r := m.Func.Call(frame, args...)
+	m.cache[key] = r
+	return r
+}
+
+func (m Memo) Equals(other Func) bool {
+	panic("Not implemented.")
+}
+
+type memoCache map[string]Func
+
+func (cache memoCache) Key(args []Func) string {
+	var buf bytes.Buffer
+	for _, arg := range args {
+		// TODO: Figure out a way to do this that isn't stupid.
+		fmt.Fprint(&buf, arg)
+	}
+	return buf.String()
 }
