@@ -336,7 +336,7 @@ func (c Compound) Call(frame Frame, args ...Func) Func {
 	var last Func
 	for _, f := range c {
 		last = f.Call(frame)
-		if last, ok := last.(Error); ok {
+		if _, ok := last.(error); ok {
 			return last
 		}
 	}
@@ -367,7 +367,7 @@ type Switch struct {
 
 func (s Switch) Call(frame Frame, args ...Func) Func {
 	check := s.Check.Call(frame)
-	if check, ok := check.(Error); ok {
+	if _, ok := check.(error); ok {
 		return check
 	}
 
@@ -377,7 +377,7 @@ func (s Switch) Call(frame Frame, args ...Func) Func {
 		}
 
 		lhs := c[0].Call(frame)
-		if lhs, ok := lhs.(Error); ok {
+		if _, ok := lhs.(error); ok {
 			return lhs
 		}
 
