@@ -39,7 +39,7 @@ fib n => switch n {
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 
-main => (
+memo main => (
 	print (fib 5);
 	print 3;
 );
