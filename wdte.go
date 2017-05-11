@@ -483,6 +483,8 @@ func (f FramedFunc) Equals(other Func) bool {
 	panic("Not implemented.")
 }
 
+// A Memo wraps another function, caching the results of calls with
+// the same arguments.
 type Memo struct {
 	Func Func
 
