@@ -197,6 +197,9 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if !ok {
 			break
 		}
+		if _, ok := n.(error); ok {
+			return n
+		}
 
 		r = append(r, n.Call(frame))
 	}
