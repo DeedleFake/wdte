@@ -90,6 +90,12 @@ type Frame struct {
 	args []Func
 }
 
+// F returns a blank, top-level frame. This can be used by Go code
+// calling WDTE functions directly if another frame is not available.
+func F() Frame {
+	return Frame{}
+}
+
 // New creates a new frame from a previous frame. id should be the ID
 // of the function that generated the frame, and args should be the
 // arguments given to that function.

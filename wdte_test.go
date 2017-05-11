@@ -35,7 +35,7 @@ main => (
 
 	std.Insert(m)
 
-	m.Funcs["range"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+	m.Funcs["range"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		a := args[0].Call(frame).(wdte.Number)
 
 		r := make(wdte.Array, int(a))
@@ -46,9 +46,9 @@ main => (
 		return r
 	})
 
-	m.Funcs["map"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+	m.Funcs["map"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		m := args[0].Call(frame)
-		return wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+		return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			a := args[0].Call(frame).(wdte.Array)
 
 			r := make(wdte.Array, len(a))
@@ -59,7 +59,7 @@ main => (
 		})
 	})
 
-	m.Funcs["print"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+	m.Funcs["print"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if len(args) < 1 {
 			return m.Funcs["print"]
 		}
@@ -79,7 +79,7 @@ main => (
 	//	t.Logf("\t%q", f)
 	//}
 
-	if err, ok := m.Funcs["main"].Call(nil).(error); ok {
+	if err, ok := m.Funcs["main"].Call(wdte.F()).(error); ok {
 		t.Fatal(err)
 	}
 }
