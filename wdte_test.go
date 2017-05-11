@@ -58,7 +58,9 @@ main => (
 		}
 
 		a := args[0].Call(frame)
-		t.Logf("%v", a)
+		if _, ok := a.(error); !ok {
+			t.Logf("%v", a)
+		}
 		return a
 	})
 
