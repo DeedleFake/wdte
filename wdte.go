@@ -92,7 +92,7 @@ func main() {
 		}
 		std.Insert(m)
 
-		m.Funcs["print"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+		m.Funcs["print"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			if len(args) == 0 {
 				return m.Funcs["print"]
 			}
@@ -118,7 +118,7 @@ func main() {
 		}
 
 		stdout.Set("innerHTML", "")
-		if err, ok := main.Call(nil).(error); ok {
+		if err, ok := main.Call(wdte.F()).(error); ok {
 			log.Println(err)
 		}
 
