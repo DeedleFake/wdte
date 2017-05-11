@@ -46,12 +46,10 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	case 1:
 		if a1, ok := args[0].Call(frame).(wdte.Array); ok {
-			frame = frame.WithID("new")
 			return &array{a: a1}
 		}
 	}
 
-	frame = frame.WithID("new")
 	return &array{a: args}
 }
 
@@ -95,8 +93,6 @@ func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Range)
 	}
-
-	frame = frame.WithID("range")
 
 	switch len(args) {
 	case 1:
@@ -172,7 +168,6 @@ func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 					return nil, false
 				}
 
-				frame = frame.WithID("map")
 				return m.m.Call(frame, n), true
 			})
 		}
@@ -191,8 +186,6 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	case 0:
 		return wdte.GoFunc(Collect)
 	}
-
-	frame = frame.WithID("collect")
 
 	a, ok := args[0].Call(frame).(Stream)
 	if !ok {

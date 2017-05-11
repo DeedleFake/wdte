@@ -86,7 +86,8 @@ type Func interface {
 
 // A Frame tracks information about the current function call.
 type Frame struct {
-	id   ID
+	m    ID
+	f    ID
 	args []Func
 
 	p *Frame
@@ -96,7 +97,7 @@ type Frame struct {
 // WDTE functions directly if another frame is not available.
 func F() Frame {
 	return Frame{
-		id: "unknown function, maybe Go",
+		f: "unknown function, maybe Go",
 	}
 }
 
@@ -104,23 +105,54 @@ func F() Frame {
 // of the function that generated the frame, and args should be the
 // arguments given to that function.
 func (f Frame) New(id ID, args []Func) Frame {
+	return f.NewWithModule(f.m, id, args)
+}
+
+// NewWithModule returns a new frame that has the given module,
+// function, and arguments.
+func (f Frame) NewWithModule(m ID, fid ID, args []Func) Frame {
 	return Frame{
-		id:   id,
+		m:    m,
+		f:    fid,
 		args: args,
 		p:    &f,
 	}
 }
 
-// WithID is a convienence function for creating a frame with a new ID
-// but the same arguments as the previous frame.
-func (f Frame) WithID(id ID) Frame {
+// WithModule is a convenience function for create a frame with a new
+// module ID but the same function and arguments as the previous
+// frame.
+func (f Frame) WithModule(id ID) Frame {
+	return f.NewWithModule(id, f.f, f.args)
+}
+
+// WithFunc is a convenience function for creating a frame with a new
+// function ID but the same module and arguments as the previous
+// frame.
+func (f Frame) WithFunc(id ID) Frame {
 	return f.New(id, f.args)
 }
 
-// ID returns the ID of the frame. This is generally the function that
-// created the frame.
-func (f Frame) ID() ID {
-	return f.id
+// Module returns the module ID of the frame.
+func (f Frame) Module() ID {
+	return f.m
+}
+
+// Func returns the function ID of the frame. This is generally the
+// function that created the frame.
+func (f Frame) Func() ID {
+	return f.f
+}
+
+// FullFunc returns the full function name of the frame, including the
+// module if applicable.
+func (f Frame) FullFunc() string {
+	var m string
+	if f.m != "" {
+		m = string(f.m + ".")
+	}
+
+	return m + string(f.f)
 }
 
 // Args returns the arguments of the frame.
@@ -140,7 +172,7 @@ func (f Frame) Parent() Frame {
 
 // Backtrace prints a backtrace to w.
 func (f Frame) Backtrace(w io.Writer) error {
-	_, err := fmt.Fprintf(w, "\t%v\n", f.ID())
+	_, err := fmt.Fprintf(w, "\t%v\n", f.FullFunc())
 	if err != nil {
 		return err
 	}
@@ -153,7 +185,7 @@ func (f *Frame) backtrace(w io.Writer) error {
 		return nil
 	}
 
-	id := f.ID()
+	id := f.FullFunc()
 	if id == "" {
 		return nil
 	}
@@ -198,7 +230,7 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) {
 				Err: err,
 
 				// Hmmm...
-				Frame: frame.WithID("panic in GoFunc"),
+				Frame: frame.NewWithModule("", "panic in GoFunc", frame.Args()),
 			}
 		}
 	}()
@@ -254,7 +286,7 @@ func (f DeclFunc) Call(frame Frame, args ...Func) Func {
 		})
 	}
 
-	return f.Expr.Call(frame.New(f.ID, next), next...)
+	return f.Expr.Call(frame.New(frame.Func(), next), next...)
 }
 
 func (f DeclFunc) Equals(other Func) bool {
@@ -334,7 +366,7 @@ func (e External) Call(frame Frame, args ...Func) Func {
 		}
 	}
 
-	return f.Call(frame, args...)
+	return f.Call(frame.NewWithModule(e.Import, e.Func, frame.Args()), args...)
 }
 
 func (e External) Equals(other Func) bool {
@@ -363,7 +395,7 @@ func (local Local) Call(frame Frame, args ...Func) Func {
 		}
 	}
 
-	return f.Call(frame, args...)
+	return f.Call(frame.WithFunc(local.Func), args...)
 }
 
 func (local Local) Equals(other Func) bool {

@@ -18,7 +18,7 @@ func TestModule(t *testing.T) {
 fib n => switch n {
 	0 => 0;
 	1 => 1;
-	default => + (fib (- n 1)) (fib (- n 2));
+	default => + (fi (- n 1)) (fib (- n 2));
 };
 
 main => (
@@ -51,14 +51,16 @@ main => (
 	std.Insert(m)
 
 	m.Funcs["print"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		frame = frame.WithID("print")
+		frame = frame.WithFunc("print")
 
 		if len(args) < 1 {
 			return m.Funcs["print"]
 		}
 
 		a := args[0].Call(frame)
-		t.Logf("%v", a)
+		if _, ok := a.(error); !ok {
+			t.Logf("%v", a)
+		}
 		return a
 	})
 
