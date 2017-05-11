@@ -9,12 +9,12 @@ import (
 )
 
 // Pi ignores its arguments and returns π as a wdte.Number.
-func Pi(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Pi(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Number(math.Pi)
 }
 
 // Sin returns sin(args[0]).
-func Sin(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Sin(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Sin)
 	}
@@ -24,7 +24,7 @@ func Sin(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 }
 
 // Cos returns cos(args[0]).
-func Cos(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Cos(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Cos)
 	}
@@ -34,7 +34,7 @@ func Cos(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 }
 
 // Tan returns tan(args[0]).
-func Tan(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Tan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Tan)
 	}
@@ -44,7 +44,7 @@ func Tan(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 }
 
 // Floor returns ⌊args[0]⌋.
-func Floor(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Floor(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Floor)
 	}
@@ -54,7 +54,7 @@ func Floor(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 }
 
 // Ceil returns ⌈args[0]⌉.
-func Ceil(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Ceil(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Ceil)
 	}
@@ -64,7 +64,7 @@ func Ceil(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 }
 
 // Abs returns |args[0]|.
-func Abs(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Abs(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Abs)
 	}
