@@ -343,8 +343,21 @@ type Switch struct {
 
 func (s Switch) Call(frame []Func, args ...Func) Func {
 	check := s.Check.Call(frame)
+	if check, ok := check.(Error); ok {
+		return check
+	}
+
 	for _, c := range s.Cases {
-		if (c[0] == nil) || (check.Equals(c[0].Call(frame))) {
+		if c[0] == nil {
+			return c[1].Call(frame)
+		}
+
+		lhs := c[0].Call(frame)
+		if lhs, ok := lhs.(Error); ok {
+			return lhs
+		}
+
+		if check.Equals(lhs) {
 			return c[1].Call(frame)
 		}
 	}
