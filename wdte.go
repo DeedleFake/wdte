@@ -97,6 +97,8 @@ func main() {
 				return m.Funcs["print"]
 			}
 
+			frame = frame.WithID("print")
+
 			a := make([]interface{}, 0, len(args))
 			for _, arg := range args {
 				arg = arg.Call(frame)
