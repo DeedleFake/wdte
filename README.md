@@ -91,7 +91,7 @@ func main() {
 Documentation
 -------------
 
-For an overview of the language's design and features, see [the GitHub wiki](https://github.com/DeedleFake/wdte/wiki/Overview).
+For an overview of the language's design and features, see [the GitHub wiki][wiki].
 
 Status
 ------
@@ -99,3 +99,4 @@ Status
 WDTE is in a pre-alpha state. It is filled with bugs and large amounts of stuff are subject to change without warning. That being said, if you're interested in anything, feel free to submit a pull request and get things fixed and/or implemented faster.
 
 [playground]: https://deedlefake.github.io/wdte
+[wiki]: https://github.com/DeedleFake/wdte/wiki
