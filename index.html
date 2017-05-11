@@ -1,0 +1,80 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+		<title>WDTE Playground</title>
+		<script type='application/javascript' src='wdte.js' defer></script>
+
+		<style type='text/css'>
+			@font-face
+			{
+				font-family:'Go Mono';
+				src: url('Go-Mono.ttf');
+			}
+
+			body
+			{
+				background-color:#EEEEEE;
+				display:flex;
+				flex-direction:row;
+				margin:0px;
+				padding:0px;
+				width:100%;
+				height:100%;
+			}
+
+			#left, #right
+			{
+				display:flex;
+				flex-direction:column;
+				flex:1;
+				max-width:50%;
+			}
+
+			#input, #output, #error
+			{
+				background-color:#DDDDDD;
+				margin:8px;
+				padding:4px;
+			}
+
+			#input
+			{
+				font-family:'Go Mono';
+				flex:15;
+			}
+
+			#controls
+			{
+				display:flex;
+				flex:1;
+				flex-wrap:wrap;
+				margin:8px;
+			}
+
+			#controls > *
+			{
+				margin:8px;
+			}
+
+			#output, #error
+			{
+				flex:1;
+				overflow:auto;
+			}
+		</style>
+	</head>
+	<body onload='window.main()'>
+		<div id='left'>
+			<textarea id='input'></textarea>
+			<div id='controls'>
+				<input type='button' value='Run' onclick='window.run()' />
+				<input type='button' value='Clear Errors' onclick='window.clear()' />
+			</div>
+		</div>
+
+		<div id='right'>
+			<pre id='output'></pre>
+			<pre id='error'></pre>
+		</div>
+	</body>
+</html>
