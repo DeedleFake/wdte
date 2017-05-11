@@ -1,6 +1,9 @@
 package wdte
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+)
 
 // A String is a string, as parsed from a string literal. That's about
 // it. Like everything else, it's a function. It simply returns itself
@@ -77,5 +80,8 @@ func (e Error) Equals(other Func) bool {
 }
 
 func (e Error) Error() string {
-	return fmt.Sprintf("Error in %v: %v", e.Frame.ID(), e.Err)
+	var buf bytes.Buffer
+	e.Frame.Backtrace(&buf)
+
+	return fmt.Sprintf("WDTE Error: %v\n%s", e.Frame.ID(), e.Err, buf.Bytes())
 }

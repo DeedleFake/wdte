@@ -88,6 +88,8 @@ type Func interface {
 type Frame struct {
 	id   ID
 	args []Func
+
+	p *Frame
 }
 
 // F returns a blank, top-level frame. This can be used by Go code
@@ -103,6 +105,7 @@ func (f Frame) New(id ID, args []Func) Frame {
 	return Frame{
 		id:   id,
 		args: args,
+		p:    &f,
 	}
 }
 
@@ -121,6 +124,44 @@ func (f Frame) ID() ID {
 // Args returns the arguments of the frame.
 func (f Frame) Args() []Func {
 	return f.args
+}
+
+// Parent returns the frame that this frame was created from, or a
+// blank frame if there was none.
+func (f Frame) Parent() Frame {
+	if f.p == nil {
+		return F()
+	}
+
+	return *f.p
+}
+
+// Backtrace prints a backtrace to w.
+func (f Frame) Backtrace(w io.Writer) error {
+	_, err := fmt.Fprintf(w, "\t%v\n", f.ID())
+	if err != nil {
+		return err
+	}
+
+	return f.p.backtrace(w)
+}
+
+func (f *Frame) backtrace(w io.Writer) error {
+	if f == nil {
+		return nil
+	}
+
+	id := f.ID()
+	if id == "" {
+		id = "unknown function, maybe Go"
+	}
+
+	_, err := fmt.Fprintf(w, "\tCalled from %v\n", id)
+	if err != nil {
+		return err
+	}
+
+	return f.p.backtrace(w)
 }
 
 // A GoFunc is an implementation of Func that calls a Go function.
