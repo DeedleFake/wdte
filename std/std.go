@@ -7,7 +7,7 @@ import (
 )
 
 func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
-	return wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return f.Call(frame, append(saved, args...)...)
 	})
 }
@@ -15,7 +15,7 @@ func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
 // Add returns the sum of its arguments. If called with only 1
 // argument, it returns a function which adds arguments given to that
 // one argument.
-func Add(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Add)
@@ -34,7 +34,7 @@ func Add(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 // Sub returns args[0] - args[1]. If called with only 1 argument, it
 // returns a function which returns that argument minus the argument
 // given.
-func Sub(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Sub)
@@ -51,7 +51,7 @@ func Sub(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 // Mult returns the product of its arguments. If called with only 1
 // argument, it returns a function that multiplies that argument by
 // its own arguments.
-func Mult(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Mult)
@@ -70,7 +70,7 @@ func Mult(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 // Div returns args[0] / args[1]. If called with only 1 argument, it
 // returns a function which divides its own argument by the original
 // argument.
-func Div(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Div)
@@ -87,7 +87,7 @@ func Div(frame []wdte.Func, args ...wdte.Func) wdte.Func {
 // Mod returns args[0] % args[1]. If called with only 1 argument, it
 // returns a function which divides its own argument by the original
 // argument.
-func Mod(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Mod)
