@@ -19,6 +19,8 @@ I had a number of design goals in mind when I started working on this project:
 * Designed primarily for embedding. No command-line interpreter by default.
 * Extremely easy to use from the binding side. In this case, that's primarily Go.
 
+If you want to try the language yourself, feel free to take a look at [the playground][playground].
+
 Example
 -------
 
@@ -95,3 +97,5 @@ Status
 ------
 
 WDTE is in a pre-alpha state. It is filled with bugs and large amounts of stuff are subject to change without warning. That being said, if you're interested in anything, feel free to submit a pull request and get things fixed and/or implemented faster.
+
+[playground]: https://deedlefake.github.io/wdte
