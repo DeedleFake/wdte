@@ -79,5 +79,7 @@ main => (
 	//	t.Logf("\t%q", f)
 	//}
 
-	m.Funcs["main"].Call(nil)
+	if err, ok := m.Funcs["main"].Call(nil).(error); ok {
+		t.Fatal(err)
+	}
 }

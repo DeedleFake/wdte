@@ -1,6 +1,7 @@
 package wdte
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/DeedleFake/wdte/ast"
@@ -108,7 +109,13 @@ type Func interface {
 // evaluation system into infinite loops or causing panics.
 type GoFunc func(frame []Func, args ...Func) Func
 
-func (f GoFunc) Call(frame []Func, args ...Func) Func {
+func (f GoFunc) Call(frame []Func, args ...Func) (r Func) {
+	defer func() {
+		if err := recover(); err != nil {
+			r = Error{err}
+		}
+	}()
+
 	return f(frame, args...)
 }
 
@@ -390,4 +397,23 @@ func (a Array) Equals(other Func) bool {
 	}
 
 	return true
+}
+
+// An Error is returned by any of the built-in functions when they run
+// into an error.
+type Error struct {
+	// Cause is the cause of the error.
+	Cause interface{}
+}
+
+func (e Error) Call(frame []Func, args ...Func) Func {
+	return e
+}
+
+func (e Error) Equals(other Func) bool {
+	panic("Not implemented.")
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("WDTE error: %v", e.Cause)
 }
