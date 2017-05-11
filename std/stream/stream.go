@@ -46,10 +46,12 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	case 1:
 		if a1, ok := args[0].Call(frame).(wdte.Array); ok {
+			frame = frame.WithID("new")
 			return &array{a: a1}
 		}
 	}
 
+	frame = frame.WithID("new")
 	return &array{a: args}
 }
 
@@ -90,10 +92,13 @@ type rng struct {
 // step in between numbers yielded is the third argument, rather than
 // 1.
 func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Range)
+	}
 
+	frame = frame.WithID("range")
+
+	switch len(args) {
 	case 1:
 		return &rng{
 			m: args[0].Call(frame).(wdte.Number),
@@ -167,6 +172,7 @@ func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 					return nil, false
 				}
 
+				frame = frame.WithID("map")
 				return m.m.Call(frame, n), true
 			})
 		}
@@ -185,6 +191,8 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	case 0:
 		return wdte.GoFunc(Collect)
 	}
+
+	frame = frame.WithID("collect")
 
 	a, ok := args[0].Call(frame).(Stream)
 	if !ok {

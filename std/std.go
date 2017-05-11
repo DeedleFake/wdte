@@ -24,6 +24,8 @@ func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Add), args[0])
 	}
 
+	frame = frame.WithID("+")
+
 	var sum wdte.Number
 	for _, arg := range args {
 		sum += arg.Call(frame).(wdte.Number)
@@ -43,6 +45,8 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Sub), args[0])
 	}
 
+	frame = frame.WithID("-")
+
 	a1 := args[0].Call(frame).(wdte.Number)
 	a2 := args[1].Call(frame).(wdte.Number)
 	return a1 - a2
@@ -59,6 +63,8 @@ func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	case 1:
 		return save(wdte.GoFunc(Mult), args[0])
 	}
+
+	frame = frame.WithID("*")
 
 	p := wdte.Number(1)
 	for _, arg := range args {
@@ -79,6 +85,8 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Div), args[0])
 	}
 
+	frame = frame.WithID("/")
+
 	a1 := args[0].Call(frame).(wdte.Number)
 	a2 := args[1].Call(frame).(wdte.Number)
 	return a1 / a2
@@ -95,6 +103,8 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	case 1:
 		return save(wdte.GoFunc(Mod), args[0])
 	}
+
+	frame = frame.WithID("%")
 
 	a1 := args[0].Call(frame).(wdte.Number)
 	a2 := args[1].Call(frame).(wdte.Number)
