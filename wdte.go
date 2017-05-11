@@ -92,10 +92,12 @@ type Frame struct {
 	p *Frame
 }
 
-// F returns a blank, top-level frame. This can be used by Go code
-// calling WDTE functions directly if another frame is not available.
+// F returns a top-level frame. This can be used by Go code calling
+// WDTE functions directly if another frame is not available.
 func F() Frame {
-	return Frame{}
+	return Frame{
+		id: "unknown function, maybe Go",
+	}
 }
 
 // New creates a new frame from a previous frame. id should be the ID
@@ -130,7 +132,7 @@ func (f Frame) Args() []Func {
 // blank frame if there was none.
 func (f Frame) Parent() Frame {
 	if f.p == nil {
-		return F()
+		return Frame{}
 	}
 
 	return *f.p
@@ -153,7 +155,7 @@ func (f *Frame) backtrace(w io.Writer) error {
 
 	id := f.ID()
 	if id == "" {
-		id = "unknown function, maybe Go"
+		return nil
 	}
 
 	_, err := fmt.Fprintf(w, "\tCalled from %v\n", id)
@@ -231,6 +233,7 @@ type DeclFunc struct {
 func (f DeclFunc) Call(frame Frame, args ...Func) Func {
 	if len(args) < f.Args {
 		return &DeclFunc{
+			ID:     f.ID,
 			Expr:   f,
 			Args:   f.Args - len(args),
 			Stored: args,

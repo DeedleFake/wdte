@@ -83,5 +83,5 @@ func (e Error) Error() string {
 	var buf bytes.Buffer
 	e.Frame.Backtrace(&buf)
 
-	return fmt.Sprintf("WDTE Error: %v\n%s", e.Frame.ID(), e.Err, buf.Bytes())
+	return fmt.Sprintf("WDTE Error: %v\n%s", e.Err, buf.Bytes())
 }
