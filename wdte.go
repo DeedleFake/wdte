@@ -406,7 +406,7 @@ func (f FramedFunc) Equals(other Func) bool {
 
 // An Array represents a WDTE array type. It's similar to a Compound,
 // but doesn't evaluate its own members. Instead, evaluation simply
-// returns itself, much like strings and numbers.
+// yields the array, much like how strings and numbers work.
 type Array []Func
 
 func (a Array) Call(frame []Func, args ...Func) Func {
