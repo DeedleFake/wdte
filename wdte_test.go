@@ -1,15 +1,20 @@
 package wdte_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/std"
+	"github.com/DeedleFake/wdte/std/math"
+	"github.com/DeedleFake/wdte/std/stream"
 )
 
 func TestModule(t *testing.T) {
 	const test = `
+'stream' => s;
+
 fib n => switch n {
 	0 => 0;
 	1 => 1;
@@ -17,54 +22,33 @@ fib n => switch n {
 };
 
 main => (
-	range 15
-    -> map fib
+	s.range 15
+    -> s.map fib
+		-> s.collect
 	  -> print
 	;
-	[5; 2; (fib 7)]
-	  -> map (+ 2)
+	s.new [5; 2; (fib 7)]
+	  -> s.map (+ 2)
+		-> s.collect
 		-> print
 	;
 );
 `
 
-	m, err := wdte.Parse(strings.NewReader(test), nil)
+	m, err := wdte.Parse(strings.NewReader(test), wdte.ImportFunc(func(from string) (*wdte.Module, error) {
+		switch from {
+		case "stream":
+			return stream.Module(), nil
+		case "math":
+			return math.Module(), nil
+		}
+
+		return nil, fmt.Errorf("Unknown import: %q", from)
+	}))
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	std.Insert(m)
-
-	m.Funcs["range"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		frame = frame.WithID("range")
-
-		a := args[0].Call(frame).(wdte.Number)
-
-		r := make(wdte.Array, int(a))
-		for i := range r {
-			r[i] = wdte.Number(i)
-		}
-
-		return r
-	})
-
-	m.Funcs["map"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		frame = frame.WithID("map")
-
-		m := args[0].Call(frame)
-		return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-			a := args[0].Call(frame).(wdte.Array)
-
-			r := make(wdte.Array, len(a))
-			for i := range r {
-				r[i] = m.Call(frame, a[i].Call(frame))
-				if _, ok := r[i].(error); ok {
-					return r[i]
-				}
-			}
-			return r
-		})
-	})
 
 	m.Funcs["print"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		frame = frame.WithID("print")
