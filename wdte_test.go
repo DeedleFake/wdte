@@ -22,15 +22,15 @@ memo fib n => switch n {
 };
 
 main => (
-	fib 100;
-	#s.range 15
-  #-> s.map fib
-	#-> s.collect
-	#-> print;
-	#s.new [5; 2; (fib 7)]
-	#-> s.map (+ 2)
-	#-> s.collect
-	#-> print;
+	s.range 15
+  -> s.map fib
+	-> s.collect
+	-> print;
+
+	s.new [5; 2; fib 7]
+	-> s.map (+ 2)
+	-> s.collect
+	-> print;
 );
 `
 

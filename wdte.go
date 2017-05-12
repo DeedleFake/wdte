@@ -515,27 +515,32 @@ type memoCache struct {
 }
 
 func (cache *memoCache) Get(args []Func) (Func, bool) {
-	if len(args) > 0 {
-		if cache.next == nil {
-			return nil, false
-		}
-
-		return cache.next[args[0]].Get(args[1:])
+	if cache == nil {
+		return nil, false
 	}
 
-	return cache.val, true
+	if len(args) == 0 {
+		return cache.val, true
+	}
+
+	if cache.next == nil {
+		return nil, false
+	}
+
+	return cache.next[args[0]].Get(args[1:])
 }
 
 func (cache *memoCache) Set(args []Func, val Func) {
-	if len(args) > 0 {
-		if cache.next == nil {
-			cache.next = make(map[Func]*memoCache)
-		}
-
-		n := new(memoCache)
-		n.Set(args[1:], val)
-		cache.next[args[0]] = n
+	if len(args) == 0 {
+		cache.val = val
+		return
 	}
 
-	cache.val = val
+	if cache.next == nil {
+		cache.next = make(map[Func]*memoCache)
+	}
+
+	n := new(memoCache)
+	n.Set(args[1:], val)
+	cache.next[args[0]] = n
 }
