@@ -28,7 +28,11 @@ func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	var sum wdte.Number
 	for _, arg := range args {
-		sum += arg.Call(frame).(wdte.Number)
+		arg = arg.Call(frame)
+		if _, ok := arg.(error); ok {
+			return arg
+		}
+		sum += arg.(wdte.Number)
 	}
 	return sum
 }
@@ -47,9 +51,17 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.WithID("-")
 
-	a1 := args[0].Call(frame).(wdte.Number)
-	a2 := args[1].Call(frame).(wdte.Number)
-	return a1 - a2
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	return a1.(wdte.Number) - a2.(wdte.Number)
 }
 
 // Mult returns the product of its arguments. If called with only 1
@@ -68,7 +80,11 @@ func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	p := wdte.Number(1)
 	for _, arg := range args {
-		p *= arg.Call(frame).(wdte.Number)
+		arg = arg.Call(frame)
+		if _, ok := arg.(error); ok {
+			return arg
+		}
+		p *= arg.(wdte.Number)
 	}
 	return p
 }
@@ -87,9 +103,17 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.WithID("/")
 
-	a1 := args[0].Call(frame).(wdte.Number)
-	a2 := args[1].Call(frame).(wdte.Number)
-	return a1 / a2
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	return a1.(wdte.Number) / a2.(wdte.Number)
 }
 
 // Mod returns args[0] % args[1]. If called with only 1 argument, it
@@ -106,9 +130,20 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.WithID("%")
 
-	a1 := args[0].Call(frame).(wdte.Number)
-	a2 := args[1].Call(frame).(wdte.Number)
-	return wdte.Number(math.Mod(float64(a1), float64(a2)))
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	return wdte.Number(math.Mod(
+		float64(a1.(wdte.Number)),
+		float64(a2.(wdte.Number)),
+	))
 }
 
 // Insert adds the functions in this package to m. It maps them to the

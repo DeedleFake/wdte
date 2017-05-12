@@ -1,7 +1,6 @@
 package wdte
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 
@@ -492,23 +491,17 @@ type Memo struct {
 }
 
 func (m *Memo) Call(frame Frame, args ...Func) Func {
-	if m.cache == nil {
-		m.cache = make(memoCache)
-	}
-
 	for i := range args {
 		args[i] = args[i].Call(frame)
 	}
 
-	key := m.cache.Key(args)
-
-	cached, ok := m.cache[key]
+	cached, ok := m.cache.Get(args)
 	if ok {
 		return cached
 	}
 
 	r := m.Func.Call(frame, args...)
-	m.cache[key] = r
+	m.cache.Set(args, r)
 	return r
 }
 
@@ -516,13 +509,33 @@ func (m Memo) Equals(other Func) bool {
 	panic("Not implemented.")
 }
 
-type memoCache map[string]Func
+type memoCache struct {
+	val  Func
+	next map[Func]*memoCache
+}
 
-func (cache memoCache) Key(args []Func) string {
-	var buf bytes.Buffer
-	for _, arg := range args {
-		// TODO: Figure out a way to do this that isn't stupid.
-		fmt.Fprint(&buf, arg)
+func (cache *memoCache) Get(args []Func) (Func, bool) {
+	if len(args) > 0 {
+		if cache.next == nil {
+			return nil, false
+		}
+
+		return cache.next[args[0]].Get(args[1:])
 	}
-	return buf.String()
+
+	return cache.val, true
+}
+
+func (cache *memoCache) Set(args []Func, val Func) {
+	if len(args) > 0 {
+		if cache.next == nil {
+			cache.next = make(map[Func]*memoCache)
+		}
+
+		n := new(memoCache)
+		n.Set(args[1:], val)
+		cache.next[args[0]] = n
+	}
+
+	cache.val = val
 }
