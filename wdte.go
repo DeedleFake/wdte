@@ -138,6 +138,30 @@ func main() {
 
 	js.Global.Set("main", func(args ...interface{}) *js.Object {
 		stdin.Set("value", initial)
+
+		document.Call("querySelector", ".tab").Call(
+			"addEventListener",
+			"keydown",
+			js.MakeFunc(func(this *js.Object, args []*js.Object) interface{} {
+				if args[0].Get("keyCode").Int() != 9 {
+					return nil
+				}
+
+				start := this.Get("selectionStart").Int()
+				end := this.Get("selectionEnd").Int()
+
+				target := args[0].Get("target")
+				target.Set("value", target.Get("value").String()[:start]+"\t"+target.Get("value").String()[end:])
+
+				this.Set("selectionStart", start+1)
+				this.Set("selectionEnd", start+1)
+
+				args[0].Call("preventDefault")
+
+				return nil
+			}),
+		)
+
 		return nil
 	})
 }
