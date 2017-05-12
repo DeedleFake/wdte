@@ -146,13 +146,49 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	))
 }
 
-// Insert adds the functions in this package to m. It maps them to the
-// corresponding mathematical operators. For example, Add() becomes
-// `+`, Sub() becomes `-`, and so on.
+func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Equals)
+
+	case 1:
+		return save(wdte.GoFunc(Equals), args[0])
+	}
+
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	if cmp, ok := a1.(wdte.Comparer); ok {
+		c, _ := cmp.Compare(a2)
+		return wdte.Bool(c == 0)
+	}
+
+	if cmp, ok := a2.(wdte.Comparer); ok {
+		c, _ := cmp.Compare(a1)
+		return wdte.Bool(c == 0)
+	}
+
+	return wdte.Bool(a1 == args[1].Call(frame))
+}
+
+// Insert adds the functions in this package to m. It maps
+// mathematical functions to the corresponding mathematical symbols.
+// For example, Add() becomes `+`, Sub() becomes `-`, and so on.
+// Comparisons get mapped to the cooresponding comparison symbols from
+// C-style languages. For example, Equals() becomes `==`.
 func Insert(m *wdte.Module) {
 	m.Funcs["+"] = wdte.GoFunc(Add)
 	m.Funcs["-"] = wdte.GoFunc(Sub)
 	m.Funcs["*"] = wdte.GoFunc(Mult)
 	m.Funcs["/"] = wdte.GoFunc(Div)
 	m.Funcs["%"] = wdte.GoFunc(Mod)
+
+	m.Funcs["=="] = wdte.GoFunc(Equals)
 }
