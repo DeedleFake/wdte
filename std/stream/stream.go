@@ -21,10 +21,6 @@ func (n NextFunc) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return n
 }
 
-func (n NextFunc) Equals(other wdte.Func) bool {
-	panic("Not implemented.")
-}
-
 func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) {
 	return n(frame)
 }
@@ -57,10 +53,6 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 func (a *array) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return a
-}
-
-func (a *array) Equals(other wdte.Func) bool {
-	panic("Not implemented.")
 }
 
 func (a *array) Next(frame wdte.Frame) (wdte.Func, bool) {
@@ -124,10 +116,6 @@ func (r *rng) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return r
 }
 
-func (r *rng) Equals(other wdte.Func) bool {
-	panic("Not implemented.")
-}
-
 func (r *rng) Next(frame wdte.Frame) (wdte.Func, bool) {
 	if r.i >= r.m {
 		return nil, false
@@ -179,10 +167,6 @@ func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	return m
-}
-
-func (m *mapper) Equals(other wdte.Func) bool {
-	panic("Not implemented.")
 }
 
 // Collect converts a Stream into an array.
