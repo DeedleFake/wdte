@@ -16,12 +16,8 @@ func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
 // argument, it returns a function which adds arguments given to that
 // one argument.
 func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Add)
-
-	case 1:
-		return save(wdte.GoFunc(Add), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Add), args...)
 	}
 
 	frame = frame.WithID("+")
@@ -41,12 +37,8 @@ func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // returns a function which returns that argument minus the argument
 // given.
 func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Sub)
-
-	case 1:
-		return save(wdte.GoFunc(Sub), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Sub), args...)
 	}
 
 	frame = frame.WithID("-")
@@ -68,12 +60,8 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // argument, it returns a function that multiplies that argument by
 // its own arguments.
 func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Mult)
-
-	case 1:
-		return save(wdte.GoFunc(Mult), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Mult), args...)
 	}
 
 	frame = frame.WithID("*")
@@ -93,12 +81,8 @@ func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // returns a function which divides its own argument by the original
 // argument.
 func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Div)
-
-	case 1:
-		return save(wdte.GoFunc(Div), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Div), args...)
 	}
 
 	frame = frame.WithID("/")
@@ -120,12 +104,8 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // returns a function which divides its own argument by the original
 // argument.
 func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Mod)
-
-	case 1:
-		return save(wdte.GoFunc(Mod), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Mod), args...)
 	}
 
 	frame = frame.WithID("%")
@@ -154,12 +134,8 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // for the comparison. If not, and the second does, then that is used.
 // If neither does, a simple, direct Go equality check is used.
 func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Equals)
-
-	case 1:
-		return save(wdte.GoFunc(Equals), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Equals), args...)
 	}
 
 	a1 := args[0].Call(frame)
