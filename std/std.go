@@ -254,4 +254,5 @@ func Insert(m *wdte.Module) {
 
 	m.Funcs["=="] = wdte.GoFunc(Equals)
 	m.Funcs["<"] = wdte.GoFunc(Less)
+	m.Funcs[">"] = wdte.GoFunc(Greater)
 }
