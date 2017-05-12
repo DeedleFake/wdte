@@ -8,7 +8,7 @@ import (
 
 func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		return f.Call(frame, append(saved, args...)...)
+		return f.Call(frame, append(args, saved...)...)
 	})
 }
 
