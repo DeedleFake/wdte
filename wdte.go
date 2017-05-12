@@ -17,7 +17,7 @@ const initial = `# Welcome to the WDTE playground, a browser based evaluation
 # standard function set as well as a number of importable modules.
 #
 # If you have never seen WDTE before and are completely confused at
-# the moment trying reading the overview on the WDTE wiki:
+# the moment, try reading the overview on the WDTE project's wiki:
 # https://github.com/DeedleFake/wdte/wiki
 #
 # For documentation on the standard function set, see
@@ -41,10 +41,10 @@ memo fib n => switch n {
 };
 
 main => (
-	m.sin m.pi -> print;
+	fib 50 -> print;
 
-	s.range 15
-	-> s.map fib
+	s.range (* m.pi -1) m.pi .5
+	-> s.map m.sin
 	-> s.collect
 	-> print;
 );`
