@@ -16,8 +16,8 @@ func TestModule(t *testing.T) {
 'stream' => s;
 
 memo fib n => switch n {
-	0 => 0;
-	1 => 1;
+	== 0 => 0;
+	== 1 => 1;
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 

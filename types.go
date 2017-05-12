@@ -15,9 +15,20 @@ func (s String) Call(frame Frame, args ...Func) Func {
 	return s
 }
 
-func (s String) Equals(other Func) bool {
+func (s String) Compare(other Func) (int, bool) {
 	o, ok := other.(String)
-	return ok && (s == o)
+	if !ok {
+		return -1, false
+	}
+
+	switch {
+	case s < o:
+		return -1, true
+	case s > o:
+		return 1, true
+	}
+
+	return 0, true
 }
 
 // A Number is a number, as parsed from a number literal. That's about
@@ -30,9 +41,13 @@ func (n Number) Call(frame Frame, args ...Func) Func {
 	return n
 }
 
-func (n Number) Equals(other Func) bool {
+func (n Number) Compare(other Func) (int, bool) {
 	o, ok := other.(Number)
-	return ok && (n == o)
+	if !ok {
+		return -1, false
+	}
+
+	return int(n - o), true
 }
 
 // An Array represents a WDTE array type. It's similar to a Compound,
@@ -44,20 +59,11 @@ func (a Array) Call(frame Frame, args ...Func) Func {
 	return a
 }
 
-func (a Array) Equals(other Func) bool {
-	o, ok := other.(Array)
-	if !ok || (len(a) != len(o)) {
-		return false
-	}
-
-	for i := range a {
-		if !a[i].Equals(o[i]) {
-			return false
-		}
-	}
-
-	return true
-}
+//func (a Array)Compare(other Func) (int, bool) {
+//	TODO: Implement this. I'm not sure if it should support ordering
+//	or not. I'm also not sure if it should call its elements in order
+//	to get their underlying values. It probably should.
+//}
 
 // An Error is returned by any of the built-in functions when they run
 // into an error.
@@ -75,13 +81,22 @@ func (e Error) Call(frame Frame, args ...Func) Func {
 	return e
 }
 
-func (e Error) Equals(other Func) bool {
-	panic("Not implemented.")
-}
-
 func (e Error) Error() string {
 	var buf bytes.Buffer
 	e.Frame.Backtrace(&buf)
 
 	return fmt.Sprintf("WDTE Error: %v\n%s", e.Err, buf.Bytes())
+}
+
+type Bool bool
+
+func (b Bool) Call(frame Frame, args ...Func) Func {
+	return b
+}
+
+func (b Bool) Compare(other Func) (int, bool) {
+	if b == other {
+		return 0, false
+	}
+	return -1, false
 }

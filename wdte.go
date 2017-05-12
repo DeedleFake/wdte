@@ -74,14 +74,18 @@ type Func interface {
 	// used to keep track of function arguments during the evaluation of
 	// expressions, and can largely be ignored by clients.
 	Call(frame Frame, args ...Func) Func
+}
 
-	// Equals returns true if one function equals another one. This is
-	// meaningless for the majority of implementations, and should
-	// largely be ignored by clients. When implementing custom
-	// functions, if you're not sure what to do for this, you probably
-	// won't have any issues. This is only used, by default, by switches
-	// as a way of checking if the condition matches one of the cases.
-	Equals(other Func) bool
+// A Comparer is a Func that is able to be compared to other
+// functions.
+type Comparer interface {
+	// Compare returns two values. The meaning of the first is dependent
+	// upon the second. If the second is true, then the first indicates
+	// ordering via the standard negative, positive, and zero results to
+	// indicate less than, greater than, and equal, respectively. If the
+	// second is false, then the first indicates only equality, with
+	// zero still meaning equal, but other values simply meaning unequal.
+	Compare(other Func) (int, bool)
 }
 
 // A Frame tracks information about the current function call.
@@ -206,10 +210,6 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) {
 	return f(frame, args...)
 }
 
-func (f GoFunc) Equals(other Func) bool {
-	panic("Not implemented.")
-}
-
 // A DeclFunc is a function that was declared in a WDTE function
 // declaration. This is the primary source of the frame argument that
 // is passed around everywhere.
@@ -257,10 +257,6 @@ func (f DeclFunc) Call(frame Frame, args ...Func) Func {
 	return f.Expr.Call(frame.New(f.ID, next), next...)
 }
 
-func (f DeclFunc) Equals(other Func) bool {
-	panic("Not implemented.")
-}
-
 // An Expr is an unevaluated expression. This is usually the
 // right-hand side of a function declaration, but could also be any of
 // various pieces of switches, compounds, or arrays.
@@ -274,10 +270,6 @@ type Expr struct {
 
 func (f Expr) Call(frame Frame, args ...Func) Func {
 	return f.Func.Call(frame, f.Args...)
-}
-
-func (f Expr) Equals(other Func) bool {
-	panic("Not implemented.")
 }
 
 // Chain is an unevaluated chain expression.
@@ -294,10 +286,6 @@ type Chain struct {
 
 func (f Chain) Call(frame Frame, args ...Func) Func {
 	return f.Func.Call(frame, f.Args...).Call(frame, f.Prev.Call(frame))
-}
-
-func (f Chain) Equals(other Func) bool {
-	panic("Not implemented.")
 }
 
 // External represents a function from an imported module. It looks
@@ -337,9 +325,13 @@ func (e External) Call(frame Frame, args ...Func) Func {
 	return f.Call(frame, args...)
 }
 
-func (e External) Equals(other Func) bool {
+func (e External) Compare(other Func) (int, bool) {
 	o, ok := other.(External)
-	return ok && (e.Import == o.Import) && (e.Func == o.Func)
+	if ok && (e.Import == o.Import) && (e.Func == o.Func) {
+		return 0, false
+	}
+
+	return -1, false
 }
 
 // Local represents a function from a module, usually the current one.
@@ -366,9 +358,13 @@ func (local Local) Call(frame Frame, args ...Func) Func {
 	return f.Call(frame, args...)
 }
 
-func (local Local) Equals(other Func) bool {
+func (local Local) Compare(other Func) (int, bool) {
 	o, ok := other.(Local)
-	return ok && (local.Func == o.Func)
+	if ok && (local.Func == o.Func) {
+		return 0, false
+	}
+
+	return -1, false
 }
 
 // A Compound represents a compound expression. Calling it calls each
@@ -386,10 +382,6 @@ func (c Compound) Call(frame Frame, args ...Func) Func {
 	}
 
 	return last
-}
-
-func (c Compound) Equals(other Func) bool {
-	panic("Not implemented.")
 }
 
 // Switch represents a switch expression.
@@ -425,16 +417,12 @@ func (s Switch) Call(frame Frame, args ...Func) Func {
 			return lhs
 		}
 
-		if check.Equals(lhs) {
+		if lhs.Call(frame, check) == Bool(true) {
 			return c[1].Call(frame)
 		}
 	}
 
 	return nil
-}
-
-func (s Switch) Equals(other Func) bool {
-	panic("Not implemented.")
 }
 
 // Arg represents an argument in the current frame. It is the opposite
@@ -460,10 +448,6 @@ func (a Arg) Call(frame Frame, args ...Func) Func {
 	return frame.Args()[a].Call(frame, args...)
 }
 
-func (a Arg) Equals(other Func) bool {
-	panic("Not implemented.")
-}
-
 // A FramedFunc is a function which keeps track of its own calling
 // frame.
 type FramedFunc struct {
@@ -476,10 +460,6 @@ type FramedFunc struct {
 
 func (f FramedFunc) Call(frame Frame, args ...Func) Func {
 	return f.Func.Call(f.Frame, args...)
-}
-
-func (f FramedFunc) Equals(other Func) bool {
-	panic("Not implemented.")
 }
 
 // A Memo wraps another function, caching the results of calls with
@@ -503,10 +483,6 @@ func (m *Memo) Call(frame Frame, args ...Func) Func {
 	r := m.Func.Call(frame, args...)
 	m.cache.Set(args, r)
 	return r
-}
-
-func (m Memo) Equals(other Func) bool {
-	panic("Not implemented.")
 }
 
 type memoCache struct {
