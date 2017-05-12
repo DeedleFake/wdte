@@ -35,8 +35,8 @@ const initial = `# Welcome to the WDTE playground, a browser based evaluation
 'stream' => s;
 
 memo fib n => switch n {
-	0 => 0;
-	1 => 1;
+	== 0 => 0;
+	== 1 => 1;
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 
