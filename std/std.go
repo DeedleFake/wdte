@@ -1,6 +1,7 @@
 package std
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/DeedleFake/wdte"
@@ -161,6 +162,84 @@ func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(a1 == a2)
 }
 
+// Less returns true if the first argument is less than the second.
+// It returns an error if two arguments can't be compared.
+//
+// TODO: Document usage of wdte.Comparer.
+func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Less), args...)
+	}
+
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	if cmp, ok := a1.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a2)
+		if ord {
+			return wdte.Bool(c < 0)
+		}
+	}
+
+	if cmp, ok := a2.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a1)
+		if ord {
+			return wdte.Bool(c > 0)
+		}
+	}
+
+	return wdte.Error{
+		Err:   fmt.Errorf("Unable to compare %v and %v", a1, a2),
+		Frame: frame,
+	}
+}
+
+// Greater returns true if the first argument is less than the second.
+// It returns an error if two arguments can't be compared.
+//
+// TODO: Document usage of wdte.Comparer.
+func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Less), args...)
+	}
+
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	if cmp, ok := a1.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a2)
+		if ord {
+			return wdte.Bool(c > 0)
+		}
+	}
+
+	if cmp, ok := a2.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a1)
+		if ord {
+			return wdte.Bool(c < 0)
+		}
+	}
+
+	return wdte.Error{
+		Err:   fmt.Errorf("Unable to compare %v and %v", a1, a2),
+		Frame: frame,
+	}
+}
+
 // Insert adds the functions in this package to m. It maps
 // mathematical functions to the corresponding mathematical symbols.
 // For example, Add() becomes `+`, Sub() becomes `-`, and so on.
@@ -174,4 +253,5 @@ func Insert(m *wdte.Module) {
 	m.Funcs["%"] = wdte.GoFunc(Mod)
 
 	m.Funcs["=="] = wdte.GoFunc(Equals)
+	m.Funcs["<"] = wdte.GoFunc(Less)
 }

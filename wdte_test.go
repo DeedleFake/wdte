@@ -21,6 +21,11 @@ memo fib n => switch n {
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 
+memo fact n => switch n {
+	< 2 => 1;
+	default => - n 1 -> fact -> * n;
+};
+
 main => (
 	s.range 15
   -> s.map fib
@@ -31,6 +36,8 @@ main => (
 	-> s.map (+ 2)
 	-> s.collect
 	-> print;
+
+	fact 5 -> print;
 );
 `
 
