@@ -146,6 +146,13 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	))
 }
 
+// Equals checks if two values are equal or not. If called with only
+// one argument, it returns a function which checks that argument for
+// equality with other values.
+//
+// If the first argument given implements wdte.Comparer, it is used
+// for the comparison. If not, and the second does, then that is used.
+// If neither does, a simple, direct Go equality check is used.
 func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -175,7 +182,7 @@ func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.Bool(c == 0)
 	}
 
-	return wdte.Bool(a1 == args[1].Call(frame))
+	return wdte.Bool(a1 == a2)
 }
 
 // Insert adds the functions in this package to m. It maps
