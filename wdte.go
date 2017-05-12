@@ -40,6 +40,11 @@ memo fib n => switch n {
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 
+memo ! n => switch n {
+	< 2 => 1;
+	default => - n 1 -> ! -> * n;
+};
+
 main => (
 	fib 50 -> print;
 
