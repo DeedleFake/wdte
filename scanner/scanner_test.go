@@ -96,6 +96,17 @@ o => print "double\n" 'single\\';`,
 				{Type: scanner.EOF, Val: nil},
 			},
 		},
+		{
+			name: "MaybeNumber",
+			in:   `-5 .3 . -`,
+			out: []scanner.Token{
+				{Type: scanner.Number, Val: float64(-5)},
+				{Type: scanner.Number, Val: .3},
+				{Type: scanner.Keyword, Val: "."},
+				{Type: scanner.ID, Val: "-"},
+				{Type: scanner.EOF, Val: nil},
+			},
+		},
 	}
 
 	for _, test := range tests {

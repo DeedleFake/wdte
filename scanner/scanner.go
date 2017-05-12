@@ -48,23 +48,29 @@ func (s *Scanner) Scan() bool {
 
 	s.tbuf.Reset()
 
+	var eof bool
 	state := s.whitespace
-	for (state != nil) && (s.err == nil) {
+	for state != nil {
 		r, err := s.read()
-		if err != nil {
-			s.err = err
-
-			if err == io.EOF {
-				r = '\n'
+		switch err {
+		case nil:
+			eof = false
+		case io.EOF:
+			if eof {
+				s.err = err
+				s.setTok(EOF, nil)
+				return true
 			}
+
+			r = '\n'
+			eof = true
+
+		default:
+			s.err = err
+			return false
 		}
 
 		state = state(r)
-
-		if (s.err == io.EOF) && (state != nil) {
-			s.setTok(EOF, nil)
-			return true
-		}
 	}
 
 	return true
@@ -152,10 +158,10 @@ func (s *Scanner) whitespace(r rune) stateFunc {
 		return s.whitespace
 	}
 
-	if r == '-' {
+	if (r == '-') || (r == '.') {
 		s.tline, s.tcol = s.line, s.col
-		s.unread(r)
-		return s.negative
+		s.tbuf.WriteRune(r)
+		return s.maybeNumber
 	}
 
 	if unicode.IsDigit(r) {
@@ -183,18 +189,20 @@ func (s *Scanner) comment(r rune) stateFunc {
 	return s.comment
 }
 
-func (s *Scanner) negative(r rune) stateFunc {
-	if r == '-' {
-		s.tbuf.WriteRune(r)
-		return s.negative
-	}
-
+func (s *Scanner) maybeNumber(r rune) stateFunc {
 	if unicode.IsDigit(r) {
 		s.tbuf.WriteRune(r)
 		return s.number
 	}
 
 	s.unread(r)
+
+	tbuf := []rune(s.tbuf.String())
+	for i := len(tbuf) - 1; i >= 0; i-- {
+		s.unread(tbuf[i])
+	}
+	s.tbuf.Reset()
+
 	return s.id
 }
 
@@ -255,8 +263,9 @@ func (s *Scanner) id(r rune) stateFunc {
 				return nil
 			}
 
+			kr := []rune(k)
 			for i := len(k) - 1; i >= 0; i-- {
-				s.unread(rune(k[i]))
+				s.unread(kr[i])
 			}
 
 			t, val := ID, val[:len(val)-len(k)]
