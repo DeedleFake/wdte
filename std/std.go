@@ -1,6 +1,7 @@
 package std
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/DeedleFake/wdte"
@@ -16,12 +17,8 @@ func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
 // argument, it returns a function which adds arguments given to that
 // one argument.
 func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Add)
-
-	case 1:
-		return save(wdte.GoFunc(Add), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Add), args...)
 	}
 
 	frame = frame.WithID("+")
@@ -41,12 +38,8 @@ func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // returns a function which returns that argument minus the argument
 // given.
 func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Sub)
-
-	case 1:
-		return save(wdte.GoFunc(Sub), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Sub), args...)
 	}
 
 	frame = frame.WithID("-")
@@ -68,12 +61,8 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // argument, it returns a function that multiplies that argument by
 // its own arguments.
 func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Mult)
-
-	case 1:
-		return save(wdte.GoFunc(Mult), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Mult), args...)
 	}
 
 	frame = frame.WithID("*")
@@ -93,12 +82,8 @@ func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // returns a function which divides its own argument by the original
 // argument.
 func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Div)
-
-	case 1:
-		return save(wdte.GoFunc(Div), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Div), args...)
 	}
 
 	frame = frame.WithID("/")
@@ -120,12 +105,8 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // returns a function which divides its own argument by the original
 // argument.
 func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Mod)
-
-	case 1:
-		return save(wdte.GoFunc(Mod), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Mod), args...)
 	}
 
 	frame = frame.WithID("%")
@@ -154,12 +135,8 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // for the comparison. If not, and the second does, then that is used.
 // If neither does, a simple, direct Go equality check is used.
 func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Equals)
-
-	case 1:
-		return save(wdte.GoFunc(Equals), args[0])
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Equals), args...)
 	}
 
 	a1 := args[0].Call(frame)
@@ -185,6 +162,84 @@ func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(a1 == a2)
 }
 
+// Less returns true if the first argument is less than the second.
+// It returns an error if two arguments can't be compared.
+//
+// TODO: Document usage of wdte.Comparer.
+func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Less), args...)
+	}
+
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	if cmp, ok := a1.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a2)
+		if ord {
+			return wdte.Bool(c < 0)
+		}
+	}
+
+	if cmp, ok := a2.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a1)
+		if ord {
+			return wdte.Bool(c > 0)
+		}
+	}
+
+	return wdte.Error{
+		Err:   fmt.Errorf("Unable to compare %v and %v", a1, a2),
+		Frame: frame,
+	}
+}
+
+// Greater returns true if the first argument is less than the second.
+// It returns an error if two arguments can't be compared.
+//
+// TODO: Document usage of wdte.Comparer.
+func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(Less), args...)
+	}
+
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	if cmp, ok := a1.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a2)
+		if ord {
+			return wdte.Bool(c > 0)
+		}
+	}
+
+	if cmp, ok := a2.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a1)
+		if ord {
+			return wdte.Bool(c < 0)
+		}
+	}
+
+	return wdte.Error{
+		Err:   fmt.Errorf("Unable to compare %v and %v", a1, a2),
+		Frame: frame,
+	}
+}
+
 // Insert adds the functions in this package to m. It maps
 // mathematical functions to the corresponding mathematical symbols.
 // For example, Add() becomes `+`, Sub() becomes `-`, and so on.
@@ -198,4 +253,5 @@ func Insert(m *wdte.Module) {
 	m.Funcs["%"] = wdte.GoFunc(Mod)
 
 	m.Funcs["=="] = wdte.GoFunc(Equals)
+	m.Funcs["<"] = wdte.GoFunc(Less)
 }
