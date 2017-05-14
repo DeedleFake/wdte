@@ -310,21 +310,25 @@ func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// Insert adds the functions in this package to m. It maps
-// mathematical functions to the corresponding mathematical symbols.
-// For example, Add() becomes `+`, Sub() becomes `-`, and so on.
-// Comparisons get mapped to the cooresponding comparison symbols from
-// C-style languages. For example, Equals() becomes `==`.
-func Insert(m *wdte.Module) {
-	m.Funcs["+"] = wdte.GoFunc(Add)
-	m.Funcs["-"] = wdte.GoFunc(Sub)
-	m.Funcs["*"] = wdte.GoFunc(Mult)
-	m.Funcs["/"] = wdte.GoFunc(Div)
-	m.Funcs["%"] = wdte.GoFunc(Mod)
+// Module returns a module contiaining the functions in this package.
+// It maps mathematical functions to the corresponding mathematical
+// symbols. For example, Add() becomes `+`, Sub() becomes `-`, and so
+// on. Comparisons get mapped to the cooresponding comparison symbols
+// from C-style languages. For example, Equals() becomes `==`.
+func Module() *wdte.Module {
+	return &wdte.Module{
+		Funcs: map[wdte.ID]wdte.Func{
+			"+": wdte.GoFunc(Add),
+			"-": wdte.GoFunc(Sub),
+			"*": wdte.GoFunc(Mult),
+			"/": wdte.GoFunc(Div),
+			"%": wdte.GoFunc(Mod),
 
-	m.Funcs["=="] = wdte.GoFunc(Equals)
-	m.Funcs["<"] = wdte.GoFunc(Less)
-	m.Funcs[">"] = wdte.GoFunc(Greater)
-	m.Funcs["<="] = wdte.GoFunc(LessEqual)
-	m.Funcs[">="] = wdte.GoFunc(GreaterEqual)
+			"==": wdte.GoFunc(Equals),
+			"<":  wdte.GoFunc(Less),
+			">":  wdte.GoFunc(Greater),
+			"<=": wdte.GoFunc(LessEqual),
+			">=": wdte.GoFunc(GreaterEqual),
+		},
+	}
 }
