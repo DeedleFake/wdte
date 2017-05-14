@@ -205,7 +205,12 @@ loop:
 }
 
 func (m *Module) fromCompound(compound *ast.NTerm, scope map[ID]int) Func {
-	return Compound(m.fromExprs(flatten(compound.Children()[1].(*ast.NTerm), 2, 0), scope))
+	exprs := flatten(compound.Children()[1].(*ast.NTerm), 2, 0)
+	if len(exprs) == 1 {
+		return m.fromExpr(exprs[0].(*ast.NTerm), scope)
+	}
+
+	return Compound(m.fromExprs(exprs, scope))
 }
 
 func (m *Module) fromExprs(exprs []ast.Node, scope map[ID]int) []Func {
