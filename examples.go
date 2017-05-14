@@ -49,7 +49,22 @@ main => (
 # puts the playground in canvas mode, which allows for drawing to the
 # output pane. It also redirects the normal output into the error pane.
 
+'math' => m;
 'canvas' => c;
+
+# circleRec is the recursive part of circle.
+circleRec r cx cy res t p => switch t {
+	> (* 2 m.pi) => p -> c.close;
+	default => p
+             -> c.line (+ cx (* (m.cos t) r)) (+ cy (* (m.sin t) r))
+             -> circleRec r cx cy res (+ t (/ m.pi res));
+};
+
+# circle returns a circular path centered at (cx, cy) with radius r
+# and resolution res.
+circle r cx cy res => c.path
+                  -> c.move (+ cx r) cy
+                  -> circleRec r cx cy res (/ m.pi res);
 
 main => (
 	c.start
@@ -67,6 +82,11 @@ main => (
 		-> c.line 100 100
 		-> c.close
 	)
+	-> c.draw;
+
+	c.start
+	-> c.color 'red'
+	-> circle 30 100 100 6
 	-> c.draw;
 );`,
 }
