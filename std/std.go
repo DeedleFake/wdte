@@ -35,8 +35,8 @@ func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 // Sub returns args[0] - args[1]. If called with only 1 argument, it
-// returns a function which returns that argument minus the argument
-// given.
+// returns a function which returns the argument given minus that
+// argument.
 func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Sub), args...)
@@ -79,7 +79,7 @@ func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 // Div returns args[0] / args[1]. If called with only 1 argument, it
-// returns a function which divides its own argument by the original
+// returns a function which divides the original argument by its own
 // argument.
 func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
@@ -102,7 +102,7 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 // Mod returns args[0] % args[1]. If called with only 1 argument, it
-// returns a function which divides its own argument by the original
+// returns a function which divides the original argument by its own
 // argument.
 func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
