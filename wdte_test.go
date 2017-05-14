@@ -22,7 +22,7 @@ memo fib n => switch n {
 };
 
 memo fact n => switch n {
-	< 2 => 1;
+	<= 1 => 1;
 	default => - n 1 -> fact -> * n;
 };
 
@@ -41,20 +41,22 @@ main => (
 );
 `
 
-	m, err := wdte.Parse(strings.NewReader(test), wdte.ImportFunc(func(from string) (*wdte.Module, error) {
-		switch from {
-		case "stream":
-			return stream.Module(), nil
-		case "math":
-			return math.Module(), nil
-		}
+	m, err := new(wdte.Module).Insert(std.Module()).Parse(
+		strings.NewReader(test),
+		wdte.ImportFunc(func(from string) (*wdte.Module, error) {
+			switch from {
+			case "stream":
+				return stream.Module(), nil
+			case "math":
+				return math.Module(), nil
+			}
 
-		return nil, fmt.Errorf("Unknown import: %q", from)
-	}))
+			return nil, fmt.Errorf("Unknown import: %q", from)
+		}),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
-	std.Insert(m)
 
 	m.Funcs["print"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		frame = frame.WithID("print")

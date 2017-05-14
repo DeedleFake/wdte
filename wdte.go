@@ -23,18 +23,55 @@ type Module struct {
 // is used to handle import statements. If im is nil, a no-op importer
 // is used.
 func Parse(r io.Reader, im Importer) (*Module, error) {
-	root, err := ast.Parse(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return FromAST(root, im)
+	return new(Module).Parse(r, im)
 }
 
 // FromAST translates an AST into a module. im is used to handle
 // import statements. If im is nil, a no-op importer is used.
 func FromAST(root ast.Node, im Importer) (*Module, error) {
-	return fromScript(root.(*ast.NTerm), im)
+	return new(Module).FromAST(root, im)
+}
+
+// Parse parses an AST from r and then translates it into a module. im
+// is used to handle import statements. If im is nil, a no-op importer
+// is used.
+func (m *Module) Parse(r io.Reader, im Importer) (*Module, error) {
+	root, err := ast.Parse(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return m.FromAST(root, im)
+}
+
+// FromAST translates an AST into a module. im is used to handle
+// import statements. If im is nil, a no-op importer is used.
+func (m *Module) FromAST(root ast.Node, im Importer) (*Module, error) {
+	return m.fromScript(root.(*ast.NTerm), im)
+}
+
+// Insert inserts the functions from n into m. This is different from
+// an import as the functions are inserted into m's namespace. This is
+// the preferred way of using the standard library.
+//
+// Insert returns m to allow for chaining.
+func (m *Module) Insert(n *Module) *Module {
+	if n == nil {
+		return m
+	}
+
+	if m.Funcs == nil {
+		m.Funcs = make(map[ID]Func)
+	}
+
+	for id := range n.Funcs {
+		m.Funcs[id] = Local{
+			Module: n,
+			Func:   id,
+		}
+	}
+
+	return m
 }
 
 // An Importer creates modules from strings. When parsing a WDTE script, an importer is used to import modules.

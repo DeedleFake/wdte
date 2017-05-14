@@ -35,8 +35,8 @@ func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 // Sub returns args[0] - args[1]. If called with only 1 argument, it
-// returns a function which returns that argument minus the argument
-// given.
+// returns a function which returns the argument given minus that
+// argument.
 func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Sub), args...)
@@ -79,7 +79,7 @@ func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 // Div returns args[0] / args[1]. If called with only 1 argument, it
-// returns a function which divides its own argument by the original
+// returns a function which divides the original argument by its own
 // argument.
 func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
@@ -102,7 +102,7 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 // Mod returns args[0] % args[1]. If called with only 1 argument, it
-// returns a function which divides its own argument by the original
+// returns a function which divides the original argument by its own
 // argument.
 func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
@@ -207,7 +207,7 @@ func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // TODO: Document usage of wdte.Comparer.
 func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Less), args...)
+		return save(wdte.GoFunc(Greater), args...)
 	}
 
 	a1 := args[0].Call(frame)
@@ -240,19 +240,95 @@ func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// Insert adds the functions in this package to m. It maps
-// mathematical functions to the corresponding mathematical symbols.
-// For example, Add() becomes `+`, Sub() becomes `-`, and so on.
-// Comparisons get mapped to the cooresponding comparison symbols from
-// C-style languages. For example, Equals() becomes `==`.
-func Insert(m *wdte.Module) {
-	m.Funcs["+"] = wdte.GoFunc(Add)
-	m.Funcs["-"] = wdte.GoFunc(Sub)
-	m.Funcs["*"] = wdte.GoFunc(Mult)
-	m.Funcs["/"] = wdte.GoFunc(Div)
-	m.Funcs["%"] = wdte.GoFunc(Mod)
+func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(LessEqual), args...)
+	}
 
-	m.Funcs["=="] = wdte.GoFunc(Equals)
-	m.Funcs["<"] = wdte.GoFunc(Less)
-	m.Funcs[">"] = wdte.GoFunc(Greater)
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	if cmp, ok := a1.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a2)
+		if ord {
+			return wdte.Bool(c <= 0)
+		}
+	}
+
+	if cmp, ok := a2.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a1)
+		if ord {
+			return wdte.Bool(c >= 0)
+		}
+	}
+
+	return wdte.Error{
+		Err:   fmt.Errorf("Unable to compare %v and %v", a1, a2),
+		Frame: frame,
+	}
+}
+
+func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(GreaterEqual), args...)
+	}
+
+	a1 := args[0].Call(frame)
+	if _, ok := a1.(error); ok {
+		return a1
+	}
+
+	a2 := args[1].Call(frame)
+	if _, ok := a2.(error); ok {
+		return a2
+	}
+
+	if cmp, ok := a1.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a2)
+		if ord {
+			return wdte.Bool(c >= 0)
+		}
+	}
+
+	if cmp, ok := a2.(wdte.Comparer); ok {
+		c, ord := cmp.Compare(a1)
+		if ord {
+			return wdte.Bool(c <= 0)
+		}
+	}
+
+	return wdte.Error{
+		Err:   fmt.Errorf("Unable to compare %v and %v", a1, a2),
+		Frame: frame,
+	}
+}
+
+// Module returns a module contiaining the functions in this package.
+// It maps mathematical functions to the corresponding mathematical
+// symbols. For example, Add() becomes `+`, Sub() becomes `-`, and so
+// on. Comparisons get mapped to the cooresponding comparison symbols
+// from C-style languages. For example, Equals() becomes `==`.
+func Module() *wdte.Module {
+	return &wdte.Module{
+		Funcs: map[wdte.ID]wdte.Func{
+			"+": wdte.GoFunc(Add),
+			"-": wdte.GoFunc(Sub),
+			"*": wdte.GoFunc(Mult),
+			"/": wdte.GoFunc(Div),
+			"%": wdte.GoFunc(Mod),
+
+			"==": wdte.GoFunc(Equals),
+			"<":  wdte.GoFunc(Less),
+			">":  wdte.GoFunc(Greater),
+			"<=": wdte.GoFunc(LessEqual),
+			">=": wdte.GoFunc(GreaterEqual),
+		},
+	}
 }
