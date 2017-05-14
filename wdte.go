@@ -23,18 +23,26 @@ type Module struct {
 // is used to handle import statements. If im is nil, a no-op importer
 // is used.
 func Parse(r io.Reader, im Importer) (*Module, error) {
-	root, err := ast.Parse(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return FromAST(root, im)
+	return new(Module).Parse(r, im)
 }
 
 // FromAST translates an AST into a module. im is used to handle
 // import statements. If im is nil, a no-op importer is used.
 func FromAST(root ast.Node, im Importer) (*Module, error) {
-	return fromScript(root.(*ast.NTerm), im)
+	return new(Module).FromAST(root, im)
+}
+
+func (m *Module) Parse(r io.Reader, im Importer) (*Module, error) {
+	root, err := ast.Parse(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return m.FromAST(root, im)
+}
+
+func (m *Module) FromAST(root ast.Node, im Importer) (*Module, error) {
+	return m.fromScript(root.(*ast.NTerm), im)
 }
 
 // An Importer creates modules from strings. When parsing a WDTE script, an importer is used to import modules.
