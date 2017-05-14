@@ -41,14 +41,14 @@ memo fib n => switch n {
 };
 
 memo ! n => switch n {
-	< 2 => 1;
+	<= 1 => 1;
 	default => - n 1 -> ! -> * n;
 };
 
 main => (
 	fib 50 -> print;
 
-	s.range (* m.pi -1) m.pi .5
+	s.range (* m.pi -1) m.pi (/ m.pi 2)
 	-> s.map m.sin
 	-> s.collect
 	-> print;
@@ -94,12 +94,11 @@ func main() {
 		i := strings.NewReader(stdin.Get("value").String())
 		o := &elementWriter{stdout}
 
-		m, err := wdte.Parse(i, wdte.ImportFunc(im))
+		m, err := new(wdte.Module).Insert(std.Module()).Parse(i, wdte.ImportFunc(im))
 		if err != nil {
 			log.Printf("Failed to parse: %v", err)
 			return nil
 		}
-		std.Insert(m)
 
 		m.Funcs["print"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			if len(args) == 0 {
