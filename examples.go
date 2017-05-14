@@ -51,9 +51,22 @@ main => (
 
 'canvas' => c;
 
-main =>
+main => (
 	c.start
 	-> c.color 'purple'
 	-> c.rect 10 10 100 50
-	-> c.draw;`,
+	-> c.draw;
+
+	c.start
+	-> c.color 'pink'
+	-> (
+		c.path
+		-> c.move 10 50
+		-> c.line 30 30
+		-> c.line 50 30
+		-> c.line 100 100
+		-> c.close
+	)
+	-> c.draw;
+);`,
 }
