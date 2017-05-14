@@ -199,16 +199,57 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return r
 }
 
+// TODO: Implement this. It should be able to essentially insert its own output into another chain, so that
+//
+//    start -> (s.range 5 -> s.map f -> s.chain) -> end
+//
+// is possible.
+//func Chain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+//	switch len(args) {
+//	case 0:
+//		return wdte.GoFunc(Chain)
+//	}
+//
+//	frame = frame.WithID("call")
+//
+//	a, ok := args[0].Call(frame).(Stream)
+//	if !ok {
+//		return args[0]
+//	}
+//
+//	var prev wdte.Func
+//	for {
+//		n, ok := a.Next(frame)
+//		if !ok {
+//			break
+//		}
+//		if _, ok := n.(error); ok {
+//			return n
+//		}
+//
+//		if prev != nil {
+//			n = n.Call(frame).Call(frame, prev.Call(frame))
+//		}
+//
+//		prev = n
+//	}
+//
+//	return prev
+//}
+
 // Module returns a module for easy importing into an actual script.
 // The imported functions have the same names as the functions in this
 // package, except that the first letter is lowercase.
 func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
-			"new":     wdte.GoFunc(New),
-			"range":   wdte.GoFunc(Range),
-			"map":     wdte.GoFunc(Map),
+			"new":   wdte.GoFunc(New),
+			"range": wdte.GoFunc(Range),
+
+			"map": wdte.GoFunc(Map),
+
 			"collect": wdte.GoFunc(Collect),
+			//"chain":   wdte.GoFunc(Chain),
 		},
 	}
 }
