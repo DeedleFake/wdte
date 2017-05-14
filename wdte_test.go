@@ -22,7 +22,7 @@ memo fib n => switch n {
 };
 
 memo fact n => switch n {
-	< 2 => 1;
+	<= 1 => 1;
 	default => - n 1 -> fact -> * n;
 };
 
