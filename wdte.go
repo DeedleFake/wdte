@@ -86,6 +86,9 @@ func main() {
 		in = strings.NewReader(stdin.Get("value").String())
 		out = &elementWriter{stdout}
 
+		canvasCtx.Set("fillStyle", "white")
+		canvasCtx.Call("fillRect", 0, 0, 640, 480)
+
 		m, err := new(wdte.Module).Insert(std.Module()).Parse(in, wdte.ImportFunc(im))
 		if err != nil {
 			log.Printf("Failed to parse: %v", err)
