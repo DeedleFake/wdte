@@ -15,6 +15,7 @@ var examples = map[string]string{
 # Importable modules:
 # * 'math' (https://godoc.org/github.com/DeedleFake/wdte/std/math)
 # * 'stream' (https://godoc.org/github.com/DeedleFake/wdte/std/stream)
+# * 'canvas' (See the 'Canvas' example.)
 #
 # In addition, a print function is provided which uses the Go fmt
 # package to create a string representation of its arguments. This
@@ -46,5 +47,13 @@ main => (
 	"canvas": `# This example demonstrates the canvas module. This module is a module
 # implemented just for this playground. Importing it automatically
 # puts the playground in canvas mode, which allows for drawing to the
-# output pane. It also redirects the normal output into the error pane.`,
+# output pane. It also redirects the normal output into the error pane.
+
+'canvas' => c;
+
+main =>
+	c.start
+	-> c.color 'purple'
+	-> c.rect 10 10 100 50
+	-> c.draw;`,
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"strings"
 
@@ -10,6 +11,19 @@ import (
 	"github.com/DeedleFake/wdte/std/math"
 	"github.com/DeedleFake/wdte/std/stream"
 	"github.com/gopherjs/gopherjs/js"
+)
+
+var (
+	document *js.Object
+
+	stdin  *js.Object
+	stdout *js.Object
+	stderr *js.Object
+
+	canvas    *js.Object
+	canvasCtx *js.Object
+
+	example *js.Object
 )
 
 type elementWriter struct {
@@ -28,33 +42,51 @@ func (e elementWriter) WriteString(data string) (int, error) {
 	return len(data), nil
 }
 
+var (
+	in  io.Reader
+	out io.Writer
+)
+
 func im(from string) (*wdte.Module, error) {
 	switch from {
 	case "math":
 		return math.Module(), nil
 	case "stream":
 		return stream.Module(), nil
+
+	case "canvas":
+		stdout.Get("style").Set("display", "none")
+		canvas.Get("style").Set("display", "block")
+		out = &elementWriter{stderr}
+		return CanvasModule(), nil
 	}
 
 	return nil, fmt.Errorf("Unknown import: %q", from)
 }
 
 func main() {
-	document := js.Global.Get("document")
-	stdin := document.Call("getElementById", "input")
-	stdout := document.Call("getElementById", "output")
-	stderr := document.Call("getElementById", "error")
+	document = js.Global.Get("document")
+
+	stdin = document.Call("getElementById", "input")
+	stdout = document.Call("getElementById", "output")
+	stderr = document.Call("getElementById", "error")
+
+	canvas = document.Call("getElementById", "canvas")
+	canvasCtx = canvas.Call("getContext", "2d")
+
+	example = document.Call("getElementById", "example")
 
 	log.SetFlags(log.Ltime)
 	log.SetOutput(&elementWriter{stderr})
 
-	example := document.Call("getElementById", "example")
-
 	js.Global.Set("run", func(args ...interface{}) interface{} {
-		i := strings.NewReader(stdin.Get("value").String())
-		o := &elementWriter{stdout}
+		stdout.Get("style").Set("display", "block")
+		canvas.Get("style").Set("display", "none")
 
-		m, err := new(wdte.Module).Insert(std.Module()).Parse(i, wdte.ImportFunc(im))
+		in = strings.NewReader(stdin.Get("value").String())
+		out = &elementWriter{stdout}
+
+		m, err := new(wdte.Module).Insert(std.Module()).Parse(in, wdte.ImportFunc(im))
 		if err != nil {
 			log.Printf("Failed to parse: %v", err)
 			return nil
@@ -77,7 +109,7 @@ func main() {
 			}
 
 			str := fmt.Sprint(a...)
-			fmt.Fprintln(o, str)
+			fmt.Fprintln(out, str)
 			return wdte.String(str)
 		})
 

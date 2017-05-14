@@ -61,10 +61,16 @@
 				margin:8px;
 			}
 
-			#output, #error
+			#output, #canvas, #error
 			{
 				flex:1;
 				overflow:auto;
+			}
+
+			#canvas
+			{
+				display:none;
+				background-color:#FFFFFF;
 			}
 		</style>
 	</head>
@@ -83,6 +89,7 @@
 
 		<div id='right'>
 			<pre id='output'></pre>
+			<canvas id='canvas'></canvas>
 			<pre id='error'></pre>
 		</div>
 	</body>
