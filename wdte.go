@@ -12,48 +12,6 @@ import (
 	"github.com/gopherjs/gopherjs/js"
 )
 
-const initial = `# Welcome to the WDTE playground, a browser based evaluation
-# environment for WDTE. This playground's features includes the
-# standard function set as well as a number of importable modules.
-#
-# If you have never seen WDTE before and are completely confused at
-# the moment, try reading the overview on the WDTE project's wiki:
-# https://github.com/DeedleFake/wdte/wiki
-#
-# For documentation on the standard function set, see
-# https://godoc.org/github.com/DeedleFake/wdte/std
-#
-# Importable modules:
-# * 'math' (https://godoc.org/github.com/DeedleFake/wdte/std/math)
-# * 'stream' (https://godoc.org/github.com/DeedleFake/wdte/std/stream)
-#
-# In addition, a print function is provided which uses the Go fmt
-# package to create a string representation of its arguments. This
-# string is printed to the output pane and then returned.
-
-'math' => m;
-'stream' => s;
-
-memo fib n => switch n {
-	== 0 => 0;
-	== 1 => 1;
-	default => + (fib (- n 1)) (fib (- n 2));
-};
-
-memo ! n => switch n {
-	<= 1 => 1;
-	default => - n 1 -> ! -> * n;
-};
-
-main => (
-	fib 50 -> print;
-
-	s.range (* m.pi -1) m.pi (/ m.pi 2)
-	-> s.map m.sin
-	-> s.collect
-	-> print;
-);`
-
 type elementWriter struct {
 	*js.Object
 }
@@ -90,7 +48,9 @@ func main() {
 	log.SetFlags(log.Ltime)
 	log.SetOutput(&elementWriter{stderr})
 
-	js.Global.Set("run", func(args ...interface{}) *js.Object {
+	example := document.Call("getElementById", "example")
+
+	js.Global.Set("run", func(args ...interface{}) interface{} {
 		i := strings.NewReader(stdin.Get("value").String())
 		o := &elementWriter{stdout}
 
@@ -135,13 +95,18 @@ func main() {
 		return nil
 	})
 
-	js.Global.Set("clear", func(args ...interface{}) *js.Object {
+	js.Global.Set("clear", func(args ...interface{}) interface{} {
 		stderr.Set("innerHTML", "")
 		return nil
 	})
 
-	js.Global.Set("main", func(args ...interface{}) *js.Object {
-		stdin.Set("value", initial)
+	js.Global.Set("changeExample", func(args ...interface{}) interface{} {
+		stdin.Set("value", examples[example.Get("value").String()])
+		return nil
+	})
+
+	js.Global.Set("main", func(args ...interface{}) interface{} {
+		stdin.Set("value", examples["fib"])
 
 		document.Call("querySelector", ".tab").Call(
 			"addEventListener",
