@@ -4,7 +4,7 @@ wdte
 [![GoDoc](https://godoc.org/github.com/DeedleFake/wdte?status.svg)](https://godoc.org/github.com/DeedleFake/wdte)
 [![Go Report Card](https://goreportcard.com/badge/github.com/DeedleFake/wdte)](https://goreportcard.com/report/github.com/DeedleFake/wdte)
 
-WDTE ('why the') is a simple, functional-ish, embedded scripting language.
+WDTE is a simple, functional-ish, embedded scripting language.
 
 Why does this exist?
 --------------------
