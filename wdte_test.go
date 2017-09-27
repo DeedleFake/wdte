@@ -1,14 +1,11 @@
 package wdte_test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/std"
-	"github.com/DeedleFake/wdte/std/math"
-	"github.com/DeedleFake/wdte/std/stream"
 )
 
 func TestModule(t *testing.T) {
@@ -41,19 +38,7 @@ main => (
 );
 `
 
-	m, err := new(wdte.Module).Insert(std.Module()).Parse(
-		strings.NewReader(test),
-		wdte.ImportFunc(func(from string) (*wdte.Module, error) {
-			switch from {
-			case "stream":
-				return stream.Module(), nil
-			case "math":
-				return math.Module(), nil
-			}
-
-			return nil, fmt.Errorf("Unknown import: %q", from)
-		}),
-	)
+	m, err := std.Module().Parse(strings.NewReader(test), std.Import)
 	if err != nil {
 		t.Fatal(err)
 	}
