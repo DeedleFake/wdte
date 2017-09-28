@@ -317,6 +317,12 @@ func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // symbols. For example, Add() becomes `+`, Sub() becomes `-`, and so
 // on. Comparisons get mapped to the cooresponding comparison symbols
 // from C-style languages. For example, Equals() becomes `==`.
+//
+// This module is useful as a starting point for parsing. For example,
+// if you want to parse a module and you want it to have access to
+// these functions, you can use
+//
+//     m, err := std.Module().Parse(r, im)
 func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
