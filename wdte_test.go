@@ -52,8 +52,9 @@ main w r => (
 	-> io.writeln 'Or is it?';
 
 	r
-	-> io.string
-	-> print;
+	-> io.lines
+	-> s.map print
+	-> s.collect;
 );
 `
 

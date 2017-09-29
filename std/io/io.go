@@ -3,6 +3,7 @@
 package io
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -77,6 +78,38 @@ func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(buf.String())
 }
 
+type scanner struct {
+	s *bufio.Scanner
+}
+
+func (s scanner) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return s
+}
+
+func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) {
+	ok := s.s.Scan()
+	if !ok {
+		err := s.s.Err()
+		if err != nil {
+			return wdte.Error{Err: err, Frame: frame}, false
+		}
+		return nil, false
+	}
+
+	return wdte.String(s.s.Text()), true
+}
+
+func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("lines")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Lines)
+	}
+
+	r := args[0].Call(frame).(reader)
+	return scanner{s: bufio.NewScanner(r)}
+}
+
 // Module returns a module for easy importing into an actual script.
 // The imported functions have the same names as the functions in this
 // package, except that the first letter is lowercase.
@@ -90,6 +123,7 @@ func Module() *wdte.Module {
 			"writeln": wdte.GoFunc(Writeln),
 
 			"string": wdte.GoFunc(String),
+			"lines":  wdte.GoFunc(Lines),
 		},
 	}
 }
