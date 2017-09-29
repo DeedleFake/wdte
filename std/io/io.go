@@ -3,6 +3,7 @@
 package io
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -59,6 +60,23 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return w
 }
 
+func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("string")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(String)
+	}
+
+	r := args[0].Call(frame).(reader)
+
+	var buf bytes.Buffer
+	_, err := io.Copy(&buf, r)
+	if err != nil {
+		return wdte.Error{Err: err, Frame: frame}
+	}
+	return wdte.String(buf.String())
+}
+
 // Module returns a module for easy importing into an actual script.
 // The imported functions have the same names as the functions in this
 // package, except that the first letter is lowercase.
@@ -70,6 +88,8 @@ func Module() *wdte.Module {
 			"stderr": Writer{Writer: os.Stderr},
 
 			"writeln": wdte.GoFunc(Writeln),
+
+			"string": wdte.GoFunc(String),
 		},
 	}
 }

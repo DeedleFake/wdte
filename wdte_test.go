@@ -34,7 +34,7 @@ memo fact n => switch n {
 	default => - n 1 -> fact -> * n;
 };
 
-main w => (
+main w r => (
 	s.range 15
   -> s.map fib
 	-> s.collect
@@ -50,6 +50,10 @@ main w => (
 	w
 	-> io.writeln 'This is a test.'
 	-> io.writeln 'Or is it?';
+
+	r
+	-> io.string
+	-> print;
 );
 `
 
@@ -83,7 +87,8 @@ main w => (
 	//}
 
 	w := twriter{t: t}
-	if err, ok := m.Funcs["main"].Call(wdte.F(), io.Writer{w}).(error); ok {
+	r := strings.NewReader(test)
+	if err, ok := m.Funcs["main"].Call(wdte.F(), io.Writer{w}, io.Reader{r}).(error); ok {
 		t.Fatal(err)
 	}
 }
