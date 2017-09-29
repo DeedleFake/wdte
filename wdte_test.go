@@ -6,11 +6,22 @@ import (
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/std"
+	"github.com/DeedleFake/wdte/std/io"
 )
+
+type twriter struct {
+	t *testing.T
+}
+
+func (w twriter) Write(data []byte) (int, error) {
+	w.t.Logf("%s", data)
+	return len(data), nil
+}
 
 func TestModule(t *testing.T) {
 	const test = `
 'stream' => s;
+'io' => io;
 
 memo fib n => switch n {
 	== 0 => 0;
@@ -23,7 +34,7 @@ memo fact n => switch n {
 	default => - n 1 -> fact -> * n;
 };
 
-main => (
+main w => (
 	s.range 15
   -> s.map fib
 	-> s.collect
@@ -35,6 +46,10 @@ main => (
 	-> print;
 
 	fact 5 -> print;
+
+	w
+	-> io.writeln 'This is a test.'
+	-> io.writeln 'Or is it?';
 );
 `
 
@@ -67,7 +82,8 @@ main => (
 	//	t.Logf("\t%q", f)
 	//}
 
-	if err, ok := m.Funcs["main"].Call(wdte.F()).(error); ok {
+	w := twriter{t: t}
+	if err, ok := m.Funcs["main"].Call(wdte.F(), io.Writer{w}).(error); ok {
 		t.Fatal(err)
 	}
 }
