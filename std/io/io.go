@@ -1,0 +1,75 @@
+// Package io contains WDTE functions for dealing with files and other
+// types of data streams.
+package io
+
+import (
+	"fmt"
+	"io"
+	"os"
+
+	"github.com/DeedleFake/wdte"
+)
+
+type reader interface {
+	wdte.Func
+	io.Reader
+}
+
+// Reader wraps an io.Reader, allowing it to be used as a WDTE function.
+type Reader struct {
+	io.Reader
+}
+
+func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return r
+}
+
+type writer interface {
+	wdte.Func
+	io.Writer
+}
+
+// Writer wraps an io.Writer, allowing it to be used as a WDTE function.
+type Writer struct {
+	io.Writer
+}
+
+func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return w
+}
+
+func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("writeln")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Writeln)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
+			return Writeln(frame, append(more, args...)...)
+		})
+	}
+
+	w := args[0].Call(frame).(writer)
+	d := args[1].Call(frame)
+	_, err := fmt.Fprintln(w, d)
+	if err != nil {
+		return wdte.Error{Err: err, Frame: frame}
+	}
+	return w
+}
+
+// Module returns a module for easy importing into an actual script.
+// The imported functions have the same names as the functions in this
+// package, except that the first letter is lowercase.
+func Module() *wdte.Module {
+	return &wdte.Module{
+		Funcs: map[wdte.ID]wdte.Func{
+			"stdin":  Reader{Reader: os.Stdin},
+			"stdout": Writer{Writer: os.Stdout},
+			"stderr": Writer{Writer: os.Stderr},
+
+			"writeln": wdte.GoFunc(Writeln),
+		},
+	}
+}
