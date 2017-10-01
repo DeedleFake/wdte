@@ -36,7 +36,7 @@ memo fact n => switch n {
 
 main w r => (
 	s.range 15
-  -> s.map fib
+	-> s.map fib
 	-> s.collect
 	-> io.writeln w;
 
@@ -57,6 +57,7 @@ main w r => (
 	-> s.collect;
 
 	io.open 'wdte_test.go'
+	-> io.copy w
 	-> io.close;
 );
 `

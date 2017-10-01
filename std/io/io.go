@@ -136,9 +136,10 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 //     io.stdin -> io.copy io.stdout;
 //
-// are identical in terms of functionality.
-//
-// In either case, it returns the writer that it copied to.
+// are mostly equivalent. The only difference is in the return value.
+// Copy returns the second argument it was given to allow for easier
+// chaining. For example, in the first example above it returns
+// io.stdout, while in the second it returns io.stdin.
 func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("copy")
 
