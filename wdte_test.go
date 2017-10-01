@@ -38,14 +38,14 @@ main w r => (
 	s.range 15
   -> s.map fib
 	-> s.collect
-	-> print;
+	-> io.writeln w;
 
 	s.new [5; 2; fib 7]
 	-> s.map (+ 2)
 	-> s.collect
-	-> print;
+	-> io.writeln w;
 
-	fact 5 -> print;
+	fact 5 -> io.writeln w;
 
 	w
 	-> io.write 'This is a test.'
@@ -53,7 +53,7 @@ main w r => (
 
 	r
 	-> io.lines
-	-> s.map print
+	-> s.map (io.writeln w)
 	-> s.collect;
 );
 `
@@ -62,20 +62,6 @@ main w r => (
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	m.Funcs["print"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		frame = frame.WithID("print")
-
-		if len(args) < 1 {
-			return m.Funcs["print"]
-		}
-
-		a := args[0].Call(frame)
-		if _, ok := a.(error); !ok {
-			t.Logf("%v", a)
-		}
-		return a
-	})
 
 	//t.Log("Imports:")
 	//for i := range m.Imports {
