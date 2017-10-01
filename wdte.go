@@ -93,7 +93,7 @@ type Importer interface {
 // used as Importers.
 type ImportFunc func(from string) (*Module, error)
 
-func (f ImportFunc) Import(from string) (*Module, error) {
+func (f ImportFunc) Import(from string) (*Module, error) { // nolint
 	return f(from)
 }
 
@@ -232,7 +232,7 @@ func (f *Frame) backtrace(w io.Writer) error {
 // evaluation system into infinite loops or causing panics.
 type GoFunc func(frame Frame, args ...Func) Func
 
-func (f GoFunc) Call(frame Frame, args ...Func) (r Func) {
+func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 	defer func() {
 		if err, ok := recover().(error); ok {
 			r = Error{
@@ -267,7 +267,7 @@ type DeclFunc struct {
 	Stored []Func
 }
 
-func (f DeclFunc) Call(frame Frame, args ...Func) Func {
+func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 	if len(args) < f.Args {
 		return &DeclFunc{
 			ID:     f.ID,
@@ -305,7 +305,7 @@ type Expr struct {
 	Args []Func
 }
 
-func (f Expr) Call(frame Frame, args ...Func) Func {
+func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Func.Call(frame, f.Args...)
 }
 
@@ -321,7 +321,7 @@ type Chain struct {
 	Prev Func
 }
 
-func (f Chain) Call(frame Frame, args ...Func) Func {
+func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Func.Call(frame, f.Args...).Call(frame, f.Prev.Call(frame))
 }
 
@@ -343,7 +343,7 @@ type External struct {
 	Func ID
 }
 
-func (e External) Call(frame Frame, args ...Func) Func {
+func (e External) Call(frame Frame, args ...Func) Func { // nolint
 	i, ok := e.Module.Imports[e.Import]
 	if !ok {
 		return Error{
@@ -362,7 +362,7 @@ func (e External) Call(frame Frame, args ...Func) Func {
 	return f.Call(frame, args...)
 }
 
-func (e External) Compare(other Func) (int, bool) {
+func (e External) Compare(other Func) (int, bool) { // nolint
 	o, ok := other.(External)
 	if ok && (e.Import == o.Import) && (e.Func == o.Func) {
 		return 0, false
@@ -383,7 +383,7 @@ type Local struct {
 	Func ID
 }
 
-func (local Local) Call(frame Frame, args ...Func) Func {
+func (local Local) Call(frame Frame, args ...Func) Func { // nolint
 	f, ok := local.Module.Funcs[local.Func]
 	if !ok {
 		return Error{
@@ -395,7 +395,7 @@ func (local Local) Call(frame Frame, args ...Func) Func {
 	return f.Call(frame, args...)
 }
 
-func (local Local) Compare(other Func) (int, bool) {
+func (local Local) Compare(other Func) (int, bool) { // nolint
 	o, ok := other.(Local)
 	if ok && (local.Func == o.Func) {
 		return 0, false
@@ -409,7 +409,7 @@ func (local Local) Compare(other Func) (int, bool) {
 // one. If the compound is empty, nil is returned.
 type Compound []Func
 
-func (c Compound) Call(frame Frame, args ...Func) Func {
+func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
 	var last Func
 	for _, f := range c {
 		last = f.Call(frame)
@@ -438,7 +438,7 @@ type Switch struct {
 	Cases [][2]Func
 }
 
-func (s Switch) Call(frame Frame, args ...Func) Func {
+func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 	check := s.Check.Call(frame)
 	if _, ok := check.(error); ok {
 		return check
@@ -467,7 +467,7 @@ func (s Switch) Call(frame Frame, args ...Func) Func {
 // over the place.
 type Arg int
 
-func (a Arg) Call(frame Frame, args ...Func) Func {
+func (a Arg) Call(frame Frame, args ...Func) Func { // nolint
 	if int(a) >= len(frame.Args()) {
 		// I don't think this can happen normally, but some GoFunc
 		// somewhere could generate an Arg for some bizarre reason and
@@ -495,7 +495,7 @@ type FramedFunc struct {
 	Frame Frame
 }
 
-func (f FramedFunc) Call(frame Frame, args ...Func) Func {
+func (f FramedFunc) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Func.Call(f.Frame, args...)
 }
 
@@ -507,7 +507,7 @@ type Memo struct {
 	cache memoCache
 }
 
-func (m *Memo) Call(frame Frame, args ...Func) Func {
+func (m *Memo) Call(frame Frame, args ...Func) Func { // nolint
 	for i := range args {
 		args[i] = args[i].Call(frame)
 	}

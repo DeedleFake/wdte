@@ -17,11 +17,11 @@ type Stream interface {
 // Stream. When called as a WDTE function, the function simply returns itself.
 type NextFunc func(frame wdte.Frame) (wdte.Func, bool)
 
-func (n NextFunc) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (n NextFunc) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return n
 }
 
-func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) {
+func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return n(frame)
 }
 

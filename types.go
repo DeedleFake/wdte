@@ -10,12 +10,12 @@ import (
 // when called.
 type String string
 
-func (s String) Call(frame Frame, args ...Func) Func {
+func (s String) Call(frame Frame, args ...Func) Func { // nolint
 	// TODO: Use the arguments for something. Probably concatenation.
 	return s
 }
 
-func (s String) Compare(other Func) (int, bool) {
+func (s String) Compare(other Func) (int, bool) { // nolint
 	o, ok := other.(String)
 	if !ok {
 		return -1, false
@@ -36,12 +36,12 @@ func (s String) Compare(other Func) (int, bool) {
 // when called.
 type Number float64
 
-func (n Number) Call(frame Frame, args ...Func) Func {
+func (n Number) Call(frame Frame, args ...Func) Func { // nolint
 	// TODO: Use the arguments for something, perhaps.
 	return n
 }
 
-func (n Number) Compare(other Func) (int, bool) {
+func (n Number) Compare(other Func) (int, bool) { // nolint
 	o, ok := other.(Number)
 	if !ok {
 		return -1, false
@@ -55,7 +55,7 @@ func (n Number) Compare(other Func) (int, bool) {
 // yields the array, much like how strings and numbers work.
 type Array []Func
 
-func (a Array) Call(frame Frame, args ...Func) Func {
+func (a Array) Call(frame Frame, args ...Func) Func { // nolint
 	return a
 }
 
@@ -77,24 +77,26 @@ type Error struct {
 	Frame Frame
 }
 
-func (e Error) Call(frame Frame, args ...Func) Func {
+func (e Error) Call(frame Frame, args ...Func) Func { // nolint
 	return e
 }
 
 func (e Error) Error() string {
 	var buf bytes.Buffer
-	e.Frame.Backtrace(&buf)
+	_ = e.Frame.Backtrace(&buf)
 
 	return fmt.Sprintf("WDTE Error: %v\n%s", e.Err, buf.Bytes())
 }
 
+// Bool is a boolean. Like other primitive types, it simply returns
+// itself when called.
 type Bool bool
 
-func (b Bool) Call(frame Frame, args ...Func) Func {
+func (b Bool) Call(frame Frame, args ...Func) Func { // nolint
 	return b
 }
 
-func (b Bool) Compare(other Func) (int, bool) {
+func (b Bool) Compare(other Func) (int, bool) { // nolint
 	if b == other {
 		return 0, false
 	}

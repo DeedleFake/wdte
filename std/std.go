@@ -243,6 +243,10 @@ func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
+// LessEqual returns true if the first argument is less than or equal
+// to the second.
+//
+// TODO: Document usage of wdte.Comparer.
 func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(LessEqual), args...)
@@ -278,6 +282,10 @@ func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
+// GreaterEqual returns true if the first argument is greater than or
+// equal to the second.
+//
+// TODO: Document usage of wdte.Comparer.
 func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(GreaterEqual), args...)

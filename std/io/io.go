@@ -22,7 +22,7 @@ type Reader struct {
 	io.Reader
 }
 
-func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return r
 }
 
@@ -36,7 +36,7 @@ type Writer struct {
 	io.Writer
 }
 
-func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return w
 }
 
