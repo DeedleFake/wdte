@@ -261,6 +261,21 @@ func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return scanner{s: bufio.NewScanner(r)}
 }
 
+// Words returns a stream that yields, as strings, successive words
+// read from a reader.
+func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("words")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Words)
+	}
+
+	r := args[0].Call(frame).(reader)
+	s := bufio.NewScanner(r)
+	s.Split(bufio.ScanWords)
+	return scanner{s: s}
+}
+
 func write(f func(io.Writer, interface{}) error) wdte.Func {
 	var gf wdte.GoFunc
 	gf = func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -346,6 +361,7 @@ func Module() *wdte.Module {
 
 			"string": wdte.GoFunc(String),
 			"lines":  wdte.GoFunc(Lines),
+			"words":  wdte.GoFunc(Words),
 
 			"write":   wdte.GoFunc(Write),
 			"writeln": wdte.GoFunc(Writeln),
