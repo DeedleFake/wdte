@@ -52,8 +52,17 @@ func write(f func(io.Writer, interface{}) error) wdte.Func {
 			})
 		}
 
-		w := args[0].Call(frame).(writer)
-		d := args[1].Call(frame)
+		var w writer
+		var d wdte.Func
+		switch a0 := args[0].Call(frame).(type) {
+		case writer:
+			w = a0
+			d = args[1].Call(frame)
+		case wdte.Func:
+			d = a0
+			w = args[1].Call(frame).(writer)
+		}
+
 		err := f(w, d)
 		if err != nil {
 			return wdte.Error{Err: err, Frame: frame}
