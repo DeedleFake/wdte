@@ -40,52 +40,68 @@ func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return w
 }
 
-func write(f func(io.Writer, interface{}) error) wdte.Func {
-	var gf wdte.GoFunc
-	gf = func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		switch len(args) {
-		case 0:
-			return gf
-		case 1:
-			return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
-				return gf(frame, append(more, args...)...)
-			})
-		}
+func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("combine")
 
-		var w writer
-		var d wdte.Func
-		switch a0 := args[0].Call(frame).(type) {
-		case writer:
-			w = a0
-			d = args[1].Call(frame)
-		case wdte.Func:
-			d = a0
-			w = args[1].Call(frame).(writer)
-		}
-
-		err := f(w, d)
-		if err != nil {
-			return wdte.Error{Err: err, Frame: frame}
-		}
-		return w
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Combine)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
+			return Combine(frame, append(args, more...)...)
+		})
 	}
-	return gf
+
+	switch a0 := args[0].Call(frame).(type) {
+	case reader:
+		r := make([]io.Reader, 1, len(args))
+		r[0] = a0
+		for _, a := range args[1:] {
+			r = append(r, a.Call(frame).(reader))
+		}
+		return Reader{Reader: io.MultiReader(r...)}
+
+	case writer:
+		w := make([]io.Writer, 1, len(args))
+		w[0] = a0
+		for _, a := range args[1:] {
+			w = append(w, a.Call(frame).(writer))
+		}
+		return Writer{Writer: io.MultiWriter(w...)}
+
+	default:
+		panic(fmt.Errorf("Unexpected argument type: %T", a0))
+	}
 }
 
-func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("write")
-	return write(func(w io.Writer, v interface{}) error {
-		_, err := fmt.Fprint(w, v)
-		return err
-	}).Call(frame, args...)
-}
+func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("copy")
 
-func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("writeln")
-	return write(func(w io.Writer, v interface{}) error {
-		_, err := fmt.Fprintln(w, v)
-		return err
-	}).Call(frame, args...)
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Copy)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
+			return Copy(frame, append(args, more...)...)
+		})
+	}
+
+	var w writer
+	var r reader
+	switch a0 := args[0].Call(frame).(type) {
+	case writer:
+		w = a0
+		r = args[1].Call(frame).(reader)
+	case reader:
+		w = args[1].Call(frame).(writer)
+		r = a0
+	}
+
+	_, err := io.Copy(w, r)
+	if err != nil {
+		return wdte.Error{Err: err, Frame: frame}
+	}
+	return w
 }
 
 func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -137,6 +153,54 @@ func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return scanner{s: bufio.NewScanner(r)}
 }
 
+func write(f func(io.Writer, interface{}) error) wdte.Func {
+	var gf wdte.GoFunc
+	gf = func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		switch len(args) {
+		case 0:
+			return gf
+		case 1:
+			return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
+				return gf(frame, append(more, args...)...)
+			})
+		}
+
+		var w writer
+		var d wdte.Func
+		switch a0 := args[0].Call(frame).(type) {
+		case writer:
+			w = a0
+			d = args[1].Call(frame)
+		case wdte.Func:
+			d = a0
+			w = args[1].Call(frame).(writer)
+		}
+
+		err := f(w, d)
+		if err != nil {
+			return wdte.Error{Err: err, Frame: frame}
+		}
+		return w
+	}
+	return gf
+}
+
+func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("write")
+	return write(func(w io.Writer, v interface{}) error {
+		_, err := fmt.Fprint(w, v)
+		return err
+	}).Call(frame, args...)
+}
+
+func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("writeln")
+	return write(func(w io.Writer, v interface{}) error {
+		_, err := fmt.Fprintln(w, v)
+		return err
+	}).Call(frame, args...)
+}
+
 // Module returns a module for easy importing into an actual script.
 // The imported functions have the same names as the functions in this
 // package, except that the first letter is lowercase.
@@ -147,11 +211,14 @@ func Module() *wdte.Module {
 			"stdout": Writer{Writer: os.Stdout},
 			"stderr": Writer{Writer: os.Stderr},
 
-			"write":   wdte.GoFunc(Write),
-			"writeln": wdte.GoFunc(Writeln),
+			"combine": wdte.GoFunc(Combine),
+			"copy":    wdte.GoFunc(Copy),
 
 			"string": wdte.GoFunc(String),
 			"lines":  wdte.GoFunc(Lines),
+
+			"write":   wdte.GoFunc(Write),
+			"writeln": wdte.GoFunc(Writeln),
 		},
 	}
 }
