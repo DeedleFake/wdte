@@ -26,6 +26,13 @@ func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return r
 }
 
+func (r Reader) Close() error {
+	if c, ok := r.Reader.(io.Closer); ok {
+		return c.Close()
+	}
+	return nil
+}
+
 type writer interface {
 	wdte.Func
 	io.Writer
@@ -38,6 +45,43 @@ type Writer struct {
 
 func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return w
+}
+
+func (w Writer) Close() error {
+	if c, ok := w.Writer.(io.Closer); ok {
+		return c.Close()
+	}
+	return nil
+}
+
+func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("open")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Open)
+	}
+
+	path := args[0].Call(frame).(wdte.String)
+	file, err := os.Open(string(path))
+	if err != nil {
+		return wdte.Error{Err: err, Frame: frame}
+	}
+	return Reader{Reader: file}
+}
+
+func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("close")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Close)
+	}
+
+	c := args[0].Call(frame).(io.Closer)
+	err := c.Close()
+	if err != nil {
+		return wdte.Error{Err: err, Frame: frame}
+	}
+	return c.(wdte.Func)
 }
 
 // Combine combines multiple readers or multiple writers. If the
@@ -253,6 +297,11 @@ func Module() *wdte.Module {
 			"stdin":  Reader{Reader: os.Stdin},
 			"stdout": Writer{Writer: os.Stdout},
 			"stderr": Writer{Writer: os.Stderr},
+
+			"open": wdte.GoFunc(Open),
+			//"create": wdte.GoFunc(Create),
+			//"append": wdte.GoFunc(Append),
+			"close": wdte.GoFunc(Close),
 
 			"combine": wdte.GoFunc(Combine),
 			"copy":    wdte.GoFunc(Copy),

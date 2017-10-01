@@ -55,6 +55,9 @@ main w r => (
 	-> io.lines
 	-> s.map (io.writeln w)
 	-> s.collect;
+
+	io.open 'wdte_test.go'
+	-> io.close;
 );
 `
 
