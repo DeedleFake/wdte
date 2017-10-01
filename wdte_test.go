@@ -48,7 +48,7 @@ main w r => (
 	fact 5 -> print;
 
 	w
-	-> io.writeln 'This is a test.'
+	-> io.write 'This is a test.'
 	-> io.writeln 'Or is it?';
 
 	r

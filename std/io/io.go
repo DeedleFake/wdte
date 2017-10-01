@@ -40,25 +40,43 @@ func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return w
 }
 
+func write(f func(io.Writer, interface{}) error) wdte.Func {
+	var gf wdte.GoFunc
+	gf = func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		switch len(args) {
+		case 0:
+			return gf
+		case 1:
+			return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
+				return gf(frame, append(more, args...)...)
+			})
+		}
+
+		w := args[0].Call(frame).(writer)
+		d := args[1].Call(frame)
+		err := f(w, d)
+		if err != nil {
+			return wdte.Error{Err: err, Frame: frame}
+		}
+		return w
+	}
+	return gf
+}
+
+func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("write")
+	return write(func(w io.Writer, v interface{}) error {
+		_, err := fmt.Fprint(w, v)
+		return err
+	}).Call(frame, args...)
+}
+
 func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("writeln")
-
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Writeln)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
-			return Writeln(frame, append(more, args...)...)
-		})
-	}
-
-	w := args[0].Call(frame).(writer)
-	d := args[1].Call(frame)
-	_, err := fmt.Fprintln(w, d)
-	if err != nil {
-		return wdte.Error{Err: err, Frame: frame}
-	}
-	return w
+	return write(func(w io.Writer, v interface{}) error {
+		_, err := fmt.Fprintln(w, v)
+		return err
+	}).Call(frame, args...)
 }
 
 func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -120,6 +138,7 @@ func Module() *wdte.Module {
 			"stdout": Writer{Writer: os.Stdout},
 			"stderr": Writer{Writer: os.Stderr},
 
+			"write":   wdte.GoFunc(Write),
 			"writeln": wdte.GoFunc(Writeln),
 
 			"string": wdte.GoFunc(String),
