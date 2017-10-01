@@ -69,6 +69,36 @@ func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return Reader{Reader: file}
 }
 
+func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("create")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Create)
+	}
+
+	path := args[0].Call(frame).(wdte.String)
+	file, err := os.Create(string(path))
+	if err != nil {
+		return wdte.Error{Err: err, Frame: frame}
+	}
+	return Writer{Writer: file}
+}
+
+func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("append")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Append)
+	}
+
+	path := args[0].Call(frame).(wdte.String)
+	file, err := os.OpenFile(string(path), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return wdte.Error{Err: err, Frame: frame}
+	}
+	return Writer{Writer: file}
+}
+
 func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("close")
 
@@ -299,10 +329,10 @@ func Module() *wdte.Module {
 			"stdout": Writer{Writer: os.Stdout},
 			"stderr": Writer{Writer: os.Stderr},
 
-			"open": wdte.GoFunc(Open),
-			//"create": wdte.GoFunc(Create),
-			//"append": wdte.GoFunc(Append),
-			"close": wdte.GoFunc(Close),
+			"open":   wdte.GoFunc(Open),
+			"create": wdte.GoFunc(Create),
+			"append": wdte.GoFunc(Append),
+			"close":  wdte.GoFunc(Close),
 
 			"combine": wdte.GoFunc(Combine),
 			"copy":    wdte.GoFunc(Copy),
