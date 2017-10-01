@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/DeedleFake/wdte"
 )
@@ -207,6 +208,18 @@ func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return w
 }
 
+// ReadString returns a reader that reads from a string.
+func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("readString")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(ReadString)
+	}
+
+	s := args[0].Call(frame).(wdte.String)
+	return Reader{Reader: strings.NewReader(string(s))}
+}
+
 // String reads the entirety of a reader into a string and returns it.
 func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("string")
@@ -359,9 +372,10 @@ func Module() *wdte.Module {
 			"combine": wdte.GoFunc(Combine),
 			"copy":    wdte.GoFunc(Copy),
 
-			"string": wdte.GoFunc(String),
-			"lines":  wdte.GoFunc(Lines),
-			"words":  wdte.GoFunc(Words),
+			"readString": wdte.GoFunc(ReadString),
+			"string":     wdte.GoFunc(String),
+			"lines":      wdte.GoFunc(Lines),
+			"words":      wdte.GoFunc(Words),
 
 			"write":   wdte.GoFunc(Write),
 			"writeln": wdte.GoFunc(Writeln),
