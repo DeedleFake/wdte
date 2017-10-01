@@ -26,7 +26,7 @@ func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return r
 }
 
-func (r Reader) Close() error {
+func (r Reader) Close() error { // nolint
 	if c, ok := r.Reader.(io.Closer); ok {
 		return c.Close()
 	}
@@ -47,13 +47,14 @@ func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return w
 }
 
-func (w Writer) Close() error {
+func (w Writer) Close() error { // nolint
 	if c, ok := w.Writer.(io.Closer); ok {
 		return c.Close()
 	}
 	return nil
 }
 
+// Open opens a file and returns it as a reader.
 func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("open")
 
@@ -69,6 +70,8 @@ func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return Reader{Reader: file}
 }
 
+// Create creates a file, truncating it if it exists, and returns it
+// as a writer.
 func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("create")
 
@@ -84,6 +87,8 @@ func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return Writer{Writer: file}
 }
 
+// Append opens a file for appending as a writer. If it doesn't exist
+// already, it is created.
 func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("append")
 
@@ -99,6 +104,8 @@ func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return Writer{Writer: file}
 }
 
+// Close closes a closer. This includes files opened with other
+// functions in this module.
 func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("close")
 
