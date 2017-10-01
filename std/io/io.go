@@ -40,6 +40,12 @@ func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return w
 }
 
+// Combine combines multiple readers or multiple writers. If the
+// arguments passed are readers, it uses Go's io.MultiReader to
+// concatenate them. If the arguments passed are writers, it uses Go's
+// io.MultiWriter to combine them. If only one argument is given, it
+// returns a function which combines its arguments with the argument
+// originally given.
 func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("combine")
 
@@ -74,6 +80,21 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
+// Copy copies from a reader to a writer until it hits EOF using Go's
+// io.Copy. It takes its arguments in either order, and, if given one
+// only argument, returns a function which performs the copy using
+// that argument and a single argument that it is given. In other
+// words:
+//
+//     io.stdout -> io.copy io.stdin;
+//
+// and
+//
+//     io.stdin -> io.copy io.stdout;
+//
+// are identical in terms of functionality.
+//
+// In either case, it returns the writer that it copied to.
 func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("copy")
 
@@ -104,6 +125,7 @@ func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return w
 }
 
+// String reads the entirety of a reader into a string and returns it.
 func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("string")
 
@@ -121,6 +143,8 @@ func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(buf.String())
 }
 
+// scanner is a simple wrapper that allows a bufio.Scanner to be used
+// as a stream.Stream.
 type scanner struct {
 	s *bufio.Scanner
 }
@@ -142,6 +166,8 @@ func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) {
 	return wdte.String(s.s.Text()), true
 }
 
+// Lines returns a stream that yields, as strings, successive lines
+// read from a reader.
 func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("lines")
 
@@ -185,6 +211,21 @@ func write(f func(io.Writer, interface{}) error) wdte.Func {
 	return gf
 }
 
+// Write writes to a writer. It takes two arguments, one of which is
+// the writer and one of which is the data. It is essentially
+// equivalent to fmt.Fprint. It accepts the arguments in either order
+// and, if given only one argument, returns a function that takes the
+// other. In other words,
+//
+//     'Example' -> io.write io.stdout;
+//
+// and
+//
+//     io.stdout -> io.write 'Example';
+//
+// are equivalent.
+//
+// It returns the writer that it was passed.
 func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("write")
 	return write(func(w io.Writer, v interface{}) error {
@@ -193,6 +234,8 @@ func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}).Call(frame, args...)
 }
 
+// Writeln is exactly like Write, but also writes a newline
+// afterwards. It is essentially equivalent to fmt.Fprintln.
 func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("writeln")
 	return write(func(w io.Writer, v interface{}) error {
