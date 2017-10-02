@@ -57,12 +57,13 @@ main w r => (
 	-> s.map (io.writeln w)
 	-> s.collect;
 
-	file.open 'wdte_test.go'
-	-> io.copy w
-	-> io.close;
+	#file.open 'wdte_test.go'
+	#-> io.copy w
+	#-> io.close;
 
-	#io.readString 'This is also a test.'
-	#-> io.copy w;
+	io.readString 'This is also a test.'
+	-> io.seek -5 -1
+	-> io.copy w;
 );
 `
 

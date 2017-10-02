@@ -41,6 +41,37 @@ func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return w
 }
 
+// Seek seeks an io.Seeker and then returns it.
+func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("seek")
+
+	if len(args) < 3 {
+		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
+			return Seek(frame, append(more, args...)...)
+		})
+	}
+
+	s := args[0].Call(frame).(io.Seeker)
+	off := int64(args[1].Call(frame).(wdte.Number))
+	rel := args[2].Call(frame).(wdte.Number)
+
+	var w int
+	switch {
+	case rel < 0:
+		w = io.SeekEnd
+	case rel == 0:
+		w = io.SeekCurrent
+	case rel > 0:
+		w = io.SeekStart
+	}
+
+	_, err := s.Seek(off, w)
+	if err != nil {
+		return wdte.Error{Err: err, Frame: frame}
+	}
+	return s.(wdte.Func)
+}
+
 // Close closes a closer. This includes files opened with other
 // functions in this module.
 func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -148,6 +179,14 @@ func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return a1
 }
 
+type stringReader struct {
+	*strings.Reader
+}
+
+func (r stringReader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+	return r
+}
+
 // ReadString returns a reader that reads from a string.
 func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("readString")
@@ -157,7 +196,7 @@ func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	s := args[0].Call(frame).(wdte.String)
-	return Reader{Reader: strings.NewReader(string(s))}
+	return stringReader{Reader: strings.NewReader(string(s))}
 }
 
 // String reads the entirety of a reader into a string and returns it.
@@ -304,6 +343,7 @@ func Module() *wdte.Module {
 			"stdout": Writer{Writer: os.Stdout},
 			"stderr": Writer{Writer: os.Stderr},
 
+			"seek":  wdte.GoFunc(Seek),
 			"close": wdte.GoFunc(Close),
 
 			"combine": wdte.GoFunc(Combine),
