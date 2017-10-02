@@ -128,20 +128,24 @@ func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	var w writer
 	var r reader
+	var a1 wdte.Func
 	switch a0 := args[0].Call(frame).(type) {
 	case writer:
 		w = a0
 		r = args[1].Call(frame).(reader)
+		a1 = r
+
 	case reader:
 		w = args[1].Call(frame).(writer)
 		r = a0
+		a1 = w
 	}
 
 	_, err := io.Copy(w, r)
 	if err != nil {
 		return wdte.Error{Err: err, Frame: frame}
 	}
-	return w
+	return a1
 }
 
 // ReadString returns a reader that reads from a string.
