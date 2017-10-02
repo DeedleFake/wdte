@@ -336,6 +336,11 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Module returns a module for easy importing into an actual script.
 // The imported functions have the same names as the functions in this
 // package, except that the first letter is lowercase.
+//
+// In addition, it contains the following functions:
+//
+// * stdin, stdout, and stderr: Return readers or writers, as
+//   appropriate, that wrap the standard I/O streams.
 func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
