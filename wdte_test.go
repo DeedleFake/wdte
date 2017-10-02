@@ -22,6 +22,7 @@ func TestModule(t *testing.T) {
 	const test = `
 'stream' => s;
 'io' => io;
+'io/file' => file;
 
 memo fib n => switch n {
 	== 0 => 0;
@@ -56,12 +57,12 @@ main w r => (
 	-> s.map (io.writeln w)
 	-> s.collect;
 
-	#io.open 'wdte_test.go'
-	#-> io.copy w
-	#-> io.close;
+	file.open 'wdte_test.go'
+	-> io.copy w
+	-> io.close;
 
-	io.readString 'This is also a test.'
-	-> io.copy w;
+	#io.readString 'This is also a test.'
+	#-> io.copy w;
 );
 `
 

@@ -27,13 +27,6 @@ func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return r
 }
 
-func (r Reader) Close() error { // nolint
-	if c, ok := r.Reader.(io.Closer); ok {
-		return c.Close()
-	}
-	return nil
-}
-
 type writer interface {
 	wdte.Func
 	io.Writer
@@ -46,63 +39,6 @@ type Writer struct {
 
 func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return w
-}
-
-func (w Writer) Close() error { // nolint
-	if c, ok := w.Writer.(io.Closer); ok {
-		return c.Close()
-	}
-	return nil
-}
-
-// Open opens a file and returns it as a reader.
-func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("open")
-
-	if len(args) == 0 {
-		return wdte.GoFunc(Open)
-	}
-
-	path := args[0].Call(frame).(wdte.String)
-	file, err := os.Open(string(path))
-	if err != nil {
-		return wdte.Error{Err: err, Frame: frame}
-	}
-	return Reader{Reader: file}
-}
-
-// Create creates a file, truncating it if it exists, and returns it
-// as a writer.
-func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("create")
-
-	if len(args) == 0 {
-		return wdte.GoFunc(Create)
-	}
-
-	path := args[0].Call(frame).(wdte.String)
-	file, err := os.Create(string(path))
-	if err != nil {
-		return wdte.Error{Err: err, Frame: frame}
-	}
-	return Writer{Writer: file}
-}
-
-// Append opens a file for appending as a writer. If it doesn't exist
-// already, it is created.
-func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("append")
-
-	if len(args) == 0 {
-		return wdte.GoFunc(Append)
-	}
-
-	path := args[0].Call(frame).(wdte.String)
-	file, err := os.OpenFile(string(path), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		return wdte.Error{Err: err, Frame: frame}
-	}
-	return Writer{Writer: file}
 }
 
 // Close closes a closer. This includes files opened with other
@@ -364,10 +300,7 @@ func Module() *wdte.Module {
 			"stdout": Writer{Writer: os.Stdout},
 			"stderr": Writer{Writer: os.Stderr},
 
-			"open":   wdte.GoFunc(Open),
-			"create": wdte.GoFunc(Create),
-			"append": wdte.GoFunc(Append),
-			"close":  wdte.GoFunc(Close),
+			"close": wdte.GoFunc(Close),
 
 			"combine": wdte.GoFunc(Combine),
 			"copy":    wdte.GoFunc(Copy),
