@@ -1,3 +1,4 @@
+// Package file provides functions for dealing with files.
 package file
 
 import (
@@ -6,11 +7,12 @@ import (
 	"github.com/DeedleFake/wdte"
 )
 
+// File wraps an os.File, allowing it to be used as a WDTE function.
 type File struct {
 	*os.File
 }
 
-func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return f
 }
 
@@ -64,6 +66,7 @@ func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return File{File: file}
 }
 
+// Module returns a module containing the functions in this package.
 func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
