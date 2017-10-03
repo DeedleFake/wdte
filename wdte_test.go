@@ -12,15 +12,6 @@ import (
 	"github.com/DeedleFake/wdte/std/io"
 )
 
-type twriter struct {
-	t *testing.T
-}
-
-func (w twriter) Write(data []byte) (int, error) {
-	w.t.Logf("%s", data)
-	return len(data), nil
-}
-
 type test struct {
 	name string
 
