@@ -1,6 +1,7 @@
 package wdte_test
 
 import (
+	"bytes"
 	"math"
 	"reflect"
 	"strings"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/std"
+	"github.com/DeedleFake/wdte/std/io"
 )
 
 type twriter struct {
@@ -27,15 +29,32 @@ type test struct {
 
 	args []wdte.Func
 	ret  wdte.Func
+
+	in  string
+	out string
+	err string
 }
 
 func runTests(t *testing.T, tests []test) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+
 			im := test.im
 			if im == nil {
-				im = std.Import
+				im = wdte.ImportFunc(func(from string) (*wdte.Module, error) {
+					switch from {
+					case "io":
+						m := io.Module()
+						m.Funcs["stdin"] = io.Reader{strings.NewReader(test.in)}
+						m.Funcs["stdout"] = io.Writer{&stdout}
+						m.Funcs["stderr"] = io.Writer{&stderr}
+						return m, nil
+					}
+
+					return std.Import(from)
+				})
 			}
 
 			m, err := std.Module().Parse(strings.NewReader(test.script), im)
@@ -49,16 +68,25 @@ func runTests(t *testing.T, tests []test) {
 			}
 
 			ret := main.Call(wdte.F(), test.args...)
-			switch ret := ret.(type) {
-			case wdte.Comparer:
-				if c, _ := ret.Compare(test.ret); c != 0 {
-					t.Fatalf("Expected %#v\nGot %#v", test.ret, ret)
-				}
+			if test.ret != nil {
+				switch ret := ret.(type) {
+				case wdte.Comparer:
+					if c, _ := ret.Compare(test.ret); c != 0 {
+						t.Errorf("Return: Expected %#v\nGot %#v", test.ret, ret)
+					}
 
-			default:
-				if !reflect.DeepEqual(ret, test.ret) {
-					t.Fatalf("Expected %#v\nGot %#v", test.ret, ret)
+				default:
+					if !reflect.DeepEqual(ret, test.ret) {
+						t.Errorf("Return: Expected %#v\nGot %#v", test.ret, ret)
+					}
 				}
+			}
+
+			if out := stdout.String(); out != test.out {
+				t.Errorf("Stdout: Expected %q\nGot %q", test.out, out)
+			}
+			if err := stderr.String(); err != test.err {
+				t.Errorf("Stderr: Expected %q\nGot %q", test.err, err)
 			}
 		})
 	}
@@ -145,6 +173,21 @@ func TestStream(t *testing.T) {
 			name:   "Map",
 			script: `'stream' => s; main => s.range 3 -> s.map (* 5) -> s.collect;`,
 			ret:    wdte.Array{wdte.Number(0), wdte.Number(5), wdte.Number(10)},
+		},
+	})
+}
+
+func TestIO(t *testing.T) {
+	runTests(t, []test{
+		{
+			name:   "Write",
+			script: `'io' => io; main => 'test' -> io.write io.stdout;`,
+			out:    "test",
+		},
+		{
+			name:   "Writeln",
+			script: `'io' => io; main => 'test' -> io.writeln io.stdout;`,
+			out:    "test\n",
 		},
 	})
 }
