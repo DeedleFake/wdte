@@ -68,7 +68,13 @@ func runTests(t *testing.T, tests []test) {
 			}
 
 			ret := main.Call(wdte.F(), test.args...)
-			if test.ret != nil {
+			switch test.ret {
+			case nil:
+				if err, ok := ret.(error); ok {
+					t.Errorf("Return: Got an error: %v", err)
+				}
+
+			default:
 				switch ret := ret.(type) {
 				case wdte.Comparer:
 					if c, _ := ret.Compare(test.ret); c != 0 {
