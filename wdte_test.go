@@ -127,6 +127,28 @@ func TestMath(t *testing.T) {
 	})
 }
 
+func TestStream(t *testing.T) {
+	runTests(t, []test{
+		{
+			name:   "New/Args",
+			script: `'stream' => s; main a b c => s.new a b c -> s.collect;`,
+			args:   []wdte.Func{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
+			ret:    wdte.Array{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
+		},
+		{
+			name:   "Range",
+			script: `'stream' => s; main start end step => s.range start end step -> s.collect;`,
+			args:   []wdte.Func{wdte.Number(3), wdte.Number(12), wdte.Number(3)},
+			ret:    wdte.Array{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
+		},
+		{
+			name:   "Map",
+			script: `'stream' => s; main => s.range 3 -> s.map (* 5) -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(0), wdte.Number(5), wdte.Number(10)},
+		},
+	})
+}
+
 // Wonder why memo exists? I disabled it for this run.
 //
 //=== RUN   TestBasics
