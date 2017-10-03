@@ -1,6 +1,7 @@
 package wdte_test
 
 import (
+	"math"
 	"reflect"
 	"strings"
 	"testing"
@@ -18,34 +19,26 @@ func (w twriter) Write(data []byte) (int, error) {
 	return len(data), nil
 }
 
-func TestBasics(t *testing.T) {
-	tests := []struct {
-		name string
+type test struct {
+	name string
 
-		script string
-		im     wdte.Importer
+	script string
+	im     wdte.Importer
 
-		args []wdte.Func
-		ret  wdte.Func
-	}{
-		{
-			name:   "Fib",
-			script: `main n => switch n { <= 1 => n; default => + (main (- n 2)) (main (- n 1)); };`,
-			args:   []wdte.Func{wdte.Number(12)},
-			ret:    wdte.Number(144),
-		},
-		{
-			name:   "Fib/Memo",
-			script: `memo main n => switch n { <= 1 => n; default => + (main (- n 2)) (main (- n 1)); };`,
-			args:   []wdte.Func{wdte.Number(38)},
-			ret:    wdte.Number(39088169),
-		},
-	}
+	args []wdte.Func
+	ret  wdte.Func
+}
 
+func runTests(t *testing.T, tests []test) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			m, err := std.Module().Parse(strings.NewReader(test.script), test.im)
+			im := test.im
+			if im == nil {
+				im = std.Import
+			}
+
+			m, err := std.Module().Parse(strings.NewReader(test.script), im)
 			if err != nil {
 				t.Fatalf("Failed to parse script: %v", err)
 			}
@@ -71,53 +64,68 @@ func TestBasics(t *testing.T) {
 	}
 }
 
-//	const test = `
-//'stream' => s;
-//'io' => io;
-//'io/file' => file;
-//
-//memo fib n => switch n {
-//	== 0 => 0;
-//	== 1 => 1;
-//	default => + (fib (- n 1)) (fib (- n 2));
-//};
-//
-//memo fact n => switch n {
-//	<= 1 => 1;
-//	default => - n 1 -> fact -> * n;
-//};
-//
-//main w r => (
-//	s.range 15
-//	-> s.map fib
-//	-> s.collect
-//	-> io.writeln w;
-//
-//	s.new [5; 2; fib 7]
-//	-> s.map (+ 2)
-//	-> s.collect
-//	-> io.writeln w;
-//
-//	fact 5 -> io.writeln w;
-//
-//	w
-//	-> io.write 'This is a test.'
-//	-> io.writeln 'Or is it?';
-//
-//	r
-//	-> io.lines
-//	-> s.map (io.writeln w)
-//	-> s.collect;
-//
-//	#file.open 'wdte_test.go'
-//	#-> io.copy w
-//	#-> io.close;
-//
-//	io.readString 'This is also a test.'
-//	-> io.seek -5 -1
-//	-> io.copy w;
-//);
-//`
+func TestBasics(t *testing.T) {
+	runTests(t, []test{
+		{
+			name:   "Fib",
+			script: `main n => switch n { <= 1 => n; default => + (main (- n 2)) (main (- n 1)); };`,
+			args:   []wdte.Func{wdte.Number(12)},
+			ret:    wdte.Number(144),
+		},
+		{
+			name:   "Fib/Memo",
+			script: `memo main n => switch n { <= 1 => n; default => + (main (- n 2)) (main (- n 1)); };`,
+			args:   []wdte.Func{wdte.Number(38)},
+			ret:    wdte.Number(39088169),
+		},
+	})
+}
+
+func TestMath(t *testing.T) {
+	runTests(t, []test{
+		{
+			name:   "Abs",
+			script: `'math' => m; main n => m.abs n;`,
+			args:   []wdte.Func{wdte.Number(-3)},
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "Ceil",
+			script: `'math' => m; main n => m.ceil n;`,
+			args:   []wdte.Func{wdte.Number(1.1)},
+			ret:    wdte.Number(2),
+		},
+		{
+			name:   "Floor",
+			script: `'math' => m; main n => m.floor n;`,
+			args:   []wdte.Func{wdte.Number(1.1)},
+			ret:    wdte.Number(1),
+		},
+		{
+			name:   "Sin",
+			script: `'math' => m; main n => m.sin n;`,
+			args:   []wdte.Func{wdte.Number(3)},
+			ret:    wdte.Number(math.Sin(3)),
+		},
+		{
+			name:   "Cos",
+			script: `'math' => m; main n => m.cos n;`,
+			args:   []wdte.Func{wdte.Number(3)},
+			ret:    wdte.Number(math.Cos(3)),
+		},
+		{
+			name:   "Tan",
+			script: `'math' => m; main n => m.tan n;`,
+			args:   []wdte.Func{wdte.Number(3)},
+			ret:    wdte.Number(math.Tan(3)),
+		},
+		{
+			name:   "π",
+			script: `'math' => m; main => m.pi;`,
+			ret:    wdte.Number(math.Pi),
+		},
+	})
+}
 
 // Wonder why memo exists? I disabled it for this run.
 //
