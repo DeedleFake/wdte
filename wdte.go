@@ -130,7 +130,8 @@ type Frame struct {
 	id   ID
 	args []Func
 
-	p *Frame
+	p           *Frame
+	cline, ccol int
 }
 
 // F returns a top-level frame. This can be used by Go code calling
@@ -138,6 +139,14 @@ type Frame struct {
 func F() Frame {
 	return Frame{
 		id: "unknown function, maybe Go",
+	}
+}
+
+func CustomFrame(id ID, args []Func, parent *Frame) Frame {
+	return Frame{
+		id:   id,
+		args: args,
+		p:    parent,
 	}
 }
 
@@ -152,10 +161,25 @@ func (f Frame) New(id ID, args []Func) Frame {
 	}
 }
 
+// Pos builds a new frame with position information. This is primarily
+// intended for internal use.
+func (f Frame) Pos(line, col int) Frame {
+	f.cline = line
+	f.ccol = col
+	return f
+}
+
 // WithID is a convienence function for creating a frame with a new ID
 // but the same arguments as the previous frame.
 func (f Frame) WithID(id ID) Frame {
-	return f.New(id, f.args)
+	return Frame{
+		id:   id,
+		args: f.args,
+
+		p:     &f,
+		cline: f.cline,
+		ccol:  f.ccol,
+	}
 }
 
 // ID returns the ID of the frame. This is generally the function that
@@ -199,7 +223,7 @@ func (f *Frame) backtrace(w io.Writer) error {
 		return nil
 	}
 
-	_, err := fmt.Fprintf(w, "\tCalled from %v\n", id)
+	_, err := fmt.Fprintf(w, "\tCalled from %v (%v:%v)\n", id, f.cline, f.ccol)
 	if err != nil {
 		return err
 	}
@@ -341,6 +365,8 @@ type External struct {
 
 	// Func is the ID of the function in the module it was declared in.
 	Func ID
+
+	Line, Col int
 }
 
 func (e External) Call(frame Frame, args ...Func) Func { // nolint
@@ -359,7 +385,7 @@ func (e External) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	return f.Call(frame, args...)
+	return f.Call(frame.Pos(e.Line, e.Col), args...)
 }
 
 func (e External) Compare(other Func) (int, bool) { // nolint
@@ -381,6 +407,8 @@ type Local struct {
 
 	// Func is the ID of the function in the module.
 	Func ID
+
+	Line, Col int
 }
 
 func (local Local) Call(frame Frame, args ...Func) Func { // nolint
@@ -392,7 +420,7 @@ func (local Local) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	return f.Call(frame, args...)
+	return f.Call(frame.Pos(local.Line, local.Col), args...)
 }
 
 func (local Local) Compare(other Func) (int, bool) { // nolint

@@ -140,13 +140,18 @@ func (m *Module) fromSingle(single *ast.NTerm, scope map[ID]int) Func {
 }
 
 func (m *Module) fromFunc(f *ast.NTerm, scope map[ID]int) Func {
-	id := ID(f.Children()[0].(*ast.Term).Tok().Val.(string))
+	tok := f.Children()[0].(*ast.Term).Tok()
+	id := ID(tok.Val.(string))
+
 	sub := m.fromSubfunc(f.Children()[1].(*ast.NTerm))
 	if sub != "" {
 		return &External{
 			Module: m,
 			Import: id,
 			Func:   sub,
+
+			Line: tok.Line,
+			Col:  tok.Col,
 		}
 	}
 
@@ -157,6 +162,9 @@ func (m *Module) fromFunc(f *ast.NTerm, scope map[ID]int) Func {
 	return &Local{
 		Module: m,
 		Func:   id,
+
+		Line: tok.Line,
+		Col:  tok.Col,
 	}
 }
 
