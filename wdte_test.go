@@ -146,6 +146,20 @@ func TestBasics(t *testing.T) {
 			args:   []wdte.Func{wdte.Number(38)},
 			ret:    wdte.Number(39088169),
 		},
+		{
+			name:   "PassModule",
+			script: `'somemodule' => m; test im => im.num; main => test m;`,
+			im: wdte.ImportFunc(func(from string) (*wdte.Module, error) {
+				return &wdte.Module{
+					Funcs: map[wdte.ID]wdte.Func{
+						"num": wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+							return wdte.Number(3)
+						}),
+					},
+				}, nil
+			}),
+			ret: wdte.Number(3),
+		},
 		//{
 		//	name:   "Frame",
 		//	script: `'frame' => frame; test => frame.get; main => test;`,

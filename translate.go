@@ -16,9 +16,6 @@ func (m *Module) fromScript(script *ast.NTerm, im Importer) (*Module, error) {
 }
 
 func (m *Module) fromDecls(decls []ast.Node, im Importer) (*Module, error) {
-	if m.Imports == nil {
-		m.Imports = make(map[ID]*Module)
-	}
 	if m.Funcs == nil {
 		m.Funcs = make(map[ID]Func)
 	}
@@ -30,7 +27,7 @@ func (m *Module) fromDecls(decls []ast.Node, im Importer) (*Module, error) {
 			if err != nil {
 				return nil, err
 			}
-			m.Imports[id] = sub
+			m.Funcs[id] = sub
 
 		case "funcdecl":
 			def := m.fromFuncDecl(d.Children()[0].(*ast.NTerm))
@@ -145,11 +142,29 @@ func (m *Module) fromFunc(f *ast.NTerm, scope map[ID]int) Func {
 
 	sub := m.fromSubfunc(f.Children()[1].(*ast.NTerm))
 	if sub != "" {
+		var im Func
+
+		arg, ok := scope[id]
+		switch ok {
+		case true:
+			im = Arg(arg)
+		case false:
+			im = &Local{
+				Module: m,
+				Func:   id,
+
+				Line: tok.Line,
+				Col:  tok.Col,
+			}
+		}
+
 		return &External{
 			Module: m,
-			Import: id,
+			Import: im,
 			Func:   sub,
 
+			// These are off slightly. They should be set from the token
+			// that m.fromSubfunc() uses.
 			Line: tok.Line,
 			Col:  tok.Col,
 		}
