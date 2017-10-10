@@ -142,16 +142,26 @@ func (m *Module) fromFunc(f *ast.NTerm, scope map[ID]int) Func {
 
 	sub := m.fromSubfunc(f.Children()[1].(*ast.NTerm))
 	if sub != "" {
-		return &External{
-			Module: m,
-			Import: &Local{
+		var im Func
+
+		arg, ok := scope[id]
+		switch ok {
+		case true:
+			im = Arg(arg)
+		case false:
+			im = &Local{
 				Module: m,
 				Func:   id,
 
 				Line: tok.Line,
 				Col:  tok.Col,
-			},
-			Func: sub,
+			}
+		}
+
+		return &External{
+			Module: m,
+			Import: im,
+			Func:   sub,
 
 			// These are off slightly. They should be set from the token
 			// that m.fromSubfunc() uses.
