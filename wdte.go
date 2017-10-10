@@ -10,12 +10,8 @@ import (
 // A Module is the result of parsing a WDTE script. It is the main
 // type of this entire library.
 type Module struct {
-	// Imports maps IDs to other modules. WDTE import statements create
-	// these when parsed.
-	Imports map[ID]*Module
-
-	// Funcs maps IDs to functions. WDTE function declarations create
-	// these when parsed.
+	// Funcs maps IDs to functions. WDTE import statements and function
+	// declarations create these when parsed.
 	Funcs map[ID]Func
 }
 
@@ -74,7 +70,12 @@ func (m *Module) Insert(n *Module) *Module {
 	return m
 }
 
-// An Importer creates modules from strings. When parsing a WDTE script, an importer is used to import modules.
+func (m *Module) Call(frame Frame, args ...Func) Func { // nolint
+	return m
+}
+
+// An Importer creates modules from strings. When parsing a WDTE
+// script, an importer is used to import modules.
 //
 // When the WDTE import statement
 //
@@ -84,7 +85,7 @@ func (m *Module) Insert(n *Module) *Module {
 //
 //    im.Import(example)
 //
-// The return value will then be added to the module's Imports map.
+// The return value will then be added to the module's Funcs map.
 type Importer interface {
 	Import(from string) (*Module, error)
 }
@@ -359,9 +360,10 @@ type External struct {
 	// some reason, the module has itself as an import.
 	Module *Module
 
-	// Import is the import ID of the module that the function was
-	// declared in.
-	Import ID
+	// Import is the expression on the left-hand side of an external
+	// function call. If this does not return a module, the call will
+	// fail.
+	Import Func
 
 	// Func is the ID of the function in the module it was declared in.
 	Func ID
@@ -370,10 +372,11 @@ type External struct {
 }
 
 func (e External) Call(frame Frame, args ...Func) Func { // nolint
-	i, ok := e.Module.Imports[e.Import]
+	im := e.Import.Call(frame)
+	i, ok := im.(*Module)
 	if !ok {
 		return Error{
-			Err:   fmt.Errorf("Import %q does not exist", e.Import),
+			Err:   fmt.Errorf("Function called on non-module %#v", im),
 			Frame: frame,
 		}
 	}
