@@ -234,6 +234,11 @@ func TestStream(t *testing.T) {
 			script: `'stream' => s; main => s.range 3 -> s.map (* 5) -> s.collect;`,
 			ret:    wdte.Array{wdte.Number(0), wdte.Number(5), wdte.Number(10)},
 		},
+		{
+			name:   "Filter",
+			script: `'stream' => s; main => s.range 5 -> s.filter (< 3) -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(0), wdte.Number(1), wdte.Number(2)},
+		},
 	})
 }
 

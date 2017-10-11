@@ -14,7 +14,8 @@ type Stream interface {
 }
 
 // A NextFunc wraps a Go function, making it possible to use it as a
-// Stream. When called as a WDTE function, the function simply returns itself.
+// Stream. When called as a WDTE function, the function simply returns
+// itself.
 type NextFunc func(frame wdte.Frame) (wdte.Func, bool)
 
 func (n NextFunc) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
@@ -25,7 +26,7 @@ func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return n(frame)
 }
 
-// An array is a Stream that iterates over an array.
+// An array is a stream that iterates over an array.
 type array struct {
 	a wdte.Array
 	i int
@@ -126,20 +127,20 @@ func (r *rng) Next(frame wdte.Frame) (wdte.Func, bool) {
 	return n, true
 }
 
-// A mapper is a function that creates Stream wrappers that call a
-// function on each value yielded by the underlying Stream, returning
+// A mapper is a function that creates stream wrappers that call a
+// function on each value yielded by the underlying stream, returning
 // the result.
 type mapper struct {
 	m wdte.Func
 }
 
-// Map returns a function that takes a Stream and wraps the Stream in
-// a new Stream that calls the function originally given to Map on
+// Map returns a function that takes a stream and wraps the stream in
+// a new stream that calls the function originally given to Map on
 // each element before passing it on.
 //
 // Wow, that sound horrible. It's not too bad, though. It works like
 // this. Call Map with some function `f` and get a new function. Then,
-// call that returned function on a Stream to get a new Stream that
+// call that returned function on a stream to get a new stream that
 // calls `f` on each element when Next is called.
 func Map(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
@@ -169,7 +170,49 @@ func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return m
 }
 
-// Collect converts a Stream into an array.
+type filter struct {
+	f wdte.Func
+}
+
+// Filter returns a stream which yields values from a previous stream
+// that are passed through a filter. For example,
+//
+//     s.range 5 -> s.filter (<= 2) -> s.collect
+//
+// returns [0; 1; 2].
+func Filter(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Filter)
+	}
+
+	return filter{f: args[0].Call(frame)}
+}
+
+func (f filter) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 1:
+		if a, ok := args[0].Call(frame).(Stream); ok {
+			return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+				for {
+					n, ok := a.Next(frame)
+					if !ok {
+						return nil, false
+					}
+
+					frame = frame.WithID("filter")
+					if f.f.Call(frame, n) == wdte.Bool(true) {
+						return n, true
+					}
+				}
+			})
+		}
+	}
+
+	return f
+}
+
+// Collect converts a stream into an array.
 func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -199,7 +242,8 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return r
 }
 
-// TODO: Implement this. It should be able to essentially insert its own output into another chain, so that
+// TODO: Implement this. It should be able to essentially insert its
+// own output into another chain, so that
 //
 //    start -> (s.range 5 -> s.map f -> s.chain) -> end
 //
@@ -246,7 +290,8 @@ func Module() *wdte.Module {
 			"new":   wdte.GoFunc(New),
 			"range": wdte.GoFunc(Range),
 
-			"map": wdte.GoFunc(Map),
+			"map":    wdte.GoFunc(Map),
+			"filter": wdte.GoFunc(Filter),
 
 			"collect": wdte.GoFunc(Collect),
 			//"chain":   wdte.GoFunc(Chain),
