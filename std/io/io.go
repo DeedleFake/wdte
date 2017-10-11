@@ -18,7 +18,8 @@ type reader interface {
 	io.Reader
 }
 
-// Reader wraps an io.Reader, allowing it to be used as a WDTE function.
+// Reader wraps an io.Reader, allowing it to be used as a WDTE
+// function.
 type Reader struct {
 	io.Reader
 }
@@ -32,7 +33,8 @@ type writer interface {
 	io.Writer
 }
 
-// Writer wraps an io.Writer, allowing it to be used as a WDTE function.
+// Writer wraps an io.Writer, allowing it to be used as a WDTE
+// function.
 type Writer struct {
 	io.Writer
 }
@@ -135,11 +137,11 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // that argument and a single argument that it is given. In other
 // words:
 //
-//     io.stdout -> io.copy io.stdin;
+//     io.stdout -> io.copy io.stdin
 //
 // and
 //
-//     io.stdin -> io.copy io.stdout;
+//     io.stdin -> io.copy io.stdout
 //
 // are mostly equivalent. The only difference is in the return value.
 // Copy returns the second argument it was given to allow for easier
@@ -268,6 +270,57 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return scanner{s: s}
 }
 
+// Scan returns a stream that splits a read around a given seperator
+// string. For example,
+//
+//     io.readString str -> io.scan '--'
+//
+// splits str around instances of '--'.
+func Scan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("scan")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Scan)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Scan(frame, append(args, next...)...)
+		})
+	}
+
+	var r reader
+	var sep wdte.String
+	switch a0 := args[0].Call(frame).(type) {
+	case reader:
+		r = a0
+		sep = args[1].Call(frame).(wdte.String)
+	case wdte.String:
+		r = args[1].Call(frame).(reader)
+		sep = a0
+	}
+
+	seb := []byte(sep)
+
+	s := bufio.NewScanner(r)
+	s.Split(func(data []byte, eof bool) (int, []byte, error) {
+		start := bytes.Index(data, seb)
+		if start < 0 {
+			if eof {
+				if len(data) == 0 {
+					return 1, nil, nil
+				}
+
+				return len(data), data, nil
+			}
+			return 0, nil, nil
+		}
+
+		return start + len(seb), data[:start], nil
+	})
+
+	return scanner{s: s}
+}
+
 type runeStream struct {
 	r io.RuneReader
 }
@@ -349,11 +402,11 @@ func write(f func(io.Writer, interface{}) error) wdte.Func {
 // and, if given only one argument, returns a function that takes the
 // other. In other words,
 //
-//     'Example' -> io.write io.stdout;
+//     'Example' -> io.write io.stdout
 //
 // and
 //
-//     io.stdout -> io.write 'Example';
+//     io.stdout -> io.write 'Example'
 //
 // are equivalent.
 //
@@ -401,6 +454,7 @@ func Module() *wdte.Module {
 			"string":     wdte.GoFunc(String),
 			"lines":      wdte.GoFunc(Lines),
 			"words":      wdte.GoFunc(Words),
+			"scan":       wdte.GoFunc(Scan),
 			"runes":      wdte.GoFunc(Runes),
 
 			"write":   wdte.GoFunc(Write),
