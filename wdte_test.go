@@ -69,12 +69,12 @@ func runTests(t *testing.T, tests []test) {
 				switch ret := ret.(type) {
 				case wdte.Comparer:
 					if c, _ := ret.Compare(test.ret); c != 0 {
-						t.Errorf("Return:\n\tExpected %#v\n\tGot %#v", test.ret, ret)
+						t.Errorf("Return:\n\tExpected %#v\n\tGot %#v\n\t\t%v", test.ret, ret, ret)
 					}
 
 				default:
 					if !reflect.DeepEqual(ret, test.ret) {
-						t.Errorf("Return:\n\tExpected %#v\n\tGot %#v", test.ret, ret)
+						t.Errorf("Return:\n\tExpected %#v\n\tGot %#v\n\t\t%v", test.ret, ret, ret)
 					}
 				}
 			}
@@ -254,6 +254,12 @@ func TestIO(t *testing.T) {
 			script: `'io' => io; 'stream' => s; main str => io.readString str -> io.lines -> s.collect;`,
 			args:   []wdte.Func{wdte.String("Line 1\nLine 2\nLine 3")},
 			ret:    wdte.Array{wdte.String("Line 1"), wdte.String("Line 2"), wdte.String("Line 3")},
+		},
+		{
+			name:   "Scan",
+			script: `'io' => io; 'stream' => s; main str => io.readString str -> io.scan '|||' -> s.collect;`,
+			args:   []wdte.Func{wdte.String("Part 1|||Part 2|||Part 3")},
+			ret:    wdte.Array{wdte.String("Part 1"), wdte.String("Part 2"), wdte.String("Part 3")},
 		},
 	})
 }
