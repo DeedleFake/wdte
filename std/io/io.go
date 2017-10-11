@@ -268,6 +268,49 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return scanner{s: s}
 }
 
+type runeStream struct {
+	r io.RuneReader
+}
+
+func (r runeStream) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return r
+}
+
+func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) {
+	c, _, err := r.r.ReadRune()
+	if err != nil {
+		if err == io.EOF {
+			return nil, false
+		}
+		return wdte.Error{Frame: frame, Err: err}, true
+	}
+	return wdte.Number(c), true
+}
+
+// Runes returns a stream that yields individual runes from a reader
+// as wdte.Numbers.
+func Runes(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("runes")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Runes)
+	}
+
+	a := args[0].Call(frame)
+
+	var r io.RuneReader
+	switch a := a.(type) {
+	case io.RuneReader:
+		r = a
+	case io.Reader:
+		r = bufio.NewReader(a)
+	default:
+		panic(fmt.Errorf("Unexpected argument type: %T", a))
+	}
+
+	return runeStream{r: r}
+}
+
 func write(f func(io.Writer, interface{}) error) wdte.Func {
 	var gf wdte.GoFunc
 	gf = func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -358,6 +401,7 @@ func Module() *wdte.Module {
 			"string":     wdte.GoFunc(String),
 			"lines":      wdte.GoFunc(Lines),
 			"words":      wdte.GoFunc(Words),
+			"runes":      wdte.GoFunc(Runes),
 
 			"write":   wdte.GoFunc(Write),
 			"writeln": wdte.GoFunc(Writeln),
