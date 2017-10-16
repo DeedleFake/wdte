@@ -102,3 +102,43 @@ func (r *rng) Next(frame wdte.Frame) (wdte.Func, bool) {
 	r.i += r.s
 	return n, true
 }
+
+// Concat contatenates two or more streams, returning a new stream
+// that yields all of the elements of the original streams in the
+// order that they were given. If it is only given one stream, it
+// returns a function that prepends that stream to any arguments that
+// it is given.
+func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Concat)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Concat(frame, append(args, next...)...)
+		})
+	}
+
+	frame = frame.WithID("concat")
+
+	var i int
+	cur := args[0].Call(frame).(Stream)
+	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+		if i >= len(args) {
+			return nil, false
+		}
+
+		for {
+			n, ok := cur.Next(frame)
+			if !ok {
+				i++
+				if i >= len(args) {
+					return nil, false
+				}
+
+				cur = args[i].Call(frame).(Stream)
+				continue
+			}
+			return n, ok
+		}
+	})
+}
