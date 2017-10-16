@@ -110,3 +110,39 @@ func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 //	return prev
 //}
+
+// Any takes two arguments, a stream and a function. It iterates over
+// the stream's values, calling the given function on each element. If
+// any of the calls return true, than the whole function returns true.
+// If it reaches the end of the stream, then it returns
+// false.
+//
+// If given only one argument, it returns a function which checks its
+// own argument, a stream, against the function it was originally
+// given.
+func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Any)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Any(frame, append(next, args...)...)
+		})
+	}
+
+	frame = frame.WithID("any")
+
+	s := args[0].Call(frame).(Stream)
+	f := args[1].Call(frame)
+
+	for {
+		n, ok := s.Next(frame)
+		if !ok {
+			return wdte.Bool(false)
+		}
+
+		if b, ok := f.Call(frame, n).(wdte.Bool); bool(b) && ok {
+			return wdte.Bool(true)
+		}
+	}
+}

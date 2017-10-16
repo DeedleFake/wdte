@@ -32,8 +32,9 @@ func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
-			"new":   wdte.GoFunc(New),
-			"range": wdte.GoFunc(Range),
+			"new":    wdte.GoFunc(New),
+			"range":  wdte.GoFunc(Range),
+			"concat": wdte.GoFunc(Concat),
 
 			"map":    wdte.GoFunc(Map),
 			"filter": wdte.GoFunc(Filter),
@@ -41,6 +42,7 @@ func Module() *wdte.Module {
 			"collect": wdte.GoFunc(Collect),
 			"reduce":  wdte.GoFunc(Reduce),
 			//"chain":   wdte.GoFunc(Chain),
+			"any": wdte.GoFunc(Any),
 		},
 	}
 }
