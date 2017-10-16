@@ -42,6 +42,7 @@ func Module() *wdte.Module {
 			"collect": wdte.GoFunc(Collect),
 			"reduce":  wdte.GoFunc(Reduce),
 			//"chain":   wdte.GoFunc(Chain),
+			"any": wdte.GoFunc(Any),
 		},
 	}
 }
