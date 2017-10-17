@@ -104,7 +104,7 @@ func (m *Module) fromExpr(expr *ast.NTerm, scope map[ID]int) Func {
 	first := m.fromSingle(expr.Children()[0].(*ast.NTerm), scope)
 	in := m.fromArgs(flatten(expr.Children()[1].(*ast.NTerm), 1, 0), scope)
 
-	return m.fromChain(expr.Children()[2].(*ast.NTerm), &Expr{
+	return m.fromChain(expr.Children()[3].(*ast.NTerm), &Expr{
 		Func: first,
 		Args: in,
 	}, scope)
@@ -263,7 +263,7 @@ func (m *Module) fromChain(chain *ast.NTerm, prev Func, scope map[ID]int) Func {
 	first := m.fromSingle(chain.Children()[1].(*ast.NTerm), scope)
 	in := m.fromArgs(flatten(chain.Children()[2].(*ast.NTerm), 1, 0), scope)
 
-	return m.fromChain(chain.Children()[3].(*ast.NTerm), &Chain{
+	return m.fromChain(chain.Children()[4].(*ast.NTerm), &Chain{
 		Func: first,
 		Args: in,
 		Prev: prev,
