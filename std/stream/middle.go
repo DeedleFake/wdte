@@ -86,3 +86,67 @@ func (f filter) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	return f
 }
+
+type flatMapper struct {
+	m wdte.Func
+}
+
+// FlatMap works similarly to map, but if the mapping function returns
+// an array, the contents of that array are substituted for the values
+// of the stream, rather than the array itself being yielded. For
+// example,
+//
+//     s.range 3 -> s.flatMap [0; 1] -> s.collect
+//
+// returns
+//
+//     [0; 1; 0; 1; 0; 1]
+func FlatMap(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Map)
+	}
+
+	return &flatMapper{m: args[0].Call(frame)}
+}
+
+func (m *flatMapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 1:
+		if a, ok := args[0].Call(frame).(Stream); ok {
+			var i int
+			var cur wdte.Array
+
+			return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+				for {
+					if (cur != nil) && (i < len(cur)) {
+						r := cur[i]
+						i++
+						return r, true
+					}
+
+					n, ok := a.Next(frame)
+					if !ok {
+						return nil, false
+					}
+
+					frame = frame.WithID("flatMap")
+
+					r := m.m.Call(frame, n).Call(frame)
+					if r, ok := r.(wdte.Array); ok {
+						if len(r) == 0 {
+							continue
+						}
+
+						cur = r
+						i = 1
+						return r[0], true
+					}
+					return r, true
+				}
+			})
+		}
+	}
+
+	return m
+}
