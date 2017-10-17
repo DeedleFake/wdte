@@ -109,8 +109,9 @@ func (m *Module) fromExpr(expr *ast.NTerm, scope map[ID]int) Func {
 
 	var slots []Func
 	return m.fromChain(expr.Children()[3].(*ast.NTerm), &Expr{
-		Func: first,
-		Args: in,
+		Func:  first,
+		Args:  in,
+		Slots: &slots,
 	}, &slots, scope)
 }
 
@@ -278,12 +279,26 @@ func (m *Module) fromChain(chain *ast.NTerm, prev Func, slots *[]Func, scope map
 	slot := m.fromSlot(chain.Children()[3].(*ast.NTerm))
 	scope = subScope(scope, slot)
 
-	return m.fromChain(chain.Children()[4].(*ast.NTerm), &Chain{
-		Func:  first,
-		Args:  in,
-		Prev:  prev,
-		Slots: slots,
-	}, slots, scope)
+	switch t := chain.Children()[0].(*ast.Term).Tok().Val.(string); t {
+	case "->":
+		return m.fromChain(chain.Children()[4].(*ast.NTerm), &Chain{
+			Func:  first,
+			Args:  in,
+			Prev:  prev,
+			Slots: slots,
+		}, slots, scope)
+
+	case "--":
+		return m.fromChain(chain.Children()[4].(*ast.NTerm), &IgnoredChain{
+			Func:  first,
+			Args:  in,
+			Prev:  prev,
+			Slots: slots,
+		}, slots, scope)
+
+	default:
+		panic(fmt.Errorf("Malformed AST with unexpected chain type: %q", t))
+	}
 }
 
 func flatten(top *ast.NTerm, rec int, get ...int) []ast.Node {
