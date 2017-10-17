@@ -261,6 +261,16 @@ func TestStream(t *testing.T) {
 			script: `'stream' => s; main => s.range 3 -> s.any (== 3);`,
 			ret:    wdte.Bool(false),
 		},
+		{
+			name:   "All/True",
+			script: `'stream' => s; main => s.range 5 -> s.all (< 5);`,
+			ret:    wdte.Bool(true),
+		},
+		{
+			name:   "All/False",
+			script: `'stream' => s; main => s.range 5 -> s.all (< 3);`,
+			ret:    wdte.Bool(false),
+		},
 	})
 }
 
