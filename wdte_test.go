@@ -162,6 +162,11 @@ func TestBasics(t *testing.T) {
 			}),
 			ret: wdte.Number(3),
 		},
+		{
+			name:   "Array/Args",
+			script: `'io' => io; 'stream' => s; test a => [a]; main => s.new (test 3) -> s.map (io.writeln io.stdout) -> s.drain;`,
+			out:    "3\n",
+		},
 		//{
 		//	name:   "Frame",
 		//	script: `'frame' => frame; test => frame.get; main => test;`,
