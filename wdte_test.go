@@ -135,9 +135,9 @@ func TestBasics(t *testing.T) {
 
 	runTests(t, []test{
 		{
-			name:   "Chain",
-			script: `main => 1 : a -> + 2 -> - (* a 3);`,
-			ret:    wdte.Number(-1),
+			name:   "Chain/Slot",
+			script: `main => 1 : a -> + 2 : b -> - (* a 3) -> + b;`,
+			ret:    wdte.Number(3),
 		},
 		{
 			name:   "Fib",

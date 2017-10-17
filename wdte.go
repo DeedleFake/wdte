@@ -162,6 +162,13 @@ func (f Frame) New(id ID, args []Func) Frame {
 	}
 }
 
+// Sub returns a sub-scoped frame that has args appended to its
+// argument list.
+func (f Frame) Sub(args []Func) Frame {
+	f.args = append(f.args, args...)
+	return f
+}
+
 // Pos builds a new frame with position information. This is primarily
 // intended for internal use.
 func (f Frame) Pos(line, col int) Frame {
@@ -344,10 +351,16 @@ type Chain struct {
 
 	// Prev is the previous part of the chain.
 	Prev Func
+
+	Slots *[]Func
 }
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
-	return f.Func.Call(frame, f.Args...).Call(frame, f.Prev.Call(frame))
+	prev := f.Prev.Call(frame)
+	*f.Slots = append(*f.Slots, prev)
+
+	frame = frame.Sub(*f.Slots)
+	return f.Func.Call(frame, f.Args...).Call(frame, prev)
 }
 
 // External represents a function from an imported module. It looks

@@ -105,14 +105,13 @@ func (m *Module) fromExpr(expr *ast.NTerm, scope map[ID]int) Func {
 	in := m.fromArgs(flatten(expr.Children()[1].(*ast.NTerm), 1, 0), scope)
 
 	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
-	if slot != "" {
-		scope = subScope(scope, slot)
-	}
+	scope = subScope(scope, slot)
 
+	var slots []Func
 	return m.fromChain(expr.Children()[3].(*ast.NTerm), &Expr{
 		Func: first,
 		Args: in,
-	}, scope)
+	}, &slots, scope)
 }
 
 func (m *Module) fromSlot(expr *ast.NTerm) ID {
@@ -268,7 +267,7 @@ func (m *Module) fromArgs(args []ast.Node, scope map[ID]int) []Func {
 	return singles
 }
 
-func (m *Module) fromChain(chain *ast.NTerm, prev Func, scope map[ID]int) Func {
+func (m *Module) fromChain(chain *ast.NTerm, prev Func, slots *[]Func, scope map[ID]int) Func {
 	if _, ok := chain.Children()[0].(*ast.Epsilon); ok {
 		return prev
 	}
@@ -277,15 +276,14 @@ func (m *Module) fromChain(chain *ast.NTerm, prev Func, scope map[ID]int) Func {
 	in := m.fromArgs(flatten(chain.Children()[2].(*ast.NTerm), 1, 0), scope)
 
 	slot := m.fromSlot(chain.Children()[3].(*ast.NTerm))
-	if slot != "" {
-		scope = subScope(scope, slot)
-	}
+	scope = subScope(scope, slot)
 
 	return m.fromChain(chain.Children()[4].(*ast.NTerm), &Chain{
-		Func: first,
-		Args: in,
-		Prev: prev,
-	}, scope)
+		Func:  first,
+		Args:  in,
+		Prev:  prev,
+		Slots: slots,
+	}, slots, scope)
 }
 
 func flatten(top *ast.NTerm, rec int, get ...int) []ast.Node {
