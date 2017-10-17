@@ -57,10 +57,11 @@ func (n Number) Compare(other Func) (int, bool) { // nolint
 type Array []Func
 
 func (a Array) Call(frame Frame, args ...Func) Func { // nolint
+	n := make(Array, 0, len(a))
 	for i := range a {
-		a[i] = a[i].Call(frame)
+		n = append(n, a[i].Call(frame))
 	}
-	return a
+	return n
 }
 
 //func (a Array)Compare(other Func) (int, bool) {

@@ -36,8 +36,9 @@ func Module() *wdte.Module {
 			"range":  wdte.GoFunc(Range),
 			"concat": wdte.GoFunc(Concat),
 
-			"map":    wdte.GoFunc(Map),
-			"filter": wdte.GoFunc(Filter),
+			"map":     wdte.GoFunc(Map),
+			"filter":  wdte.GoFunc(Filter),
+			"flatMap": wdte.GoFunc(FlatMap),
 
 			"collect": wdte.GoFunc(Collect),
 			"drain":   wdte.GoFunc(Drain),
