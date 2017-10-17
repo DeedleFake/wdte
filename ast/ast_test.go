@@ -42,6 +42,7 @@ fib n => switch n {
 memo main => (
 	print (fib 5);
 	print 3;
+	3 : a -> + 2 -- * 3 a;
 );
 `
 

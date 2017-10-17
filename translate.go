@@ -104,10 +104,23 @@ func (m *Module) fromExpr(expr *ast.NTerm, scope map[ID]int) Func {
 	first := m.fromSingle(expr.Children()[0].(*ast.NTerm), scope)
 	in := m.fromArgs(flatten(expr.Children()[1].(*ast.NTerm), 1, 0), scope)
 
-	return m.fromChain(expr.Children()[2].(*ast.NTerm), &Expr{
-		Func: first,
-		Args: in,
-	}, scope)
+	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
+	scope = subScope(scope, slot)
+
+	var slots []Func
+	return m.fromChain(expr.Children()[3].(*ast.NTerm), &Expr{
+		Func:  first,
+		Args:  in,
+		Slots: &slots,
+	}, &slots, scope)
+}
+
+func (m *Module) fromSlot(expr *ast.NTerm) ID {
+	if _, ok := expr.Children()[0].(*ast.Epsilon); ok {
+		return ""
+	}
+
+	return ID(expr.Children()[1].(*ast.Term).Tok().Val.(string))
 }
 
 func (m *Module) fromSingle(single *ast.NTerm, scope map[ID]int) Func {
@@ -255,7 +268,7 @@ func (m *Module) fromArgs(args []ast.Node, scope map[ID]int) []Func {
 	return singles
 }
 
-func (m *Module) fromChain(chain *ast.NTerm, prev Func, scope map[ID]int) Func {
+func (m *Module) fromChain(chain *ast.NTerm, prev Func, slots *[]Func, scope map[ID]int) Func {
 	if _, ok := chain.Children()[0].(*ast.Epsilon); ok {
 		return prev
 	}
@@ -263,11 +276,29 @@ func (m *Module) fromChain(chain *ast.NTerm, prev Func, scope map[ID]int) Func {
 	first := m.fromSingle(chain.Children()[1].(*ast.NTerm), scope)
 	in := m.fromArgs(flatten(chain.Children()[2].(*ast.NTerm), 1, 0), scope)
 
-	return m.fromChain(chain.Children()[3].(*ast.NTerm), &Chain{
-		Func: first,
-		Args: in,
-		Prev: prev,
-	}, scope)
+	slot := m.fromSlot(chain.Children()[3].(*ast.NTerm))
+	scope = subScope(scope, slot)
+
+	switch t := chain.Children()[0].(*ast.Term).Tok().Val.(string); t {
+	case "->":
+		return m.fromChain(chain.Children()[4].(*ast.NTerm), &Chain{
+			Func:  first,
+			Args:  in,
+			Prev:  prev,
+			Slots: slots,
+		}, slots, scope)
+
+	case "--":
+		return m.fromChain(chain.Children()[4].(*ast.NTerm), &IgnoredChain{
+			Func:  first,
+			Args:  in,
+			Prev:  prev,
+			Slots: slots,
+		}, slots, scope)
+
+	default:
+		panic(fmt.Errorf("Malformed AST with unexpected chain type: %q", t))
+	}
 }
 
 func flatten(top *ast.NTerm, rec int, get ...int) []ast.Node {
@@ -288,6 +319,16 @@ func scopeMap(args []ID) map[ID]int {
 	for i, arg := range args {
 		m[arg] = i
 	}
+
+	return m
+}
+
+func subScope(scope map[ID]int, id ID) map[ID]int {
+	m := make(map[ID]int, len(scope)+1)
+	for id, n := range scope {
+		m[id] = n
+	}
+	m[id] = len(scope)
 
 	return m
 }

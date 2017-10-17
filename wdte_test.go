@@ -135,6 +135,16 @@ func TestBasics(t *testing.T) {
 
 	runTests(t, []test{
 		{
+			name:   "Chain/Slot",
+			script: `main => 1 : a -> + 2 : b -> - (* a 3) -> + b;`,
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "Chain/Ignored",
+			script: `main => 1 -> + 2 -- + 5 -> - 1;`,
+			ret:    wdte.Number(2),
+		},
+		{
 			name:   "Fib",
 			script: `main n => switch n { <= 1 => n; default => + (main (- n 2)) (main (- n 1)); };`,
 			args:   []wdte.Func{wdte.Number(12)},

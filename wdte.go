@@ -162,6 +162,13 @@ func (f Frame) New(id ID, args []Func) Frame {
 	}
 }
 
+// Sub returns a sub-scoped frame that has args appended to its
+// argument list.
+func (f Frame) Sub(args []Func) Frame {
+	f.args = append(f.args, args...)
+	return f
+}
+
 // Pos builds a new frame with position information. This is primarily
 // intended for internal use.
 func (f Frame) Pos(line, col int) Frame {
@@ -328,10 +335,17 @@ type Expr struct {
 
 	// Args are the arguments to pass to Func.
 	Args []Func
+
+	// Slots is a chain-specific global storage space for expression
+	// slots. This pointer is the same for every instance of Chain in
+	// the same chain, as well as for the initial expression.
+	Slots *[]Func
 }
 
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
-	return f.Func.Call(frame, f.Args...)
+	r := f.Func.Call(frame, f.Args...)
+	*f.Slots = append(*f.Slots, r)
+	return r
 }
 
 // Chain is an unevaluated chain expression.
@@ -344,10 +358,49 @@ type Chain struct {
 
 	// Prev is the previous part of the chain.
 	Prev Func
+
+	// Slots is a chain-specific global storage space for expression
+	// slots. This pointer is the same for every instance of Chain in
+	// the same chain, as well as for the initial expression.
+	Slots *[]Func
 }
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
-	return f.Func.Call(frame, f.Args...).Call(frame, f.Prev.Call(frame))
+	prev := f.Prev.Call(frame)
+
+	frame = frame.Sub(*f.Slots)
+	r := f.Func.Call(frame, f.Args...).Call(frame, prev)
+
+	*f.Slots = append(*f.Slots, r)
+	return r
+}
+
+// IgnoredChain is an unevaluated chain expression that returns the
+// previous expression's return value, rather than its own.
+type IgnoredChain struct {
+	// Func is the expression at the current part of the chain.
+	Func Func
+
+	// Args is the arguments to Func.
+	Args []Func
+
+	// Prev is the previous part of the chain.
+	Prev Func
+
+	// Slots is a chain-specific global storage space for expression
+	// slots. This pointer is the same for every instance of Chain in
+	// the same chain, as well as for the initial expression.
+	Slots *[]Func
+}
+
+func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
+	prev := f.Prev.Call(frame)
+
+	frame = frame.Sub(*f.Slots)
+	r := f.Func.Call(frame, f.Args...).Call(frame, prev)
+
+	*f.Slots = append(*f.Slots, r)
+	return prev
 }
 
 // External represents a function from an imported module. It looks
