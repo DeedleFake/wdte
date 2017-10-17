@@ -247,6 +247,11 @@ func TestStream(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(0), wdte.Number(1), wdte.Number(2)},
 		},
 		{
+			name:   "Drain",
+			script: `'stream' => s; 'io' => io; main => s.range 5 -> s.map (io.writeln io.stdout) -> s.drain;`,
+			out:    "0\n1\n2\n3\n4\n",
+		},
+		{
 			name:   "Reduce",
 			script: `'stream' => s; main => s.range 1 6 -> s.reduce 1 *;`,
 			ret:    wdte.Number(120),
@@ -259,6 +264,16 @@ func TestStream(t *testing.T) {
 		{
 			name:   "Any/False",
 			script: `'stream' => s; main => s.range 3 -> s.any (== 3);`,
+			ret:    wdte.Bool(false),
+		},
+		{
+			name:   "All/True",
+			script: `'stream' => s; main => s.range 5 -> s.all (< 5);`,
+			ret:    wdte.Bool(true),
+		},
+		{
+			name:   "All/False",
+			script: `'stream' => s; main => s.range 5 -> s.all (< 3);`,
 			ret:    wdte.Bool(false),
 		},
 	})

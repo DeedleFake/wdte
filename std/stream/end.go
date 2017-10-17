@@ -2,7 +2,12 @@ package stream
 
 import "github.com/DeedleFake/wdte"
 
-// Collect converts a stream into an array.
+// Collect iterates over a stream, putting each of its elements into a
+// new array, in the order they are yielded by the stream, before
+// returning the array.
+//
+// If any of the values yielded by the stream are errors, then
+// iteration stops and that error is returned instead.
 func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -30,6 +35,36 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	return r
+}
+
+// Drain drains the stream, iterating over it much like collect does,
+// but discarding each value. When it's finished it returns the
+// now-empty stream. If an error is yielded by the stream, then
+// iteration stops and that error is returned instead.
+//
+// The primary purpose of this function is to allow map to be used as
+// a type of foreach-style loop without the extra allocation that
+// collect performs. For example:
+//
+//     s.range 5 -> s.map (io.writeln io.stdout) -> s.drain;
+func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Drain)
+	}
+
+	frame = frame.WithID("drain")
+
+	s := args[0].Call(frame).(Stream)
+	for {
+		n, ok := s.Next(frame)
+		if !ok {
+			return s
+		}
+		if _, ok := n.(error); ok {
+			return n
+		}
+	}
 }
 
 // Reduce reduces a stream to a single value using a reduction
@@ -143,6 +178,42 @@ func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 		if b, ok := f.Call(frame, n).(wdte.Bool); bool(b) && ok {
 			return wdte.Bool(true)
+		}
+	}
+}
+
+// All takes two arguments, a stream and a function. It iterates over
+// the stream's values, calling the given function on each element. If
+// any of the calls don't return true, than the whole function returns
+// false. If it reaches the end of the stream, then it returns
+// true.
+//
+// If given only one argument, it returns a function which checks its
+// own argument, a stream, against the function it was originally
+// given.
+func All(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(All)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return All(frame, append(next, args...)...)
+		})
+	}
+
+	frame = frame.WithID("all")
+
+	s := args[0].Call(frame).(Stream)
+	f := args[1].Call(frame)
+
+	for {
+		n, ok := s.Next(frame)
+		if !ok {
+			return wdte.Bool(true)
+		}
+
+		if b, ok := f.Call(frame, n).(wdte.Bool); bool(!b) || !ok {
+			return wdte.Bool(false)
 		}
 	}
 }
