@@ -51,11 +51,15 @@ func (n Number) Compare(other Func) (int, bool) { // nolint
 }
 
 // An Array represents a WDTE array type. It's similar to a Compound,
-// but doesn't evaluate its own members. Instead, evaluation simply
-// yields the array, much like how strings and numbers work.
+// but when evaluated, it returns itself with its own members replaced
+// with their own evaluations. This allows it to be passed around as a
+// value in the same way as strings and numbers.
 type Array []Func
 
 func (a Array) Call(frame Frame, args ...Func) Func { // nolint
+	for i := range a {
+		a[i] = a[i].Call(frame)
+	}
 	return a
 }
 
