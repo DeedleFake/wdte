@@ -247,6 +247,11 @@ func TestStream(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(0), wdte.Number(1), wdte.Number(2)},
 		},
 		{
+			name:   "Drain",
+			script: `'stream' => s; 'io' => io; main => s.range 5 -> s.map (io.writeln io.stdout) -> s.drain;`,
+			out:    "0\n1\n2\n3\n4\n",
+		},
+		{
 			name:   "Reduce",
 			script: `'stream' => s; main => s.range 1 6 -> s.reduce 1 *;`,
 			ret:    wdte.Number(120),

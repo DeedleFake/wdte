@@ -40,6 +40,7 @@ func Module() *wdte.Module {
 			"filter": wdte.GoFunc(Filter),
 
 			"collect": wdte.GoFunc(Collect),
+			"drain":   wdte.GoFunc(Drain),
 			"reduce":  wdte.GoFunc(Reduce),
 			//"chain":   wdte.GoFunc(Chain),
 			"any": wdte.GoFunc(Any),
