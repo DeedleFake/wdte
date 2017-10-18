@@ -10,10 +10,13 @@ import (
 	"github.com/DeedleFake/wdte/scanner"
 )
 
+// ParseScript parses a full script, returning the root node of the
+// AST.
 func ParseScript(r io.Reader) (Node, error) {
 	return parse(r, tokenStack{pgen.NTerm("script")}, script.Table)
 }
 
+// ParseExpr parses a single expression.
 func ParseExpr(r io.Reader) (Node, error) {
 	return parse(r, tokenStack{pgen.NTerm("expr")}, expr.Table)
 }

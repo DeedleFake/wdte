@@ -46,7 +46,7 @@ memo main => (
 );
 `
 
-	root, err := ast.Parse(strings.NewReader(test))
+	root, err := ast.ParseScript(strings.NewReader(test))
 	if err != nil {
 		t.Fatal(err)
 	}

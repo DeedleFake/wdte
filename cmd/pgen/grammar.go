@@ -131,7 +131,7 @@ func (g Grammar) followWithout(nt NTerm, ignore []NTerm) TokenSet {
 						continue
 					}
 
-					for i := i + 1; i < len(rule); i++ {
+					for i := i + 1; i < len(rule); i++ { // nolint
 						ts.AddAll(g.First(rule[i]), rule)
 						if !g.Nullable(rule[i]) {
 							break

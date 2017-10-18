@@ -15,7 +15,7 @@ type Token struct {
 type TokenType uint
 
 const (
-	Invalid TokenType = iota
+	Invalid TokenType = iota // nolint
 	Number
 	String
 	ID

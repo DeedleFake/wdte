@@ -23,7 +23,7 @@ type Term struct {
 	p Node
 }
 
-func (t Term) Parent() Node {
+func (t Term) Parent() Node { // nolint
 	return t.p
 }
 
@@ -32,7 +32,7 @@ func (t Term) Tok() scanner.Token {
 	return t.tok
 }
 
-func (t Term) Children() []Node {
+func (t Term) Children() []Node { // nolint
 	return nil
 }
 
@@ -49,7 +49,7 @@ func (nt NTerm) Name() string {
 	return string(nt.nt)
 }
 
-func (nt NTerm) Parent() Node {
+func (nt NTerm) Parent() Node { // nolint
 	return nt.p
 }
 
@@ -63,7 +63,7 @@ func (nt *NTerm) AddChild(n Node) {
 	nt.c = append(nt.c, n)
 }
 
-func (nt NTerm) Children() []Node {
+func (nt NTerm) Children() []Node { // nolint
 	return nt.c
 }
 
@@ -72,10 +72,10 @@ type Epsilon struct {
 	p Node
 }
 
-func (e Epsilon) Parent() Node {
+func (e Epsilon) Parent() Node { // nolint
 	return e.p
 }
 
-func (e Epsilon) Children() []Node {
+func (e Epsilon) Children() []Node { // nolint
 	return nil
 }

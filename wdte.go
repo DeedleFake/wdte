@@ -154,7 +154,7 @@ func F() Frame {
 	}
 }
 
-func CustomFrame(id ID, args []Func, parent *Frame) Frame {
+func CustomFrame(id ID, args []Func, parent *Frame) Frame { // nolint
 	return Frame{
 		id:   id,
 		args: args,
