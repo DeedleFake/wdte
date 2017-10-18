@@ -11,11 +11,11 @@ import (
 )
 
 func ParseScript(r io.Reader) (Node, error) {
-	return parse(r, tokenStack{pgen.NTerm("script")}, script.Table)
+	return parse(r, tokenStack{pgen.EOF{}, pgen.NTerm("script")}, script.Table)
 }
 
 func ParseExpr(r io.Reader) (Node, error) {
-	return parse(r, tokenStack{pgen.NTerm("expr")}, expr.Table)
+	return parse(r, tokenStack{pgen.EOF{}, pgen.NTerm("expr")}, expr.Table)
 }
 
 func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule) (ast Node, err error) {
