@@ -53,13 +53,6 @@ func init() {
 
 package pgen
 
-type Lookup struct {
-	Term Token
-	NTerm NTerm
-}
-
-type Rule []Token
-
 var Table = map[Lookup]Rule{
 	{{ range $nterm, $_ := . }}
 		{{- range $term, $from := $.First $nterm -}}
