@@ -1,4 +1,4 @@
-    <expr> -> <single> <args> <slot> <chain> Ω
+    <expr> -> <single> <args> <slot> <chain>
     <args> -> <single> <args>
             | ε
    <chain> -> -> <single> <args> <slot> <chain>

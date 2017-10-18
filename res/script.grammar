@@ -1,4 +1,4 @@
-  <script> -> <decls> Ω
+  <script> -> <decls>
    <decls> -> <decl> <decls>
             | ε
     <decl> -> <import>
