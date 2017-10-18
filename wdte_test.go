@@ -340,7 +340,7 @@ func TestIO(t *testing.T) {
 	})
 }
 
-func ExampleEval() {
+func ExampleModule_Eval() {
 	const src = `
 	'math' => m;
 

@@ -94,7 +94,7 @@ func (m *Module) Call(frame Frame, args ...Func) Func { // nolint
 //
 // is parsed, the associated Importer will be invoked as follows:
 //
-//    im.Import(example)
+//    im.Import("example")
 //
 // The return value will then be added to the module's Funcs map.
 type Importer interface {
