@@ -2,6 +2,8 @@ package wdte_test
 
 import (
 	"bytes"
+	"fmt"
+	"log"
 	"math"
 	"reflect"
 	"strings"
@@ -134,6 +136,11 @@ func TestBasics(t *testing.T) {
 	//frame = wdte.CustomFrame("get", []wdte.Func{}, &frame).Pos(1, 26)
 
 	runTests(t, []test{
+		{
+			name:   "Simple",
+			script: `main => 3;`,
+			ret:    wdte.Number(3),
+		},
 		{
 			name:   "Chain/Slot",
 			script: `main => 1 : a -> + 2 : b -> - (* a 3) -> + b;`,
@@ -331,4 +338,25 @@ func TestIO(t *testing.T) {
 			ret:    wdte.Array{wdte.String("Part 1"), wdte.String("Part 2"), wdte.String("Part 3")},
 		},
 	})
+}
+
+func ExampleEval() {
+	const src = `
+	'math' => m;
+
+	npi a => * m.pi a;
+`
+
+	m, err := std.Module().Parse(strings.NewReader(src), std.Import)
+	if err != nil {
+		log.Fatalf("Failed to parse module: %v", err)
+	}
+
+	r, err := m.Eval(strings.NewReader("npi 5"))
+	if err != nil {
+		log.Fatalf("Failed to evaluate: %v", err)
+	}
+
+	fmt.Println(r.Call(wdte.F()))
+	// Output: 15.707963267948966
 }

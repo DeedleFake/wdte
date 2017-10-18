@@ -5,12 +5,21 @@ import (
 	"io"
 
 	"github.com/DeedleFake/wdte/ast/internal/pgen"
+	expr "github.com/DeedleFake/wdte/ast/internal/pgen/expr"
+	script "github.com/DeedleFake/wdte/ast/internal/pgen/script"
 	"github.com/DeedleFake/wdte/scanner"
 )
 
-func Parse(r io.Reader) (ast Node, err error) {
+func ParseScript(r io.Reader) (Node, error) {
+	return parse(r, tokenStack{pgen.NTerm("script")}, script.Table)
+}
+
+func ParseExpr(r io.Reader) (Node, error) {
+	return parse(r, tokenStack{pgen.NTerm("expr")}, expr.Table)
+}
+
+func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule) (ast Node, err error) {
 	s := scanner.New(r)
-	g := tokenStack{pgen.NTerm("script")}
 
 	more := s.Scan()
 	var cur *NTerm
@@ -43,7 +52,7 @@ func Parse(r io.Reader) (ast Node, err error) {
 			more = s.Scan()
 
 		case pgen.NTerm:
-			rule := pgen.Table[pgen.Lookup{Term: toPGenTerm(s.Tok()), NTerm: gtok}]
+			rule := table[pgen.Lookup{Term: toPGenTerm(s.Tok()), NTerm: gtok}]
 			if rule == nil {
 				return nil, parseError(s, fmt.Errorf("No rule for (%v, <%v>)", toPGenTerm(s.Tok()), gtok))
 			}
