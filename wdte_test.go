@@ -340,6 +340,46 @@ func TestIO(t *testing.T) {
 	})
 }
 
+func TestStr(t *testing.T) {
+	runTests(t, []test{
+		{
+			name:   "Contains",
+			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.contains "t") -> s.collect;`,
+			ret:    wdte.Array{wdte.String("this"), wdte.String("test")},
+		},
+		{
+			name:   "Prefix",
+			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.prefix "i") -> s.collect;`,
+			ret:    wdte.Array{wdte.String("is")},
+		},
+		{
+			name:   "Contains",
+			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.suffix "t") -> s.collect;`,
+			ret:    wdte.Array{wdte.String("test")},
+		},
+		{
+			name:   "Len",
+			script: `'strings' => str; main => str.len 'abc';`,
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "At",
+			script: `'strings' => str; main => str.at 'test' 2;`,
+			ret:    wdte.String('s'),
+		},
+		{
+			name:   "Upper",
+			script: `'strings' => str; main => str.upper 'QwErTy';`,
+			ret:    wdte.String("QWERTY"),
+		},
+		{
+			name:   "Lower",
+			script: `'strings' => str; main => str.lower 'QwErTy';`,
+			ret:    wdte.String("qwerty"),
+		},
+	})
+}
+
 func ExampleModule_Eval() {
 	const src = `
 	'math' => m;
