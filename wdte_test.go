@@ -344,8 +344,18 @@ func TestStr(t *testing.T) {
 	runTests(t, []test{
 		{
 			name:   "Contains",
-			script: `'stream' => s; 'str' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.contains "t") -> s.collect;`,
+			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.contains "t") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("this"), wdte.String("test")},
+		},
+		{
+			name:   "Prefix",
+			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.prefix "i") -> s.collect;`,
+			ret:    wdte.Array{wdte.String("is")},
+		},
+		{
+			name:   "Contains",
+			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.suffix "t") -> s.collect;`,
+			ret:    wdte.Array{wdte.String("test")},
 		},
 	})
 }

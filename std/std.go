@@ -8,8 +8,8 @@ import (
 	stdio "github.com/DeedleFake/wdte/std/io"
 	"github.com/DeedleFake/wdte/std/io/file"
 	stdmath "github.com/DeedleFake/wdte/std/math"
-	"github.com/DeedleFake/wdte/std/str"
 	"github.com/DeedleFake/wdte/std/stream"
+	"github.com/DeedleFake/wdte/std/strings"
 )
 
 func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
