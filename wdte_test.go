@@ -340,6 +340,16 @@ func TestIO(t *testing.T) {
 	})
 }
 
+func TestStr(t *testing.T) {
+	runTests(t, []test{
+		{
+			name:   "Contains",
+			script: `'stream' => s; 'str' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.contains "t") -> s.collect;`,
+			ret:    wdte.Array{wdte.String("this"), wdte.String("test")},
+		},
+	})
+}
+
 func ExampleModule_Eval() {
 	const src = `
 	'math' => m;

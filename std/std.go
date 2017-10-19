@@ -8,6 +8,7 @@ import (
 	stdio "github.com/DeedleFake/wdte/std/io"
 	"github.com/DeedleFake/wdte/std/io/file"
 	stdmath "github.com/DeedleFake/wdte/std/math"
+	"github.com/DeedleFake/wdte/std/str"
 	"github.com/DeedleFake/wdte/std/stream"
 )
 
@@ -367,6 +368,9 @@ func stdImporter(from string) (*wdte.Module, error) {
 		return stdio.Module(), nil
 	case "io/file":
 		return file.Module(), nil
+
+	case "strings":
+		return strings.Module(), nil
 	}
 
 	return nil, fmt.Errorf("Unknown import: %q", from)
