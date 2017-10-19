@@ -82,6 +82,28 @@ func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Number(len(string(args[0].Call(frame).(wdte.String))))
 }
 
+// At returns the ith character of a string. The order of arguments
+// is the string and then the index. If given only one argument, it
+// uses that argument as the index to get characters from in strings
+// that it is passed.
+func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("at")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(At)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return At(frame, append(next, args...)...)
+		})
+	}
+
+	str := args[0].Call(frame).(wdte.String)
+	i := args[1].Call(frame).(wdte.Number)
+
+	return wdte.String(str[int(i)])
+}
+
 // Upper returns its argument converted to uppercase.
 func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("upper")
@@ -114,6 +136,7 @@ func Module() *wdte.Module {
 			"suffix":   wdte.GoFunc(Suffix),
 
 			"len": wdte.GoFunc(Len),
+			"at":  wdte.GoFunc(At),
 
 			"upper": wdte.GoFunc(Upper),
 			"lower": wdte.GoFunc(Lower),

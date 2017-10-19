@@ -363,6 +363,11 @@ func TestStr(t *testing.T) {
 			ret:    wdte.Number(3),
 		},
 		{
+			name:   "At",
+			script: `'strings' => str; main => str.at 'test' 2;`,
+			ret:    wdte.String('s'),
+		},
+		{
 			name:   "Upper",
 			script: `'strings' => str; main => str.upper 'QwErTy';`,
 			ret:    wdte.String("QWERTY"),
