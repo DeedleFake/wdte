@@ -12,10 +12,12 @@ var examples = map[string]string{
 # For documentation on the standard function set, see
 # https://godoc.org/github.com/DeedleFake/wdte/std
 #
-# Importable modules:
-# * 'math' (https://godoc.org/github.com/DeedleFake/wdte/std/math)
-# * 'stream' (https://godoc.org/github.com/DeedleFake/wdte/std/stream)
+# Special modules:
 # * 'canvas' (See the 'Canvas' example.)
+# * 'io/file' (This makes no sense in a browser, so it's disabled.)
+# * 'io' (Disabled pending https://github.com/gopherjs/gopherjs/issues/705.)
+#
+# For other modules, the standard importer is used as a fallback.
 #
 # In addition, a print function is provided which uses the Go fmt
 # package to create a string representation of its arguments. This

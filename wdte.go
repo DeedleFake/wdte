@@ -8,8 +8,6 @@ import (
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/std"
-	"github.com/DeedleFake/wdte/std/math"
-	"github.com/DeedleFake/wdte/std/stream"
 	"github.com/gopherjs/gopherjs/js"
 )
 
@@ -49,19 +47,17 @@ var (
 
 func im(from string) (*wdte.Module, error) {
 	switch from {
-	case "math":
-		return math.Module(), nil
-	case "stream":
-		return stream.Module(), nil
-
 	case "canvas":
 		stdout.Get("style").Set("display", "none")
 		canvas.Get("style").Set("display", "block")
 		out = &elementWriter{stderr}
 		return CanvasModule(), nil
+
+	case "io", "io/file":
+		return nil, fmt.Errorf("%q is disabled in the playground", from)
 	}
 
-	return nil, fmt.Errorf("Unknown import: %q", from)
+	return std.Import(from)
 }
 
 func main() {

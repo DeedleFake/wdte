@@ -3374,17 +3374,45 @@ $packages["sync"] = (function() {
 	return $pkg;
 })();
 $packages["io"] = (function() {
-	var $pkg = {}, $init, errors, sync, Reader, Writer, ReaderFrom, WriterTo, RuneReader, RuneScanner, stringWriter, sliceType, errWhence, errOffset, WriteString;
+	var $pkg = {}, $init, errors, sync, Reader, Writer, Closer, Seeker, ReaderFrom, WriterTo, RuneReader, RuneScanner, stringWriter, eofReader, multiReader, multiWriter, ptrType, sliceType, ptrType$1, sliceType$1, sliceType$2, errWhence, errOffset, WriteString, Copy, copyBuffer, MultiReader, MultiWriter;
 	errors = $packages["errors"];
 	sync = $packages["sync"];
 	Reader = $pkg.Reader = $newType(8, $kindInterface, "io.Reader", true, "io", true, null);
 	Writer = $pkg.Writer = $newType(8, $kindInterface, "io.Writer", true, "io", true, null);
+	Closer = $pkg.Closer = $newType(8, $kindInterface, "io.Closer", true, "io", true, null);
+	Seeker = $pkg.Seeker = $newType(8, $kindInterface, "io.Seeker", true, "io", true, null);
 	ReaderFrom = $pkg.ReaderFrom = $newType(8, $kindInterface, "io.ReaderFrom", true, "io", true, null);
 	WriterTo = $pkg.WriterTo = $newType(8, $kindInterface, "io.WriterTo", true, "io", true, null);
 	RuneReader = $pkg.RuneReader = $newType(8, $kindInterface, "io.RuneReader", true, "io", true, null);
 	RuneScanner = $pkg.RuneScanner = $newType(8, $kindInterface, "io.RuneScanner", true, "io", true, null);
 	stringWriter = $pkg.stringWriter = $newType(8, $kindInterface, "io.stringWriter", true, "io", false, null);
+	eofReader = $pkg.eofReader = $newType(0, $kindStruct, "io.eofReader", true, "io", false, function() {
+		this.$val = this;
+		if (arguments.length === 0) {
+			return;
+		}
+	});
+	multiReader = $pkg.multiReader = $newType(0, $kindStruct, "io.multiReader", true, "io", false, function(readers_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.readers = sliceType$1.nil;
+			return;
+		}
+		this.readers = readers_;
+	});
+	multiWriter = $pkg.multiWriter = $newType(0, $kindStruct, "io.multiWriter", true, "io", false, function(writers_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.writers = sliceType$2.nil;
+			return;
+		}
+		this.writers = writers_;
+	});
+	ptrType = $ptrType(multiWriter);
 	sliceType = $sliceType($Uint8);
+	ptrType$1 = $ptrType(multiReader);
+	sliceType$1 = $sliceType(Reader);
+	sliceType$2 = $sliceType(Writer);
 	WriteString = function(w, s) {
 		var _r, _r$1, _tuple, _tuple$1, _tuple$2, err, n, ok, s, sw, w, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; err = $f.err; n = $f.n; ok = $f.ok; s = $f.s; sw = $f.sw; w = $f.w; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -3410,13 +3438,246 @@ $packages["io"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: WriteString }; } $f._r = _r; $f._r$1 = _r$1; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f.err = err; $f.n = n; $f.ok = ok; $f.s = s; $f.sw = sw; $f.w = w; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.WriteString = WriteString;
+	Copy = function(dst, src) {
+		var _r, _tuple, dst, err, src, written, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; dst = $f.dst; err = $f.err; src = $f.src; written = $f.written; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		written = new $Int64(0, 0);
+		err = $ifaceNil;
+		_r = copyBuffer(dst, src, sliceType.nil); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_tuple = _r;
+		written = _tuple[0];
+		err = _tuple[1];
+		$s = -1; return [written, err];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Copy }; } $f._r = _r; $f._tuple = _tuple; $f.dst = dst; $f.err = err; $f.src = src; $f.written = written; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Copy = Copy;
+	copyBuffer = function(dst, src, buf) {
+		var _r, _r$1, _r$2, _r$3, _tmp, _tmp$1, _tuple, _tuple$1, _tuple$2, _tuple$3, _tuple$4, _tuple$5, buf, dst, er, err, ew, nr, nw, ok, ok$1, rt, src, written, wt, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _tmp = $f._tmp; _tmp$1 = $f._tmp$1; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; _tuple$3 = $f._tuple$3; _tuple$4 = $f._tuple$4; _tuple$5 = $f._tuple$5; buf = $f.buf; dst = $f.dst; er = $f.er; err = $f.err; ew = $f.ew; nr = $f.nr; nw = $f.nw; ok = $f.ok; ok$1 = $f.ok$1; rt = $f.rt; src = $f.src; written = $f.written; wt = $f.wt; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		written = new $Int64(0, 0);
+		err = $ifaceNil;
+		_tuple = $assertType(src, WriterTo, true);
+		wt = _tuple[0];
+		ok = _tuple[1];
+		/* */ if (ok) { $s = 1; continue; }
+		/* */ $s = 2; continue;
+		/* if (ok) { */ case 1:
+			_r = wt.WriteTo(dst); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			_tuple$1 = _r;
+			written = _tuple$1[0];
+			err = _tuple$1[1];
+			$s = -1; return [written, err];
+		/* } */ case 2:
+		_tuple$2 = $assertType(dst, ReaderFrom, true);
+		rt = _tuple$2[0];
+		ok$1 = _tuple$2[1];
+		/* */ if (ok$1) { $s = 4; continue; }
+		/* */ $s = 5; continue;
+		/* if (ok$1) { */ case 4:
+			_r$1 = rt.ReadFrom(src); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			_tuple$3 = _r$1;
+			written = _tuple$3[0];
+			err = _tuple$3[1];
+			$s = -1; return [written, err];
+		/* } */ case 5:
+		if (buf === sliceType.nil) {
+			buf = $makeSlice(sliceType, 32768);
+		}
+		/* while (true) { */ case 7:
+			_r$2 = src.Read(buf); /* */ $s = 9; case 9: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+			_tuple$4 = _r$2;
+			nr = _tuple$4[0];
+			er = _tuple$4[1];
+			/* */ if (nr > 0) { $s = 10; continue; }
+			/* */ $s = 11; continue;
+			/* if (nr > 0) { */ case 10:
+				_r$3 = dst.Write($subslice(buf, 0, nr)); /* */ $s = 12; case 12: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+				_tuple$5 = _r$3;
+				nw = _tuple$5[0];
+				ew = _tuple$5[1];
+				if (nw > 0) {
+					written = (x = (new $Int64(0, nw)), new $Int64(written.$high + x.$high, written.$low + x.$low));
+				}
+				if (!($interfaceIsEqual(ew, $ifaceNil))) {
+					err = ew;
+					/* break; */ $s = 8; continue;
+				}
+				if (!((nr === nw))) {
+					err = $pkg.ErrShortWrite;
+					/* break; */ $s = 8; continue;
+				}
+			/* } */ case 11:
+			if (!($interfaceIsEqual(er, $ifaceNil))) {
+				if (!($interfaceIsEqual(er, $pkg.EOF))) {
+					err = er;
+				}
+				/* break; */ $s = 8; continue;
+			}
+		/* } */ $s = 7; continue; case 8:
+		_tmp = written;
+		_tmp$1 = err;
+		written = _tmp;
+		err = _tmp$1;
+		$s = -1; return [written, err];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: copyBuffer }; } $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._tmp = _tmp; $f._tmp$1 = _tmp$1; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f._tuple$3 = _tuple$3; $f._tuple$4 = _tuple$4; $f._tuple$5 = _tuple$5; $f.buf = buf; $f.dst = dst; $f.er = er; $f.err = err; $f.ew = ew; $f.nr = nr; $f.nw = nw; $f.ok = ok; $f.ok$1 = ok$1; $f.rt = rt; $f.src = src; $f.written = written; $f.wt = wt; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	eofReader.ptr.prototype.Read = function(param) {
+		var param;
+		return [0, $pkg.EOF];
+	};
+	eofReader.prototype.Read = function(param) { return this.$val.Read(param); };
+	multiReader.ptr.prototype.Read = function(p) {
+		var _r, _tmp, _tmp$1, _tuple, _tuple$1, err, mr, n, ok, p, r, x, x$1, x$2, x$3, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tmp = $f._tmp; _tmp$1 = $f._tmp$1; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; err = $f.err; mr = $f.mr; n = $f.n; ok = $f.ok; p = $f.p; r = $f.r; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; x$3 = $f.x$3; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		n = 0;
+		err = $ifaceNil;
+		mr = this;
+		/* while (true) { */ case 1:
+			/* if (!(mr.readers.$length > 0)) { break; } */ if(!(mr.readers.$length > 0)) { $s = 2; continue; }
+			/* */ if (mr.readers.$length === 1) { $s = 3; continue; }
+			/* */ $s = 4; continue;
+			/* if (mr.readers.$length === 1) { */ case 3:
+				_tuple = $assertType((x = mr.readers, (0 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 0])), ptrType$1, true);
+				r = _tuple[0];
+				ok = _tuple[1];
+				if (ok) {
+					mr.readers = r.readers;
+					/* continue; */ $s = 1; continue;
+				}
+			/* } */ case 4:
+			_r = (x$1 = mr.readers, (0 >= x$1.$length ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + 0])).Read(p); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			_tuple$1 = _r;
+			n = _tuple$1[0];
+			err = _tuple$1[1];
+			if ($interfaceIsEqual(err, $pkg.EOF)) {
+				(x$3 = mr.readers, (0 >= x$3.$length ? ($throwRuntimeError("index out of range"), undefined) : x$3.$array[x$3.$offset + 0] = (x$2 = new eofReader.ptr(), new x$2.constructor.elem(x$2))));
+				mr.readers = $subslice(mr.readers, 1);
+			}
+			if (n > 0 || !($interfaceIsEqual(err, $pkg.EOF))) {
+				if ($interfaceIsEqual(err, $pkg.EOF) && mr.readers.$length > 0) {
+					err = $ifaceNil;
+				}
+				$s = -1; return [n, err];
+			}
+		/* } */ $s = 1; continue; case 2:
+		_tmp = 0;
+		_tmp$1 = $pkg.EOF;
+		n = _tmp;
+		err = _tmp$1;
+		$s = -1; return [n, err];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: multiReader.ptr.prototype.Read }; } $f._r = _r; $f._tmp = _tmp; $f._tmp$1 = _tmp$1; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.err = err; $f.mr = mr; $f.n = n; $f.ok = ok; $f.p = p; $f.r = r; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	multiReader.prototype.Read = function(p) { return this.$val.Read(p); };
+	MultiReader = function(readers) {
+		var r, readers;
+		r = $makeSlice(sliceType$1, readers.$length);
+		$copySlice(r, readers);
+		return new multiReader.ptr(r);
+	};
+	$pkg.MultiReader = MultiReader;
+	multiWriter.ptr.prototype.Write = function(p) {
+		var _i, _r, _ref, _tmp, _tmp$1, _tuple, err, n, p, t, w, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _ref = $f._ref; _tmp = $f._tmp; _tmp$1 = $f._tmp$1; _tuple = $f._tuple; err = $f.err; n = $f.n; p = $f.p; t = $f.t; w = $f.w; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		n = 0;
+		err = $ifaceNil;
+		t = this;
+		_ref = t.writers;
+		_i = 0;
+		/* while (true) { */ case 1:
+			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 2; continue; }
+			w = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			_r = w.Write(p); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			_tuple = _r;
+			n = _tuple[0];
+			err = _tuple[1];
+			if (!($interfaceIsEqual(err, $ifaceNil))) {
+				$s = -1; return [n, err];
+			}
+			if (!((n === p.$length))) {
+				err = $pkg.ErrShortWrite;
+				$s = -1; return [n, err];
+			}
+			_i++;
+		/* } */ $s = 1; continue; case 2:
+		_tmp = p.$length;
+		_tmp$1 = $ifaceNil;
+		n = _tmp;
+		err = _tmp$1;
+		$s = -1; return [n, err];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: multiWriter.ptr.prototype.Write }; } $f._i = _i; $f._r = _r; $f._ref = _ref; $f._tmp = _tmp; $f._tmp$1 = _tmp$1; $f._tuple = _tuple; $f.err = err; $f.n = n; $f.p = p; $f.t = t; $f.w = w; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	multiWriter.prototype.Write = function(p) { return this.$val.Write(p); };
+	multiWriter.ptr.prototype.WriteString = function(s) {
+		var _i, _r, _r$1, _ref, _tmp, _tmp$1, _tuple, _tuple$1, _tuple$2, err, n, ok, p, s, sw, t, w, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _r$1 = $f._r$1; _ref = $f._ref; _tmp = $f._tmp; _tmp$1 = $f._tmp$1; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; err = $f.err; n = $f.n; ok = $f.ok; p = $f.p; s = $f.s; sw = $f.sw; t = $f.t; w = $f.w; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		n = 0;
+		err = $ifaceNil;
+		t = this;
+		p = sliceType.nil;
+		_ref = t.writers;
+		_i = 0;
+		/* while (true) { */ case 1:
+			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 2; continue; }
+			w = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			_tuple = $assertType(w, stringWriter, true);
+			sw = _tuple[0];
+			ok = _tuple[1];
+			/* */ if (ok) { $s = 3; continue; }
+			/* */ $s = 4; continue;
+			/* if (ok) { */ case 3:
+				_r = sw.WriteString(s); /* */ $s = 6; case 6: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+				_tuple$1 = _r;
+				n = _tuple$1[0];
+				err = _tuple$1[1];
+				$s = 5; continue;
+			/* } else { */ case 4:
+				if (p === sliceType.nil) {
+					p = (new sliceType($stringToBytes(s)));
+				}
+				_r$1 = w.Write(p); /* */ $s = 7; case 7: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+				_tuple$2 = _r$1;
+				n = _tuple$2[0];
+				err = _tuple$2[1];
+			/* } */ case 5:
+			if (!($interfaceIsEqual(err, $ifaceNil))) {
+				$s = -1; return [n, err];
+			}
+			if (!((n === s.length))) {
+				err = $pkg.ErrShortWrite;
+				$s = -1; return [n, err];
+			}
+			_i++;
+		/* } */ $s = 1; continue; case 2:
+		_tmp = s.length;
+		_tmp$1 = $ifaceNil;
+		n = _tmp;
+		err = _tmp$1;
+		$s = -1; return [n, err];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: multiWriter.ptr.prototype.WriteString }; } $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._ref = _ref; $f._tmp = _tmp; $f._tmp$1 = _tmp$1; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f.err = err; $f.n = n; $f.ok = ok; $f.p = p; $f.s = s; $f.sw = sw; $f.t = t; $f.w = w; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	multiWriter.prototype.WriteString = function(s) { return this.$val.WriteString(s); };
+	MultiWriter = function(writers) {
+		var w, writers;
+		w = $makeSlice(sliceType$2, writers.$length);
+		$copySlice(w, writers);
+		return new multiWriter.ptr(w);
+	};
+	$pkg.MultiWriter = MultiWriter;
+	eofReader.methods = [{prop: "Read", name: "Read", pkg: "", typ: $funcType([sliceType], [$Int, $error], false)}];
+	ptrType$1.methods = [{prop: "Read", name: "Read", pkg: "", typ: $funcType([sliceType], [$Int, $error], false)}];
+	ptrType.methods = [{prop: "Write", name: "Write", pkg: "", typ: $funcType([sliceType], [$Int, $error], false)}, {prop: "WriteString", name: "WriteString", pkg: "", typ: $funcType([$String], [$Int, $error], false)}];
 	Reader.init([{prop: "Read", name: "Read", pkg: "", typ: $funcType([sliceType], [$Int, $error], false)}]);
 	Writer.init([{prop: "Write", name: "Write", pkg: "", typ: $funcType([sliceType], [$Int, $error], false)}]);
+	Closer.init([{prop: "Close", name: "Close", pkg: "", typ: $funcType([], [$error], false)}]);
+	Seeker.init([{prop: "Seek", name: "Seek", pkg: "", typ: $funcType([$Int64, $Int], [$Int64, $error], false)}]);
 	ReaderFrom.init([{prop: "ReadFrom", name: "ReadFrom", pkg: "", typ: $funcType([Reader], [$Int64, $error], false)}]);
 	WriterTo.init([{prop: "WriteTo", name: "WriteTo", pkg: "", typ: $funcType([Writer], [$Int64, $error], false)}]);
 	RuneReader.init([{prop: "ReadRune", name: "ReadRune", pkg: "", typ: $funcType([], [$Int32, $Int, $error], false)}]);
 	RuneScanner.init([{prop: "ReadRune", name: "ReadRune", pkg: "", typ: $funcType([], [$Int32, $Int, $error], false)}, {prop: "UnreadRune", name: "UnreadRune", pkg: "", typ: $funcType([], [$error], false)}]);
 	stringWriter.init([{prop: "WriteString", name: "WriteString", pkg: "", typ: $funcType([$String], [$Int, $error], false)}]);
+	eofReader.init("", []);
+	multiReader.init("io", [{prop: "readers", name: "readers", anonymous: false, exported: false, typ: sliceType$1, tag: ""}]);
+	multiWriter.init("io", [{prop: "writers", name: "writers", anonymous: false, exported: false, typ: sliceType$2, tag: ""}]);
 	$init = function() {
 		$pkg.$init = function() {};
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -3545,7 +3806,7 @@ $packages["math"] = (function() {
 	return $pkg;
 })();
 $packages["syscall"] = (function() {
-	var $pkg = {}, $init, js, race, runtime, sync, SockaddrLinklayer, SockaddrNetlink, mmapper, Errno, Sockaddr, SockaddrInet4, SockaddrInet6, SockaddrUnix, Timespec, Stat_t, RawSockaddrInet4, RawSockaddrInet6, RawSockaddrUnix, RawSockaddrLinklayer, RawSockaddrNetlink, RawSockaddr, RawSockaddrAny, _Socklen, Linger, Iovec, IPMreq, IPMreqn, IPv6Mreq, Msghdr, sliceType, sliceType$1, ptrType$2, ptrType$4, arrayType$1, ptrType$8, arrayType$2, ptrType$11, arrayType$4, arrayType$7, arrayType$8, arrayType$9, arrayType$10, ptrType$18, ptrType$19, structType, ptrType$22, ptrType$24, ptrType$25, mapType, funcType$2, funcType$3, ptrType$26, ptrType$27, ptrType$28, ptrType$29, arrayType$15, ptrType$31, warningPrinted, lineBuffer, syscallModule, alreadyTriedToLoad, minusOne, envs, mapper, errEAGAIN, errEINVAL, errENOENT, ioSync, ioSync$24ptr, errors, init, printWarning, printToConsole, indexByte, runtime_envs, syscall, Syscall, Syscall6, BytePtrFromString, readInt, readIntBE, readIntLE, ParseDirent, CloseOnExec, SetNonblock, msanRead, msanWrite, itoa, uitoa, anyToSockaddr, Accept, Accept4, SetsockoptIPMreqn, Recvmsg, SendmsgN, ReadDirent, direntIno, direntReclen, direntNamlen, errnoErr, Read, Write, Recvfrom, Sendto, SetsockoptByte, SetsockoptInt, SetsockoptInet4Addr, SetsockoptIPMreq, SetsockoptIPv6Mreq, SetsockoptLinger, Close, Exit, Fchdir, Fchmod, fcntl, Fsync, Getdents, read, write, munmap, Fchown, Fstat, Ftruncate, Lstat, Pread, Pwrite, Seek, Shutdown, accept, accept4, setsockopt, recvfrom, sendto, recvmsg, sendmsg, mmap;
+	var $pkg = {}, $init, js, race, runtime, sync, SockaddrLinklayer, SockaddrNetlink, mmapper, Errno, Sockaddr, SockaddrInet4, SockaddrInet6, SockaddrUnix, Timespec, Stat_t, RawSockaddrInet4, RawSockaddrInet6, RawSockaddrUnix, RawSockaddrLinklayer, RawSockaddrNetlink, RawSockaddr, RawSockaddrAny, _Socklen, Linger, Iovec, IPMreq, IPMreqn, IPv6Mreq, Msghdr, sliceType, sliceType$1, ptrType$2, ptrType$4, arrayType$1, ptrType$8, arrayType$2, ptrType$11, arrayType$4, arrayType$7, arrayType$8, arrayType$9, arrayType$10, ptrType$18, ptrType$19, structType, ptrType$22, ptrType$24, ptrType$25, mapType, funcType$2, funcType$3, ptrType$26, ptrType$27, ptrType$28, ptrType$29, arrayType$15, ptrType$31, warningPrinted, lineBuffer, syscallModule, alreadyTriedToLoad, minusOne, envs, mapper, errEAGAIN, errEINVAL, errENOENT, ioSync, ioSync$24ptr, errors, init, printWarning, printToConsole, indexByte, runtime_envs, syscall, Syscall, Syscall6, BytePtrFromString, readInt, readIntBE, readIntLE, ParseDirent, CloseOnExec, SetNonblock, msanRead, msanWrite, itoa, uitoa, Chmod, Open, anyToSockaddr, Accept, Accept4, SetsockoptIPMreqn, Recvmsg, SendmsgN, ReadDirent, direntIno, direntReclen, direntNamlen, errnoErr, Read, Write, Recvfrom, Sendto, SetsockoptByte, SetsockoptInt, SetsockoptInet4Addr, SetsockoptIPMreq, SetsockoptIPv6Mreq, SetsockoptLinger, openat, Close, Exit, Fchdir, Fchmod, Fchmodat, fcntl, Fsync, Getdents, read, write, munmap, Fchown, Fstat, Ftruncate, Lstat, Pread, Pwrite, Seek, Shutdown, Stat, accept, accept4, setsockopt, recvfrom, sendto, recvmsg, sendmsg, mmap;
 	js = $packages["github.com/gopherjs/gopherjs/js"];
 	race = $packages["internal/race"];
 	runtime = $packages["runtime"];
@@ -4253,6 +4514,23 @@ $packages["syscall"] = (function() {
 		return (x = $mul64((ts.Sec), new $Int64(0, 1000000000)), x$1 = (ts.Nsec), new $Int64(x.$high + x$1.$high, x.$low + x$1.$low));
 	};
 	Timespec.prototype.Nano = function() { return this.$val.Nano(); };
+	Chmod = function(path, mode) {
+		var err, mode, path;
+		err = $ifaceNil;
+		err = Fchmodat(-100, path, mode, 0);
+		return err;
+	};
+	$pkg.Chmod = Chmod;
+	Open = function(path, mode, perm) {
+		var _tuple, err, fd, mode, path, perm;
+		fd = 0;
+		err = $ifaceNil;
+		_tuple = openat(-100, path, mode | 0, perm);
+		fd = _tuple[0];
+		err = _tuple[1];
+		return [fd, err];
+	};
+	$pkg.Open = Open;
 	SockaddrInet4.ptr.prototype.sockaddr = function() {
 		var _array, _struct, _view, i, p, sa, x, x$1, x$2;
 		sa = this;
@@ -4876,6 +5154,26 @@ $packages["syscall"] = (function() {
 		return err;
 	};
 	$pkg.SetsockoptLinger = SetsockoptLinger;
+	openat = function(dirfd, path, flags, mode) {
+		var _p0, _tuple, _tuple$1, dirfd, e1, err, fd, flags, mode, path, r0;
+		fd = 0;
+		err = $ifaceNil;
+		_p0 = ptrType$2.nil;
+		_tuple = BytePtrFromString(path);
+		_p0 = _tuple[0];
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			return [fd, err];
+		}
+		_tuple$1 = Syscall6(257, ((dirfd >>> 0)), ((_p0)), ((flags >>> 0)), ((mode >>> 0)), 0, 0);
+		r0 = _tuple$1[0];
+		e1 = _tuple$1[2];
+		fd = ((r0 >> 0));
+		if (!((e1 === 0))) {
+			err = errnoErr(e1);
+		}
+		return [fd, err];
+	};
 	Close = function(fd) {
 		var _tuple, e1, err, fd;
 		err = $ifaceNil;
@@ -4915,6 +5213,24 @@ $packages["syscall"] = (function() {
 		return err;
 	};
 	$pkg.Fchmod = Fchmod;
+	Fchmodat = function(dirfd, path, mode, flags) {
+		var _p0, _tuple, _tuple$1, dirfd, e1, err, flags, mode, path;
+		err = $ifaceNil;
+		_p0 = ptrType$2.nil;
+		_tuple = BytePtrFromString(path);
+		_p0 = _tuple[0];
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			return err;
+		}
+		_tuple$1 = Syscall6(268, ((dirfd >>> 0)), ((_p0)), ((mode >>> 0)), ((flags >>> 0)), 0, 0);
+		e1 = _tuple$1[2];
+		if (!((e1 === 0))) {
+			err = errnoErr(e1);
+		}
+		return err;
+	};
+	$pkg.Fchmodat = Fchmodat;
 	fcntl = function(fd, cmd, arg) {
 		var _tuple, arg, cmd, e1, err, fd, r0, val;
 		val = 0;
@@ -5127,6 +5443,26 @@ $packages["syscall"] = (function() {
 		return err;
 	};
 	$pkg.Shutdown = Shutdown;
+	Stat = function(path, stat) {
+		var _array, _p0, _struct, _tuple, _tuple$1, _view, e1, err, path, stat;
+		err = $ifaceNil;
+		_p0 = ptrType$2.nil;
+		_tuple = BytePtrFromString(path);
+		_p0 = _tuple[0];
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			return err;
+		}
+		_array = new Uint8Array(144);
+		_tuple$1 = Syscall(4, ((_p0)), ((_array)), 0);
+		_struct = stat, _view = new DataView(_array.buffer, _array.byteOffset), _struct.Dev = new $Uint64(_view.getUint32(4, true), _view.getUint32(0, true)), _struct.Ino = new $Uint64(_view.getUint32(12, true), _view.getUint32(8, true)), _struct.Nlink = new $Uint64(_view.getUint32(20, true), _view.getUint32(16, true)), _struct.Mode = _view.getUint32(24, true), _struct.Uid = _view.getUint32(28, true), _struct.Gid = _view.getUint32(32, true), _struct.X__pad0 = _view.getInt32(36, true), _struct.Rdev = new $Uint64(_view.getUint32(44, true), _view.getUint32(40, true)), _struct.Size = new $Int64(_view.getUint32(52, true), _view.getUint32(48, true)), _struct.Blksize = new $Int64(_view.getUint32(60, true), _view.getUint32(56, true)), _struct.Blocks = new $Int64(_view.getUint32(68, true), _view.getUint32(64, true)), _struct.Atim.Sec = new $Int64(_view.getUint32(76, true), _view.getUint32(72, true)), _struct.Atim.Nsec = new $Int64(_view.getUint32(84, true), _view.getUint32(80, true)), _struct.Mtim.Sec = new $Int64(_view.getUint32(92, true), _view.getUint32(88, true)), _struct.Mtim.Nsec = new $Int64(_view.getUint32(100, true), _view.getUint32(96, true)), _struct.Ctim.Sec = new $Int64(_view.getUint32(108, true), _view.getUint32(104, true)), _struct.Ctim.Nsec = new $Int64(_view.getUint32(116, true), _view.getUint32(112, true)), _struct.X__unused = new ($nativeArray($kindInt64))(_array.buffer, $min(_array.byteOffset + 120, _array.buffer.byteLength));
+		e1 = _tuple$1[2];
+		if (!((e1 === 0))) {
+			err = errnoErr(e1);
+		}
+		return err;
+	};
+	$pkg.Stat = Stat;
 	accept = function(s, rsa, addrlen) {
 		var _array, _struct, _tuple, _view, addrlen, e1, err, fd, r0, rsa, s;
 		fd = 0;
@@ -9391,7 +9727,7 @@ $packages["internal/poll"] = (function() {
 	return $pkg;
 })();
 $packages["os"] = (function() {
-	var $pkg = {}, $init, errors, js, poll, io, runtime, sync, atomic, syscall, time, PathError, SyscallError, LinkError, file, dirInfo, File, FileInfo, FileMode, fileStat, sliceType, ptrType, sliceType$1, ptrType$1, sliceType$2, ptrType$2, ptrType$3, ptrType$4, sliceType$5, ptrType$12, ptrType$13, funcType$1, ptrType$15, arrayType$2, arrayType$5, ptrType$16, errFinished, lstat, runtime_args, init, runtime_beforeExit, NewSyscallError, IsNotExist, underlyingError, wrapSyscallError, isNotExist, sigpipe, syscallMode, NewFile, newFile, epipecheck, basename, init$1, Exit, fillFileStatFromSys, timespecToTime, Lstat;
+	var $pkg = {}, $init, errors, js, poll, io, runtime, sync, atomic, syscall, time, PathError, SyscallError, LinkError, file, dirInfo, File, FileInfo, FileMode, fileStat, sliceType, ptrType, sliceType$1, ptrType$1, sliceType$2, ptrType$2, ptrType$3, ptrType$4, sliceType$5, ptrType$12, ptrType$13, funcType$1, ptrType$15, arrayType$2, arrayType$5, ptrType$16, errFinished, lstat, runtime_args, init, runtime_beforeExit, NewSyscallError, IsNotExist, underlyingError, wrapSyscallError, isNotExist, Open, Create, Chmod, sigpipe, syscallMode, chmod, fixLongPath, NewFile, newFile, epipecheck, OpenFile, basename, init$1, Exit, fillFileStatFromSys, timespecToTime, Stat, Lstat;
 	errors = $packages["errors"];
 	js = $packages["github.com/gopherjs/gopherjs/js"];
 	poll = $packages["internal/poll"];
@@ -9940,6 +10276,16 @@ $packages["os"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: File.ptr.prototype.WriteString }; } $f._r = _r; $f._tuple = _tuple; $f.err = err; $f.f = f; $f.n = n; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	File.prototype.WriteString = function(s) { return this.$val.WriteString(s); };
+	Open = function(name) {
+		var name;
+		return OpenFile(name, 0, 0);
+	};
+	$pkg.Open = Open;
+	Create = function(name) {
+		var name;
+		return OpenFile(name, 578, 438);
+	};
+	$pkg.Create = Create;
 	File.ptr.prototype.wrapErr = function(op, err) {
 		var err, f, op;
 		f = this;
@@ -9952,6 +10298,11 @@ $packages["os"] = (function() {
 		return new PathError.ptr(op, f.file.name, err);
 	};
 	File.prototype.wrapErr = function(op, err) { return this.$val.wrapErr(op, err); };
+	Chmod = function(name, mode) {
+		var mode, name;
+		return chmod(name, mode);
+	};
+	$pkg.Chmod = Chmod;
 	File.ptr.prototype.Chmod = function(mode) {
 		var _r, f, mode, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; f = $f.f; mode = $f.mode; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -9978,6 +10329,14 @@ $packages["os"] = (function() {
 			o = (o | (512)) >>> 0;
 		}
 		return o;
+	};
+	chmod = function(name, mode) {
+		var e, mode, name;
+		e = syscall.Chmod(fixLongPath(name), syscallMode(mode));
+		if (!($interfaceIsEqual(e, $ifaceNil))) {
+			return new PathError.ptr("chmod", name, e);
+		}
+		return $ifaceNil;
 	};
 	File.ptr.prototype.chmod = function(mode) {
 		var _r, e, err, f, mode, $s, $r;
@@ -10073,6 +10432,10 @@ $packages["os"] = (function() {
 		return $ifaceNil;
 	};
 	File.prototype.checkValid = function(op) { return this.$val.checkValid(op); };
+	fixLongPath = function(path) {
+		var path;
+		return path;
+	};
 	File.ptr.prototype.Fd = function() {
 		var f;
 		f = this;
@@ -10117,6 +10480,39 @@ $packages["os"] = (function() {
 			sigpipe();
 		}
 	};
+	OpenFile = function(name, flag, perm) {
+		var _tuple, _tuple$1, chmod$1, e, err, flag, name, perm, r;
+		chmod$1 = false;
+		if (false && !(((flag & 64) === 0)) && !((((perm & 1048576) >>> 0) === 0))) {
+			_tuple = Stat(name);
+			err = _tuple[1];
+			if (IsNotExist(err)) {
+				chmod$1 = true;
+			}
+		}
+		r = 0;
+		while (true) {
+			e = $ifaceNil;
+			_tuple$1 = syscall.Open(name, flag | 524288, syscallMode(perm));
+			r = _tuple$1[0];
+			e = _tuple$1[1];
+			if ($interfaceIsEqual(e, $ifaceNil)) {
+				break;
+			}
+			if (false && $interfaceIsEqual(e, new syscall.Errno(4))) {
+				continue;
+			}
+			return [ptrType.nil, new PathError.ptr("open", name, e)];
+		}
+		if (chmod$1) {
+			Chmod(name, perm);
+		}
+		if (false) {
+			syscall.CloseOnExec(r);
+		}
+		return [newFile(((r >>> 0)), name, true), $ifaceNil];
+	};
+	$pkg.OpenFile = OpenFile;
 	File.ptr.prototype.Close = function() {
 		var _r, f, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; f = $f.f; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -10332,6 +10728,17 @@ $packages["os"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: File.ptr.prototype.Stat }; } $f._r = _r; $f.err = err; $f.f = f; $f.fs = fs; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	File.prototype.Stat = function() { return this.$val.Stat(); };
+	Stat = function(name) {
+		var err, fs, name;
+		fs = new fileStat.ptr("", new $Int64(0, 0), 0, new time.Time.ptr(new $Uint64(0, 0), new $Int64(0, 0), ptrType$15.nil), new syscall.Stat_t.ptr(new $Uint64(0, 0), new $Uint64(0, 0), new $Uint64(0, 0), 0, 0, 0, 0, new $Uint64(0, 0), new $Int64(0, 0), new $Int64(0, 0), new $Int64(0, 0), new syscall.Timespec.ptr(new $Int64(0, 0), new $Int64(0, 0)), new syscall.Timespec.ptr(new $Int64(0, 0), new $Int64(0, 0)), new syscall.Timespec.ptr(new $Int64(0, 0), new $Int64(0, 0)), arrayType$2.zero()));
+		err = syscall.Stat(name, fs.sys);
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			return [$ifaceNil, new PathError.ptr("stat", name, err)];
+		}
+		fillFileStatFromSys(fs, name);
+		return [fs, $ifaceNil];
+	};
+	$pkg.Stat = Stat;
 	Lstat = function(name) {
 		var err, fs, name;
 		fs = new fileStat.ptr("", new $Int64(0, 0), 0, new time.Time.ptr(new $Uint64(0, 0), new $Int64(0, 0), ptrType$15.nil), new syscall.Stat_t.ptr(new $Uint64(0, 0), new $Uint64(0, 0), new $Uint64(0, 0), 0, 0, 0, 0, new $Uint64(0, 0), new $Int64(0, 0), new $Int64(0, 0), new $Int64(0, 0), new syscall.Timespec.ptr(new $Int64(0, 0), new $Int64(0, 0)), new syscall.Timespec.ptr(new $Int64(0, 0), new $Int64(0, 0)), new syscall.Timespec.ptr(new $Int64(0, 0), new $Int64(0, 0)), arrayType$2.zero()));
@@ -17577,7 +17984,7 @@ $packages["reflect"] = (function() {
 	return $pkg;
 })();
 $packages["fmt"] = (function() {
-	var $pkg = {}, $init, errors, io, math, os, reflect, strconv, sync, utf8, fmtFlags, fmt, State, Formatter, Stringer, GoStringer, buffer, pp, scanError, ss, ssave, sliceType, ptrType, ptrType$1, arrayType, arrayType$1, sliceType$1, sliceType$2, arrayType$2, ptrType$2, ptrType$5, ptrType$25, funcType, ppFree, space, ssFree, complexError, boolError, newPrinter, Fprintf, Sprintf, Errorf, Sprint, Fprintln, Sprintln, getField, tooLarge, parsenum, intFromArg, parseArgNumber, isSpace, notSpace, indexRune;
+	var $pkg = {}, $init, errors, io, math, os, reflect, strconv, sync, utf8, fmtFlags, fmt, State, Formatter, Stringer, GoStringer, buffer, pp, scanError, ss, ssave, sliceType, ptrType, ptrType$1, arrayType, arrayType$1, sliceType$1, sliceType$2, arrayType$2, ptrType$2, ptrType$5, ptrType$25, funcType, ppFree, space, ssFree, complexError, boolError, newPrinter, Fprintf, Sprintf, Errorf, Fprint, Sprint, Fprintln, Sprintln, getField, tooLarge, parsenum, intFromArg, parseArgNumber, isSpace, notSpace, indexRune;
 	errors = $packages["errors"];
 	io = $packages["io"];
 	math = $packages["math"];
@@ -18301,6 +18708,23 @@ $packages["fmt"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Errorf }; } $f._r = _r; $f._r$1 = _r$1; $f.a = a; $f.format = format; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.Errorf = Errorf;
+	Fprint = function(w, a) {
+		var _r, _r$1, _tuple, a, err, n, p, w, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _tuple = $f._tuple; a = $f.a; err = $f.err; n = $f.n; p = $f.p; w = $f.w; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		n = 0;
+		err = $ifaceNil;
+		_r = newPrinter(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		p = _r;
+		$r = p.doPrint(a); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		_r$1 = w.Write((x = p.buf, $subslice(new sliceType$2(x.$array), x.$offset, x.$offset + x.$length))); /* */ $s = 3; case 3: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		_tuple = _r$1;
+		n = _tuple[0];
+		err = _tuple[1];
+		p.free();
+		$s = -1; return [n, err];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Fprint }; } $f._r = _r; $f._r$1 = _r$1; $f._tuple = _tuple; $f.a = a; $f.err = err; $f.n = n; $f.p = p; $f.w = w; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Fprint = Fprint;
 	Sprint = function(a) {
 		var _r, a, p, s, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; p = $f.p; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -20034,7 +20458,7 @@ $packages["fmt"] = (function() {
 	return $pkg;
 })();
 $packages["bytes"] = (function() {
-	var $pkg = {}, $init, errors, io, unicode, utf8, Buffer, readOp, ptrType, sliceType, arrayType, IndexByte, makeSlice;
+	var $pkg = {}, $init, errors, io, unicode, utf8, Buffer, readOp, ptrType, sliceType, arrayType, IndexByte, Equal, makeSlice, Index;
 	errors = $packages["errors"];
 	io = $packages["io"];
 	unicode = $packages["unicode"];
@@ -20073,6 +20497,25 @@ $packages["bytes"] = (function() {
 		return -1;
 	};
 	$pkg.IndexByte = IndexByte;
+	Equal = function(a, b) {
+		var _i, _ref, a, b, c, i;
+		if (!((a.$length === b.$length))) {
+			return false;
+		}
+		_ref = a;
+		_i = 0;
+		while (true) {
+			if (!(_i < _ref.$length)) { break; }
+			i = _i;
+			c = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			if (!((c === ((i < 0 || i >= b.$length) ? ($throwRuntimeError("index out of range"), undefined) : b.$array[b.$offset + i])))) {
+				return false;
+			}
+			_i++;
+		}
+		return true;
+	};
+	$pkg.Equal = Equal;
 	Buffer.ptr.prototype.Bytes = function() {
 		var b;
 		b = this;
@@ -20522,6 +20965,38 @@ $packages["bytes"] = (function() {
 		return [line, err];
 	};
 	Buffer.prototype.ReadString = function(delim) { return this.$val.ReadString(delim); };
+	Index = function(s, sep) {
+		var c, i, n, o, s, sep, t;
+		n = sep.$length;
+		if (n === 0) {
+			return 0;
+		}
+		if (n > s.$length) {
+			return -1;
+		}
+		c = (0 >= sep.$length ? ($throwRuntimeError("index out of range"), undefined) : sep.$array[sep.$offset + 0]);
+		if (n === 1) {
+			return IndexByte(s, c);
+		}
+		i = 0;
+		t = $subslice(s, 0, ((s.$length - n >> 0) + 1 >> 0));
+		while (true) {
+			if (!(i < t.$length)) { break; }
+			if (!((((i < 0 || i >= t.$length) ? ($throwRuntimeError("index out of range"), undefined) : t.$array[t.$offset + i]) === c))) {
+				o = IndexByte($subslice(t, i), c);
+				if (o < 0) {
+					break;
+				}
+				i = i + (o) >> 0;
+			}
+			if (Equal($subslice(s, i, (i + n >> 0)), sep)) {
+				return i;
+			}
+			i = i + (1) >> 0;
+		}
+		return -1;
+	};
+	$pkg.Index = Index;
 	ptrType.methods = [{prop: "Bytes", name: "Bytes", pkg: "", typ: $funcType([], [sliceType], false)}, {prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}, {prop: "Len", name: "Len", pkg: "", typ: $funcType([], [$Int], false)}, {prop: "Cap", name: "Cap", pkg: "", typ: $funcType([], [$Int], false)}, {prop: "Truncate", name: "Truncate", pkg: "", typ: $funcType([$Int], [], false)}, {prop: "Reset", name: "Reset", pkg: "", typ: $funcType([], [], false)}, {prop: "tryGrowByReslice", name: "tryGrowByReslice", pkg: "bytes", typ: $funcType([$Int], [$Int, $Bool], false)}, {prop: "grow", name: "grow", pkg: "bytes", typ: $funcType([$Int], [$Int], false)}, {prop: "Grow", name: "Grow", pkg: "", typ: $funcType([$Int], [], false)}, {prop: "Write", name: "Write", pkg: "", typ: $funcType([sliceType], [$Int, $error], false)}, {prop: "WriteString", name: "WriteString", pkg: "", typ: $funcType([$String], [$Int, $error], false)}, {prop: "ReadFrom", name: "ReadFrom", pkg: "", typ: $funcType([io.Reader], [$Int64, $error], false)}, {prop: "WriteTo", name: "WriteTo", pkg: "", typ: $funcType([io.Writer], [$Int64, $error], false)}, {prop: "WriteByte", name: "WriteByte", pkg: "", typ: $funcType([$Uint8], [$error], false)}, {prop: "WriteRune", name: "WriteRune", pkg: "", typ: $funcType([$Int32], [$Int, $error], false)}, {prop: "Read", name: "Read", pkg: "", typ: $funcType([sliceType], [$Int, $error], false)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([$Int], [sliceType], false)}, {prop: "ReadByte", name: "ReadByte", pkg: "", typ: $funcType([], [$Uint8, $error], false)}, {prop: "ReadRune", name: "ReadRune", pkg: "", typ: $funcType([], [$Int32, $Int, $error], false)}, {prop: "UnreadRune", name: "UnreadRune", pkg: "", typ: $funcType([], [$error], false)}, {prop: "UnreadByte", name: "UnreadByte", pkg: "", typ: $funcType([], [$error], false)}, {prop: "ReadBytes", name: "ReadBytes", pkg: "", typ: $funcType([$Uint8], [sliceType, $error], false)}, {prop: "readSlice", name: "readSlice", pkg: "bytes", typ: $funcType([$Uint8], [sliceType, $error], false)}, {prop: "ReadString", name: "ReadString", pkg: "", typ: $funcType([$Uint8], [$String, $error], false)}];
 	Buffer.init("bytes", [{prop: "buf", name: "buf", anonymous: false, exported: false, typ: sliceType, tag: ""}, {prop: "off", name: "off", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "lastRead", name: "lastRead", anonymous: false, exported: false, typ: readOp, tag: ""}, {prop: "bootstrap", name: "bootstrap", anonymous: false, exported: false, typ: arrayType, tag: ""}]);
 	$init = function() {
@@ -20538,7 +21013,7 @@ $packages["bytes"] = (function() {
 	return $pkg;
 })();
 $packages["bufio"] = (function() {
-	var $pkg = {}, $init, bytes, errors, io, utf8, Reader, sliceType, ptrType, sliceType$1, errNegativeRead, errNegativeWrite, NewReaderSize, NewReader;
+	var $pkg = {}, $init, bytes, errors, io, utf8, Reader, Scanner, SplitFunc, sliceType, ptrType, sliceType$1, ptrType$2, errNegativeRead, errNegativeWrite, NewReaderSize, NewReader, NewScanner, dropCR, ScanLines, isSpace, ScanWords;
 	bytes = $packages["bytes"];
 	errors = $packages["errors"];
 	io = $packages["io"];
@@ -20563,9 +21038,39 @@ $packages["bufio"] = (function() {
 		this.lastByte = lastByte_;
 		this.lastRuneSize = lastRuneSize_;
 	});
+	Scanner = $pkg.Scanner = $newType(0, $kindStruct, "bufio.Scanner", true, "bufio", true, function(r_, split_, maxTokenSize_, token_, buf_, start_, end_, err_, empties_, scanCalled_, done_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.r = $ifaceNil;
+			this.split = $throwNilPointerError;
+			this.maxTokenSize = 0;
+			this.token = sliceType.nil;
+			this.buf = sliceType.nil;
+			this.start = 0;
+			this.end = 0;
+			this.err = $ifaceNil;
+			this.empties = 0;
+			this.scanCalled = false;
+			this.done = false;
+			return;
+		}
+		this.r = r_;
+		this.split = split_;
+		this.maxTokenSize = maxTokenSize_;
+		this.token = token_;
+		this.buf = buf_;
+		this.start = start_;
+		this.end = end_;
+		this.err = err_;
+		this.empties = empties_;
+		this.scanCalled = scanCalled_;
+		this.done = done_;
+	});
+	SplitFunc = $pkg.SplitFunc = $newType(4, $kindFunc, "bufio.SplitFunc", true, "bufio", true, null);
 	sliceType = $sliceType($Uint8);
 	ptrType = $ptrType(Reader);
 	sliceType$1 = $sliceType(sliceType);
+	ptrType$2 = $ptrType(Scanner);
 	NewReaderSize = function(rd, size) {
 		var _tuple, b, ok, r, rd, size;
 		_tuple = $assertType(rd, ptrType, true);
@@ -21128,8 +21633,301 @@ $packages["bufio"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Reader.ptr.prototype.writeBuf }; } $f._r = _r; $f._tuple = _tuple; $f.b = b; $f.err = err; $f.n = n; $f.w = w; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Reader.prototype.writeBuf = function(w) { return this.$val.writeBuf(w); };
+	NewScanner = function(r) {
+		var r;
+		return new Scanner.ptr(r, ScanLines, 65536, sliceType.nil, sliceType.nil, 0, 0, $ifaceNil, 0, false, false);
+	};
+	$pkg.NewScanner = NewScanner;
+	Scanner.ptr.prototype.Err = function() {
+		var s;
+		s = this;
+		if ($interfaceIsEqual(s.err, io.EOF)) {
+			return $ifaceNil;
+		}
+		return s.err;
+	};
+	Scanner.prototype.Err = function() { return this.$val.Err(); };
+	Scanner.ptr.prototype.Bytes = function() {
+		var s;
+		s = this;
+		return s.token;
+	};
+	Scanner.prototype.Bytes = function() { return this.$val.Bytes(); };
+	Scanner.ptr.prototype.Text = function() {
+		var s;
+		s = this;
+		return ($bytesToString(s.token));
+	};
+	Scanner.prototype.Text = function() { return this.$val.Text(); };
+	Scanner.ptr.prototype.Scan = function() {
+		var _q, _r, _r$1, _tuple, _tuple$1, advance, err, err$1, loop, n, newBuf, newSize, s, token, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _q = $f._q; _r = $f._r; _r$1 = $f._r$1; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; advance = $f.advance; err = $f.err; err$1 = $f.err$1; loop = $f.loop; n = $f.n; newBuf = $f.newBuf; newSize = $f.newSize; s = $f.s; token = $f.token; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		s = this;
+		if (s.done) {
+			$s = -1; return false;
+		}
+		s.scanCalled = true;
+		/* while (true) { */ case 1:
+			/* */ if (s.end > s.start || !($interfaceIsEqual(s.err, $ifaceNil))) { $s = 3; continue; }
+			/* */ $s = 4; continue;
+			/* if (s.end > s.start || !($interfaceIsEqual(s.err, $ifaceNil))) { */ case 3:
+				_r = s.split($subslice(s.buf, s.start, s.end), !($interfaceIsEqual(s.err, $ifaceNil))); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+				_tuple = _r;
+				advance = _tuple[0];
+				token = _tuple[1];
+				err = _tuple[2];
+				if (!($interfaceIsEqual(err, $ifaceNil))) {
+					if ($interfaceIsEqual(err, $pkg.ErrFinalToken)) {
+						s.token = token;
+						s.done = true;
+						$s = -1; return true;
+					}
+					s.setErr(err);
+					$s = -1; return false;
+				}
+				if (!s.advance(advance)) {
+					$s = -1; return false;
+				}
+				s.token = token;
+				if (!(token === sliceType.nil)) {
+					if ($interfaceIsEqual(s.err, $ifaceNil) || advance > 0) {
+						s.empties = 0;
+					} else {
+						s.empties = s.empties + (1) >> 0;
+						if (s.empties > 100) {
+							$panic(new $String("bufio.Scan: 100 empty tokens without progressing"));
+						}
+					}
+					$s = -1; return true;
+				}
+			/* } */ case 4:
+			if (!($interfaceIsEqual(s.err, $ifaceNil))) {
+				s.start = 0;
+				s.end = 0;
+				$s = -1; return false;
+			}
+			if (s.start > 0 && ((s.end === s.buf.$length) || s.start > (_q = s.buf.$length / 2, (_q === _q && _q !== 1/0 && _q !== -1/0) ? _q >> 0 : $throwRuntimeError("integer divide by zero")))) {
+				$copySlice(s.buf, $subslice(s.buf, s.start, s.end));
+				s.end = s.end - (s.start) >> 0;
+				s.start = 0;
+			}
+			if (s.end === s.buf.$length) {
+				if (s.buf.$length >= s.maxTokenSize || s.buf.$length > 1073741823) {
+					s.setErr($pkg.ErrTooLong);
+					$s = -1; return false;
+				}
+				newSize = $imul(s.buf.$length, 2);
+				if (newSize === 0) {
+					newSize = 4096;
+				}
+				if (newSize > s.maxTokenSize) {
+					newSize = s.maxTokenSize;
+				}
+				newBuf = $makeSlice(sliceType, newSize);
+				$copySlice(newBuf, $subslice(s.buf, s.start, s.end));
+				s.buf = newBuf;
+				s.end = s.end - (s.start) >> 0;
+				s.start = 0;
+			}
+			loop = 0;
+			/* while (true) { */ case 6:
+				_r$1 = s.r.Read($subslice(s.buf, s.end, s.buf.$length)); /* */ $s = 8; case 8: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+				_tuple$1 = _r$1;
+				n = _tuple$1[0];
+				err$1 = _tuple$1[1];
+				s.end = s.end + (n) >> 0;
+				if (!($interfaceIsEqual(err$1, $ifaceNil))) {
+					s.setErr(err$1);
+					/* break; */ $s = 7; continue;
+				}
+				if (n > 0) {
+					s.empties = 0;
+					/* break; */ $s = 7; continue;
+				}
+				loop = loop + (1) >> 0;
+				if (loop > 100) {
+					s.setErr(io.ErrNoProgress);
+					/* break; */ $s = 7; continue;
+				}
+			/* } */ $s = 6; continue; case 7:
+		/* } */ $s = 1; continue; case 2:
+		$s = -1; return false;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Scanner.ptr.prototype.Scan }; } $f._q = _q; $f._r = _r; $f._r$1 = _r$1; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.advance = advance; $f.err = err; $f.err$1 = err$1; $f.loop = loop; $f.n = n; $f.newBuf = newBuf; $f.newSize = newSize; $f.s = s; $f.token = token; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	Scanner.prototype.Scan = function() { return this.$val.Scan(); };
+	Scanner.ptr.prototype.advance = function(n) {
+		var n, s;
+		s = this;
+		if (n < 0) {
+			s.setErr($pkg.ErrNegativeAdvance);
+			return false;
+		}
+		if (n > (s.end - s.start >> 0)) {
+			s.setErr($pkg.ErrAdvanceTooFar);
+			return false;
+		}
+		s.start = s.start + (n) >> 0;
+		return true;
+	};
+	Scanner.prototype.advance = function(n) { return this.$val.advance(n); };
+	Scanner.ptr.prototype.setErr = function(err) {
+		var err, s;
+		s = this;
+		if ($interfaceIsEqual(s.err, $ifaceNil) || $interfaceIsEqual(s.err, io.EOF)) {
+			s.err = err;
+		}
+	};
+	Scanner.prototype.setErr = function(err) { return this.$val.setErr(err); };
+	Scanner.ptr.prototype.Buffer = function(buf, max) {
+		var buf, max, s;
+		s = this;
+		if (s.scanCalled) {
+			$panic(new $String("Buffer called after Scan"));
+		}
+		s.buf = $subslice(buf, 0, buf.$capacity);
+		s.maxTokenSize = max;
+	};
+	Scanner.prototype.Buffer = function(buf, max) { return this.$val.Buffer(buf, max); };
+	Scanner.ptr.prototype.Split = function(split) {
+		var s, split;
+		s = this;
+		if (s.scanCalled) {
+			$panic(new $String("Split called after Scan"));
+		}
+		s.split = split;
+	};
+	Scanner.prototype.Split = function(split) { return this.$val.Split(split); };
+	dropCR = function(data) {
+		var data, x;
+		if (data.$length > 0 && ((x = data.$length - 1 >> 0, ((x < 0 || x >= data.$length) ? ($throwRuntimeError("index out of range"), undefined) : data.$array[data.$offset + x])) === 13)) {
+			return $subslice(data, 0, (data.$length - 1 >> 0));
+		}
+		return data;
+	};
+	ScanLines = function(data, atEOF) {
+		var _tmp, _tmp$1, _tmp$10, _tmp$11, _tmp$2, _tmp$3, _tmp$4, _tmp$5, _tmp$6, _tmp$7, _tmp$8, _tmp$9, advance, atEOF, data, err, i, token;
+		advance = 0;
+		token = sliceType.nil;
+		err = $ifaceNil;
+		if (atEOF && (data.$length === 0)) {
+			_tmp = 0;
+			_tmp$1 = sliceType.nil;
+			_tmp$2 = $ifaceNil;
+			advance = _tmp;
+			token = _tmp$1;
+			err = _tmp$2;
+			return [advance, token, err];
+		}
+		i = bytes.IndexByte(data, 10);
+		if (i >= 0) {
+			_tmp$3 = i + 1 >> 0;
+			_tmp$4 = dropCR($subslice(data, 0, i));
+			_tmp$5 = $ifaceNil;
+			advance = _tmp$3;
+			token = _tmp$4;
+			err = _tmp$5;
+			return [advance, token, err];
+		}
+		if (atEOF) {
+			_tmp$6 = data.$length;
+			_tmp$7 = dropCR(data);
+			_tmp$8 = $ifaceNil;
+			advance = _tmp$6;
+			token = _tmp$7;
+			err = _tmp$8;
+			return [advance, token, err];
+		}
+		_tmp$9 = 0;
+		_tmp$10 = sliceType.nil;
+		_tmp$11 = $ifaceNil;
+		advance = _tmp$9;
+		token = _tmp$10;
+		err = _tmp$11;
+		return [advance, token, err];
+	};
+	$pkg.ScanLines = ScanLines;
+	isSpace = function(r) {
+		var _1, _2, r;
+		if (r <= 255) {
+			_1 = r;
+			if ((_1 === (32)) || (_1 === (9)) || (_1 === (10)) || (_1 === (11)) || (_1 === (12)) || (_1 === (13))) {
+				return true;
+			} else if ((_1 === (133)) || (_1 === (160))) {
+				return true;
+			}
+			return false;
+		}
+		if (8192 <= r && r <= 8202) {
+			return true;
+		}
+		_2 = r;
+		if ((_2 === (5760)) || (_2 === (8232)) || (_2 === (8233)) || (_2 === (8239)) || (_2 === (8287)) || (_2 === (12288))) {
+			return true;
+		}
+		return false;
+	};
+	ScanWords = function(data, atEOF) {
+		var _tmp, _tmp$1, _tmp$10, _tmp$2, _tmp$3, _tmp$4, _tmp$5, _tmp$6, _tmp$7, _tmp$8, _tmp$9, _tuple, _tuple$1, advance, atEOF, data, err, i, r, r$1, start, token, width, width$1;
+		advance = 0;
+		token = sliceType.nil;
+		err = $ifaceNil;
+		start = 0;
+		width = 0;
+		while (true) {
+			if (!(start < data.$length)) { break; }
+			r = 0;
+			_tuple = utf8.DecodeRune($subslice(data, start));
+			r = _tuple[0];
+			width = _tuple[1];
+			if (!isSpace(r)) {
+				break;
+			}
+			start = start + (width) >> 0;
+		}
+		_tmp = 0;
+		_tmp$1 = start;
+		width$1 = _tmp;
+		i = _tmp$1;
+		while (true) {
+			if (!(i < data.$length)) { break; }
+			r$1 = 0;
+			_tuple$1 = utf8.DecodeRune($subslice(data, i));
+			r$1 = _tuple$1[0];
+			width$1 = _tuple$1[1];
+			if (isSpace(r$1)) {
+				_tmp$2 = i + width$1 >> 0;
+				_tmp$3 = $subslice(data, start, i);
+				_tmp$4 = $ifaceNil;
+				advance = _tmp$2;
+				token = _tmp$3;
+				err = _tmp$4;
+				return [advance, token, err];
+			}
+			i = i + (width$1) >> 0;
+		}
+		if (atEOF && data.$length > start) {
+			_tmp$5 = data.$length;
+			_tmp$6 = $subslice(data, start);
+			_tmp$7 = $ifaceNil;
+			advance = _tmp$5;
+			token = _tmp$6;
+			err = _tmp$7;
+			return [advance, token, err];
+		}
+		_tmp$8 = start;
+		_tmp$9 = sliceType.nil;
+		_tmp$10 = $ifaceNil;
+		advance = _tmp$8;
+		token = _tmp$9;
+		err = _tmp$10;
+		return [advance, token, err];
+	};
+	$pkg.ScanWords = ScanWords;
 	ptrType.methods = [{prop: "Reset", name: "Reset", pkg: "", typ: $funcType([io.Reader], [], false)}, {prop: "reset", name: "reset", pkg: "bufio", typ: $funcType([sliceType, io.Reader], [], false)}, {prop: "fill", name: "fill", pkg: "bufio", typ: $funcType([], [], false)}, {prop: "readErr", name: "readErr", pkg: "bufio", typ: $funcType([], [$error], false)}, {prop: "Peek", name: "Peek", pkg: "", typ: $funcType([$Int], [sliceType, $error], false)}, {prop: "Discard", name: "Discard", pkg: "", typ: $funcType([$Int], [$Int, $error], false)}, {prop: "Read", name: "Read", pkg: "", typ: $funcType([sliceType], [$Int, $error], false)}, {prop: "ReadByte", name: "ReadByte", pkg: "", typ: $funcType([], [$Uint8, $error], false)}, {prop: "UnreadByte", name: "UnreadByte", pkg: "", typ: $funcType([], [$error], false)}, {prop: "ReadRune", name: "ReadRune", pkg: "", typ: $funcType([], [$Int32, $Int, $error], false)}, {prop: "UnreadRune", name: "UnreadRune", pkg: "", typ: $funcType([], [$error], false)}, {prop: "Buffered", name: "Buffered", pkg: "", typ: $funcType([], [$Int], false)}, {prop: "ReadSlice", name: "ReadSlice", pkg: "", typ: $funcType([$Uint8], [sliceType, $error], false)}, {prop: "ReadLine", name: "ReadLine", pkg: "", typ: $funcType([], [sliceType, $Bool, $error], false)}, {prop: "ReadBytes", name: "ReadBytes", pkg: "", typ: $funcType([$Uint8], [sliceType, $error], false)}, {prop: "ReadString", name: "ReadString", pkg: "", typ: $funcType([$Uint8], [$String, $error], false)}, {prop: "WriteTo", name: "WriteTo", pkg: "", typ: $funcType([io.Writer], [$Int64, $error], false)}, {prop: "writeBuf", name: "writeBuf", pkg: "bufio", typ: $funcType([io.Writer], [$Int64, $error], false)}];
+	ptrType$2.methods = [{prop: "Err", name: "Err", pkg: "", typ: $funcType([], [$error], false)}, {prop: "Bytes", name: "Bytes", pkg: "", typ: $funcType([], [sliceType], false)}, {prop: "Text", name: "Text", pkg: "", typ: $funcType([], [$String], false)}, {prop: "Scan", name: "Scan", pkg: "", typ: $funcType([], [$Bool], false)}, {prop: "advance", name: "advance", pkg: "bufio", typ: $funcType([$Int], [$Bool], false)}, {prop: "setErr", name: "setErr", pkg: "bufio", typ: $funcType([$error], [], false)}, {prop: "Buffer", name: "Buffer", pkg: "", typ: $funcType([sliceType, $Int], [], false)}, {prop: "Split", name: "Split", pkg: "", typ: $funcType([SplitFunc], [], false)}];
 	Reader.init("bufio", [{prop: "buf", name: "buf", anonymous: false, exported: false, typ: sliceType, tag: ""}, {prop: "rd", name: "rd", anonymous: false, exported: false, typ: io.Reader, tag: ""}, {prop: "r", name: "r", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "w", name: "w", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "err", name: "err", anonymous: false, exported: false, typ: $error, tag: ""}, {prop: "lastByte", name: "lastByte", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "lastRuneSize", name: "lastRuneSize", anonymous: false, exported: false, typ: $Int, tag: ""}]);
+	Scanner.init("bufio", [{prop: "r", name: "r", anonymous: false, exported: false, typ: io.Reader, tag: ""}, {prop: "split", name: "split", anonymous: false, exported: false, typ: SplitFunc, tag: ""}, {prop: "maxTokenSize", name: "maxTokenSize", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "token", name: "token", anonymous: false, exported: false, typ: sliceType, tag: ""}, {prop: "buf", name: "buf", anonymous: false, exported: false, typ: sliceType, tag: ""}, {prop: "start", name: "start", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "end", name: "end", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "err", name: "err", anonymous: false, exported: false, typ: $error, tag: ""}, {prop: "empties", name: "empties", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "scanCalled", name: "scanCalled", anonymous: false, exported: false, typ: $Bool, tag: ""}, {prop: "done", name: "done", anonymous: false, exported: false, typ: $Bool, tag: ""}]);
+	SplitFunc.init([sliceType, $Bool], [$Int, sliceType, $error], false);
 	$init = function() {
 		$pkg.$init = function() {};
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -21803,7 +22601,7 @@ $packages["github.com/DeedleFake/wdte/scanner"] = (function() {
 		$r = strconv.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = strings.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = unicode.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		symbols = $makeMap($String.keyFor, [{ k: ".", v: new structType.ptr() }, { k: "->", v: new structType.ptr() }, { k: "{", v: new structType.ptr() }, { k: "}", v: new structType.ptr() }, { k: "[", v: new structType.ptr() }, { k: "]", v: new structType.ptr() }, { k: "(", v: new structType.ptr() }, { k: ")", v: new structType.ptr() }, { k: "=>", v: new structType.ptr() }, { k: ";", v: new structType.ptr() }]);
+		symbols = $makeMap($String.keyFor, [{ k: ".", v: new structType.ptr() }, { k: "->", v: new structType.ptr() }, { k: "{", v: new structType.ptr() }, { k: "}", v: new structType.ptr() }, { k: "[", v: new structType.ptr() }, { k: "]", v: new structType.ptr() }, { k: "(", v: new structType.ptr() }, { k: ")", v: new structType.ptr() }, { k: "=>", v: new structType.ptr() }, { k: ";", v: new structType.ptr() }, { k: ":", v: new structType.ptr() }, { k: "--", v: new structType.ptr() }]);
 		keywords = $makeMap($String.keyFor, [{ k: "switch", v: new structType.ptr() }, { k: "default", v: new structType.ptr() }, { k: "memo", v: new structType.ptr() }]);
 		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
 	};
@@ -21811,7 +22609,7 @@ $packages["github.com/DeedleFake/wdte/scanner"] = (function() {
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte/ast/internal/pgen"] = (function() {
-	var $pkg = {}, $init, scanner, Token, Term, NTerm, Epsilon, EOF, Lookup, Rule, sliceType, x, x$1, x$2, x$3, x$4, x$5, x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$13, x$14, x$15, x$16, x$17, x$18, x$19, x$20, x$21, x$22, x$23, x$24, x$25, x$26, x$27, x$28, x$29, x$30, x$31, x$32, x$33, x$34, x$35, x$36, x$37, x$38, x$39, x$40, x$41, x$42, x$43, x$44, x$45, x$46, x$47, x$48, x$49, x$50, x$51, x$52, x$53, x$54, x$55, x$56, x$57, x$58, x$59, x$60, x$61, x$62, x$63, x$64, x$65, x$66, x$67, x$68, x$69, x$70, x$71, x$72, x$73, x$74, x$75, x$76, x$77, x$78, x$79, x$80, x$81, x$82, x$83, x$84, x$85, x$86, x$87, x$88, x$89, x$90, x$91, x$92, x$93, x$94, x$95, x$96, x$97, x$98, x$99, x$100, x$101, x$102, x$103, x$104, x$105, x$106, x$107, x$108, x$109, x$110, x$111, x$112, x$113, x$114, x$115, x$116, x$117, x$118, x$119, x$120, x$121, x$122, x$123, x$124, x$125, x$126, x$127, x$128, x$129, x$130, x$131, x$132, x$133, x$134, x$135, x$136, x$137, x$138, x$139, x$140, x$141, x$142, x$143, x$144, x$145, x$146, x$147, x$148, newTerm, newNTerm, newEpsilon, newEOF, newRule;
+	var $pkg = {}, $init, scanner, Token, Term, NTerm, Epsilon, EOF, Rule, Lookup;
 	scanner = $packages["github.com/DeedleFake/wdte/scanner"];
 	Token = $pkg.Token = $newType(8, $kindInterface, "pgen.Token", true, "github.com/DeedleFake/wdte/ast/internal/pgen", true, null);
 	Term = $pkg.Term = $newType(0, $kindStruct, "pgen.Term", true, "github.com/DeedleFake/wdte/ast/internal/pgen", true, function(Type_, Keyword_) {
@@ -21837,6 +22635,7 @@ $packages["github.com/DeedleFake/wdte/ast/internal/pgen"] = (function() {
 			return;
 		}
 	});
+	Rule = $pkg.Rule = $newType(12, $kindSlice, "pgen.Rule", true, "github.com/DeedleFake/wdte/ast/internal/pgen", true, null);
 	Lookup = $pkg.Lookup = $newType(0, $kindStruct, "pgen.Lookup", true, "github.com/DeedleFake/wdte/ast/internal/pgen", true, function(Term_, NTerm_) {
 		this.$val = this;
 		if (arguments.length === 0) {
@@ -21847,8 +22646,6 @@ $packages["github.com/DeedleFake/wdte/ast/internal/pgen"] = (function() {
 		this.Term = Term_;
 		this.NTerm = NTerm_;
 	});
-	Rule = $pkg.Rule = $newType(12, $kindSlice, "pgen.Rule", true, "github.com/DeedleFake/wdte/ast/internal/pgen", true, null);
-	sliceType = $sliceType(Token);
 	Term.ptr.prototype.String = function() {
 		var _r, t, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; t = $f.t; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -21861,25 +22658,6 @@ $packages["github.com/DeedleFake/wdte/ast/internal/pgen"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Term.ptr.prototype.String }; } $f._r = _r; $f.t = t; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Term.prototype.String = function() { return this.$val.String(); };
-	newTerm = function(t) {
-		var _1, t;
-		_1 = t;
-		if (_1 === ("id")) {
-			return new Term.ptr(3, "");
-		} else if (_1 === ("string")) {
-			return new Term.ptr(2, "");
-		} else if (_1 === ("number")) {
-			return new Term.ptr(1, "");
-		}
-		return new Term.ptr(4, t);
-	};
-	newNTerm = function(nt) {
-		var nt;
-		return (nt);
-	};
-	newEpsilon = function() {
-		return new Epsilon.ptr();
-	};
 	Epsilon.ptr.prototype.String = function() {
 		var e;
 		e = this;
@@ -21892,15 +22670,6 @@ $packages["github.com/DeedleFake/wdte/ast/internal/pgen"] = (function() {
 		return "\xCE\xA9";
 	};
 	EOF.prototype.String = function() { return this.$val.String(); };
-	newEOF = function() {
-		return new EOF.ptr();
-	};
-	newRule = function(tokens) {
-		var r, tokens;
-		r = Rule.nil;
-		r = ($subslice(new Rule(tokens.$array), tokens.$offset, tokens.$offset + tokens.$length));
-		return r;
-	};
 	Term.methods = [{prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}];
 	Epsilon.methods = [{prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}];
 	EOF.methods = [{prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}];
@@ -21908,22 +22677,111 @@ $packages["github.com/DeedleFake/wdte/ast/internal/pgen"] = (function() {
 	Term.init("", [{prop: "Type", name: "Type", anonymous: false, exported: true, typ: scanner.TokenType, tag: ""}, {prop: "Keyword", name: "Keyword", anonymous: false, exported: true, typ: $String, tag: ""}]);
 	Epsilon.init("", []);
 	EOF.init("", []);
-	Lookup.init("", [{prop: "Term", name: "Term", anonymous: false, exported: true, typ: Token, tag: ""}, {prop: "NTerm", name: "NTerm", anonymous: false, exported: true, typ: NTerm, tag: ""}]);
 	Rule.init(Token);
+	Lookup.init("", [{prop: "Term", name: "Term", anonymous: false, exported: true, typ: Token, tag: ""}, {prop: "NTerm", name: "NTerm", anonymous: false, exported: true, typ: NTerm, tag: ""}]);
 	$init = function() {
 		$pkg.$init = function() {};
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		$r = scanner.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$pkg.Table = $makeMap(Lookup.keyFor, [{ k: new Lookup.ptr((x = newTerm("id"), new x.constructor.elem(x)), newNTerm("argdecls")), v: newRule(new sliceType([(x$1 = newTerm("id"), new x$1.constructor.elem(x$1)), new NTerm(newNTerm("argdecls"))])) }, { k: new Lookup.ptr((x$2 = newTerm("=>"), new x$2.constructor.elem(x$2)), newNTerm("argdecls")), v: newRule(new sliceType([(x$3 = newEpsilon(), new x$3.constructor.elem(x$3))])) }, { k: new Lookup.ptr((x$4 = newTerm("("), new x$4.constructor.elem(x$4)), newNTerm("args")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args"))])) }, { k: new Lookup.ptr((x$5 = newTerm("number"), new x$5.constructor.elem(x$5)), newNTerm("args")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args"))])) }, { k: new Lookup.ptr((x$6 = newTerm("string"), new x$6.constructor.elem(x$6)), newNTerm("args")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args"))])) }, { k: new Lookup.ptr((x$7 = newTerm("id"), new x$7.constructor.elem(x$7)), newNTerm("args")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args"))])) }, { k: new Lookup.ptr((x$8 = newTerm("["), new x$8.constructor.elem(x$8)), newNTerm("args")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args"))])) }, { k: new Lookup.ptr((x$9 = newTerm("switch"), new x$9.constructor.elem(x$9)), newNTerm("args")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args"))])) }, { k: new Lookup.ptr((x$10 = newTerm(";"), new x$10.constructor.elem(x$10)), newNTerm("args")), v: newRule(new sliceType([(x$11 = newEpsilon(), new x$11.constructor.elem(x$11))])) }, { k: new Lookup.ptr((x$12 = newTerm("{"), new x$12.constructor.elem(x$12)), newNTerm("args")), v: newRule(new sliceType([(x$13 = newEpsilon(), new x$13.constructor.elem(x$13))])) }, { k: new Lookup.ptr((x$14 = newTerm("=>"), new x$14.constructor.elem(x$14)), newNTerm("args")), v: newRule(new sliceType([(x$15 = newEpsilon(), new x$15.constructor.elem(x$15))])) }, { k: new Lookup.ptr((x$16 = newTerm("->"), new x$16.constructor.elem(x$16)), newNTerm("args")), v: newRule(new sliceType([(x$17 = newEpsilon(), new x$17.constructor.elem(x$17))])) }, { k: new Lookup.ptr((x$18 = newTerm("["), new x$18.constructor.elem(x$18)), newNTerm("array")), v: newRule(new sliceType([(x$19 = newTerm("["), new x$19.constructor.elem(x$19)), new NTerm(newNTerm("exprs")), (x$20 = newTerm("]"), new x$20.constructor.elem(x$20))])) }, { k: new Lookup.ptr((x$21 = newTerm("->"), new x$21.constructor.elem(x$21)), newNTerm("chain")), v: newRule(new sliceType([(x$22 = newTerm("->"), new x$22.constructor.elem(x$22)), new NTerm(newNTerm("single")), new NTerm(newNTerm("args")), new NTerm(newNTerm("chain"))])) }, { k: new Lookup.ptr((x$23 = newTerm(";"), new x$23.constructor.elem(x$23)), newNTerm("chain")), v: newRule(new sliceType([(x$24 = newEpsilon(), new x$24.constructor.elem(x$24))])) }, { k: new Lookup.ptr((x$25 = newTerm("{"), new x$25.constructor.elem(x$25)), newNTerm("chain")), v: newRule(new sliceType([(x$26 = newEpsilon(), new x$26.constructor.elem(x$26))])) }, { k: new Lookup.ptr((x$27 = newTerm("=>"), new x$27.constructor.elem(x$27)), newNTerm("chain")), v: newRule(new sliceType([(x$28 = newEpsilon(), new x$28.constructor.elem(x$28))])) }, { k: new Lookup.ptr((x$29 = newTerm("("), new x$29.constructor.elem(x$29)), newNTerm("compound")), v: newRule(new sliceType([(x$30 = newTerm("("), new x$30.constructor.elem(x$30)), new NTerm(newNTerm("exprs")), (x$31 = newTerm(")"), new x$31.constructor.elem(x$31))])) }, { k: new Lookup.ptr((x$32 = newTerm("memo"), new x$32.constructor.elem(x$32)), newNTerm("decl")), v: newRule(new sliceType([new NTerm(newNTerm("funcdecl"))])) }, { k: new Lookup.ptr((x$33 = newTerm("id"), new x$33.constructor.elem(x$33)), newNTerm("decl")), v: newRule(new sliceType([new NTerm(newNTerm("funcdecl"))])) }, { k: new Lookup.ptr((x$34 = newTerm("string"), new x$34.constructor.elem(x$34)), newNTerm("decl")), v: newRule(new sliceType([new NTerm(newNTerm("import"))])) }, { k: new Lookup.ptr((x$35 = newTerm("id"), new x$35.constructor.elem(x$35)), newNTerm("decls")), v: newRule(new sliceType([new NTerm(newNTerm("decl")), new NTerm(newNTerm("decls"))])) }, { k: new Lookup.ptr((x$36 = newTerm("string"), new x$36.constructor.elem(x$36)), newNTerm("decls")), v: newRule(new sliceType([new NTerm(newNTerm("decl")), new NTerm(newNTerm("decls"))])) }, { k: new Lookup.ptr((x$37 = newTerm("memo"), new x$37.constructor.elem(x$37)), newNTerm("decls")), v: newRule(new sliceType([new NTerm(newNTerm("decl")), new NTerm(newNTerm("decls"))])) }, { k: new Lookup.ptr((x$38 = newEOF(), new x$38.constructor.elem(x$38)), newNTerm("decls")), v: newRule(new sliceType([(x$39 = newEpsilon(), new x$39.constructor.elem(x$39))])) }, { k: new Lookup.ptr((x$40 = newTerm("number"), new x$40.constructor.elem(x$40)), newNTerm("expr")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args")), new NTerm(newNTerm("chain"))])) }, { k: new Lookup.ptr((x$41 = newTerm("string"), new x$41.constructor.elem(x$41)), newNTerm("expr")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args")), new NTerm(newNTerm("chain"))])) }, { k: new Lookup.ptr((x$42 = newTerm("id"), new x$42.constructor.elem(x$42)), newNTerm("expr")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args")), new NTerm(newNTerm("chain"))])) }, { k: new Lookup.ptr((x$43 = newTerm("["), new x$43.constructor.elem(x$43)), newNTerm("expr")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args")), new NTerm(newNTerm("chain"))])) }, { k: new Lookup.ptr((x$44 = newTerm("switch"), new x$44.constructor.elem(x$44)), newNTerm("expr")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args")), new NTerm(newNTerm("chain"))])) }, { k: new Lookup.ptr((x$45 = newTerm("("), new x$45.constructor.elem(x$45)), newNTerm("expr")), v: newRule(new sliceType([new NTerm(newNTerm("single")), new NTerm(newNTerm("args")), new NTerm(newNTerm("chain"))])) }, { k: new Lookup.ptr((x$46 = newTerm("string"), new x$46.constructor.elem(x$46)), newNTerm("exprs")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$47 = newTerm(";"), new x$47.constructor.elem(x$47)), new NTerm(newNTerm("exprs"))])) }, { k: new Lookup.ptr((x$48 = newTerm("id"), new x$48.constructor.elem(x$48)), newNTerm("exprs")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$49 = newTerm(";"), new x$49.constructor.elem(x$49)), new NTerm(newNTerm("exprs"))])) }, { k: new Lookup.ptr((x$50 = newTerm("["), new x$50.constructor.elem(x$50)), newNTerm("exprs")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$51 = newTerm(";"), new x$51.constructor.elem(x$51)), new NTerm(newNTerm("exprs"))])) }, { k: new Lookup.ptr((x$52 = newTerm("switch"), new x$52.constructor.elem(x$52)), newNTerm("exprs")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$53 = newTerm(";"), new x$53.constructor.elem(x$53)), new NTerm(newNTerm("exprs"))])) }, { k: new Lookup.ptr((x$54 = newTerm("("), new x$54.constructor.elem(x$54)), newNTerm("exprs")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$55 = newTerm(";"), new x$55.constructor.elem(x$55)), new NTerm(newNTerm("exprs"))])) }, { k: new Lookup.ptr((x$56 = newTerm("number"), new x$56.constructor.elem(x$56)), newNTerm("exprs")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$57 = newTerm(";"), new x$57.constructor.elem(x$57)), new NTerm(newNTerm("exprs"))])) }, { k: new Lookup.ptr((x$58 = newTerm("]"), new x$58.constructor.elem(x$58)), newNTerm("exprs")), v: newRule(new sliceType([(x$59 = newEpsilon(), new x$59.constructor.elem(x$59))])) }, { k: new Lookup.ptr((x$60 = newTerm(")"), new x$60.constructor.elem(x$60)), newNTerm("exprs")), v: newRule(new sliceType([(x$61 = newEpsilon(), new x$61.constructor.elem(x$61))])) }, { k: new Lookup.ptr((x$62 = newTerm("id"), new x$62.constructor.elem(x$62)), newNTerm("func")), v: newRule(new sliceType([(x$63 = newTerm("id"), new x$63.constructor.elem(x$63)), new NTerm(newNTerm("subfunc"))])) }, { k: new Lookup.ptr((x$64 = newTerm("memo"), new x$64.constructor.elem(x$64)), newNTerm("funcdecl")), v: newRule(new sliceType([new NTerm(newNTerm("funcmods")), (x$65 = newTerm("id"), new x$65.constructor.elem(x$65)), new NTerm(newNTerm("argdecls")), (x$66 = newTerm("=>"), new x$66.constructor.elem(x$66)), new NTerm(newNTerm("expr")), (x$67 = newTerm(";"), new x$67.constructor.elem(x$67))])) }, { k: new Lookup.ptr((x$68 = newTerm("id"), new x$68.constructor.elem(x$68)), newNTerm("funcdecl")), v: newRule(new sliceType([new NTerm(newNTerm("funcmods")), (x$69 = newTerm("id"), new x$69.constructor.elem(x$69)), new NTerm(newNTerm("argdecls")), (x$70 = newTerm("=>"), new x$70.constructor.elem(x$70)), new NTerm(newNTerm("expr")), (x$71 = newTerm(";"), new x$71.constructor.elem(x$71))])) }, { k: new Lookup.ptr((x$72 = newTerm("memo"), new x$72.constructor.elem(x$72)), newNTerm("funcmod")), v: newRule(new sliceType([(x$73 = newTerm("memo"), new x$73.constructor.elem(x$73))])) }, { k: new Lookup.ptr((x$74 = newTerm("memo"), new x$74.constructor.elem(x$74)), newNTerm("funcmods")), v: newRule(new sliceType([new NTerm(newNTerm("funcmod")), new NTerm(newNTerm("funcmods"))])) }, { k: new Lookup.ptr((x$75 = newTerm("id"), new x$75.constructor.elem(x$75)), newNTerm("funcmods")), v: newRule(new sliceType([(x$76 = newEpsilon(), new x$76.constructor.elem(x$76))])) }, { k: new Lookup.ptr((x$77 = newTerm("string"), new x$77.constructor.elem(x$77)), newNTerm("import")), v: newRule(new sliceType([(x$78 = newTerm("string"), new x$78.constructor.elem(x$78)), (x$79 = newTerm("=>"), new x$79.constructor.elem(x$79)), (x$80 = newTerm("id"), new x$80.constructor.elem(x$80)), (x$81 = newTerm(";"), new x$81.constructor.elem(x$81))])) }, { k: new Lookup.ptr((x$82 = newEOF(), new x$82.constructor.elem(x$82)), newNTerm("script")), v: newRule(new sliceType([new NTerm(newNTerm("decls")), (x$83 = newEOF(), new x$83.constructor.elem(x$83))])) }, { k: new Lookup.ptr((x$84 = newTerm("string"), new x$84.constructor.elem(x$84)), newNTerm("script")), v: newRule(new sliceType([new NTerm(newNTerm("decls")), (x$85 = newEOF(), new x$85.constructor.elem(x$85))])) }, { k: new Lookup.ptr((x$86 = newTerm("memo"), new x$86.constructor.elem(x$86)), newNTerm("script")), v: newRule(new sliceType([new NTerm(newNTerm("decls")), (x$87 = newEOF(), new x$87.constructor.elem(x$87))])) }, { k: new Lookup.ptr((x$88 = newTerm("id"), new x$88.constructor.elem(x$88)), newNTerm("script")), v: newRule(new sliceType([new NTerm(newNTerm("decls")), (x$89 = newEOF(), new x$89.constructor.elem(x$89))])) }, { k: new Lookup.ptr((x$90 = newTerm("number"), new x$90.constructor.elem(x$90)), newNTerm("single")), v: newRule(new sliceType([(x$91 = newTerm("number"), new x$91.constructor.elem(x$91))])) }, { k: new Lookup.ptr((x$92 = newTerm("string"), new x$92.constructor.elem(x$92)), newNTerm("single")), v: newRule(new sliceType([(x$93 = newTerm("string"), new x$93.constructor.elem(x$93))])) }, { k: new Lookup.ptr((x$94 = newTerm("id"), new x$94.constructor.elem(x$94)), newNTerm("single")), v: newRule(new sliceType([new NTerm(newNTerm("func"))])) }, { k: new Lookup.ptr((x$95 = newTerm("["), new x$95.constructor.elem(x$95)), newNTerm("single")), v: newRule(new sliceType([new NTerm(newNTerm("array"))])) }, { k: new Lookup.ptr((x$96 = newTerm("switch"), new x$96.constructor.elem(x$96)), newNTerm("single")), v: newRule(new sliceType([new NTerm(newNTerm("switch"))])) }, { k: new Lookup.ptr((x$97 = newTerm("("), new x$97.constructor.elem(x$97)), newNTerm("single")), v: newRule(new sliceType([new NTerm(newNTerm("compound"))])) }, { k: new Lookup.ptr((x$98 = newTerm("."), new x$98.constructor.elem(x$98)), newNTerm("subfunc")), v: newRule(new sliceType([(x$99 = newTerm("."), new x$99.constructor.elem(x$99)), (x$100 = newTerm("id"), new x$100.constructor.elem(x$100))])) }, { k: new Lookup.ptr((x$101 = newTerm("switch"), new x$101.constructor.elem(x$101)), newNTerm("subfunc")), v: newRule(new sliceType([(x$102 = newEpsilon(), new x$102.constructor.elem(x$102))])) }, { k: new Lookup.ptr((x$103 = newTerm("["), new x$103.constructor.elem(x$103)), newNTerm("subfunc")), v: newRule(new sliceType([(x$104 = newEpsilon(), new x$104.constructor.elem(x$104))])) }, { k: new Lookup.ptr((x$105 = newTerm("=>"), new x$105.constructor.elem(x$105)), newNTerm("subfunc")), v: newRule(new sliceType([(x$106 = newEpsilon(), new x$106.constructor.elem(x$106))])) }, { k: new Lookup.ptr((x$107 = newTerm(";"), new x$107.constructor.elem(x$107)), newNTerm("subfunc")), v: newRule(new sliceType([(x$108 = newEpsilon(), new x$108.constructor.elem(x$108))])) }, { k: new Lookup.ptr((x$109 = newTerm("string"), new x$109.constructor.elem(x$109)), newNTerm("subfunc")), v: newRule(new sliceType([(x$110 = newEpsilon(), new x$110.constructor.elem(x$110))])) }, { k: new Lookup.ptr((x$111 = newTerm("{"), new x$111.constructor.elem(x$111)), newNTerm("subfunc")), v: newRule(new sliceType([(x$112 = newEpsilon(), new x$112.constructor.elem(x$112))])) }, { k: new Lookup.ptr((x$113 = newTerm("->"), new x$113.constructor.elem(x$113)), newNTerm("subfunc")), v: newRule(new sliceType([(x$114 = newEpsilon(), new x$114.constructor.elem(x$114))])) }, { k: new Lookup.ptr((x$115 = newTerm("("), new x$115.constructor.elem(x$115)), newNTerm("subfunc")), v: newRule(new sliceType([(x$116 = newEpsilon(), new x$116.constructor.elem(x$116))])) }, { k: new Lookup.ptr((x$117 = newTerm("id"), new x$117.constructor.elem(x$117)), newNTerm("subfunc")), v: newRule(new sliceType([(x$118 = newEpsilon(), new x$118.constructor.elem(x$118))])) }, { k: new Lookup.ptr((x$119 = newTerm("number"), new x$119.constructor.elem(x$119)), newNTerm("subfunc")), v: newRule(new sliceType([(x$120 = newEpsilon(), new x$120.constructor.elem(x$120))])) }, { k: new Lookup.ptr((x$121 = newTerm("switch"), new x$121.constructor.elem(x$121)), newNTerm("switch")), v: newRule(new sliceType([(x$122 = newTerm("switch"), new x$122.constructor.elem(x$122)), new NTerm(newNTerm("expr")), (x$123 = newTerm("{"), new x$123.constructor.elem(x$123)), new NTerm(newNTerm("switches")), (x$124 = newTerm("}"), new x$124.constructor.elem(x$124))])) }, { k: new Lookup.ptr((x$125 = newTerm("["), new x$125.constructor.elem(x$125)), newNTerm("switches")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$126 = newTerm("=>"), new x$126.constructor.elem(x$126)), new NTerm(newNTerm("expr")), (x$127 = newTerm(";"), new x$127.constructor.elem(x$127)), new NTerm(newNTerm("switches"))])) }, { k: new Lookup.ptr((x$128 = newTerm("default"), new x$128.constructor.elem(x$128)), newNTerm("switches")), v: newRule(new sliceType([(x$129 = newTerm("default"), new x$129.constructor.elem(x$129)), (x$130 = newTerm("=>"), new x$130.constructor.elem(x$130)), new NTerm(newNTerm("expr")), (x$131 = newTerm(";"), new x$131.constructor.elem(x$131)), new NTerm(newNTerm("switches"))])) }, { k: new Lookup.ptr((x$132 = newTerm("switch"), new x$132.constructor.elem(x$132)), newNTerm("switches")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$133 = newTerm("=>"), new x$133.constructor.elem(x$133)), new NTerm(newNTerm("expr")), (x$134 = newTerm(";"), new x$134.constructor.elem(x$134)), new NTerm(newNTerm("switches"))])) }, { k: new Lookup.ptr((x$135 = newTerm("("), new x$135.constructor.elem(x$135)), newNTerm("switches")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$136 = newTerm("=>"), new x$136.constructor.elem(x$136)), new NTerm(newNTerm("expr")), (x$137 = newTerm(";"), new x$137.constructor.elem(x$137)), new NTerm(newNTerm("switches"))])) }, { k: new Lookup.ptr((x$138 = newTerm("number"), new x$138.constructor.elem(x$138)), newNTerm("switches")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$139 = newTerm("=>"), new x$139.constructor.elem(x$139)), new NTerm(newNTerm("expr")), (x$140 = newTerm(";"), new x$140.constructor.elem(x$140)), new NTerm(newNTerm("switches"))])) }, { k: new Lookup.ptr((x$141 = newTerm("string"), new x$141.constructor.elem(x$141)), newNTerm("switches")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$142 = newTerm("=>"), new x$142.constructor.elem(x$142)), new NTerm(newNTerm("expr")), (x$143 = newTerm(";"), new x$143.constructor.elem(x$143)), new NTerm(newNTerm("switches"))])) }, { k: new Lookup.ptr((x$144 = newTerm("id"), new x$144.constructor.elem(x$144)), newNTerm("switches")), v: newRule(new sliceType([new NTerm(newNTerm("expr")), (x$145 = newTerm("=>"), new x$145.constructor.elem(x$145)), new NTerm(newNTerm("expr")), (x$146 = newTerm(";"), new x$146.constructor.elem(x$146)), new NTerm(newNTerm("switches"))])) }, { k: new Lookup.ptr((x$147 = newTerm("}"), new x$147.constructor.elem(x$147)), newNTerm("switches")), v: newRule(new sliceType([(x$148 = newEpsilon(), new x$148.constructor.elem(x$148))])) }]);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
+$packages["github.com/DeedleFake/wdte/ast/internal/pgen/expr"] = (function() {
+	var $pkg = {}, $init, pgen, scanner, sliceType, x, x$1, x$2, x$3, x$4, x$5, x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$13, x$14, x$15, x$16, x$17, x$18, x$19, x$20, x$21, x$22, x$23, x$24, x$25, x$26, x$27, x$28, x$29, x$30, x$31, x$32, x$33, x$34, x$35, x$36, x$37, x$38, x$39, x$40, x$41, x$42, x$43, x$44, x$45, x$46, x$47, x$48, x$49, x$50, x$51, x$52, x$53, x$54, x$55, x$56, x$57, x$58, x$59, x$60, x$61, x$62, x$63, x$64, x$65, x$66, x$67, x$68, x$69, x$70, x$71, x$72, x$73, x$74, x$75, x$76, x$77, x$78, x$79, x$80, x$81, x$82, x$83, x$84, x$85, x$86, x$87, x$88, x$89, x$90, x$91, x$92, x$93, x$94, x$95, x$96, x$97, x$98, x$99, x$100, x$101, x$102, x$103, x$104, x$105, x$106, x$107, x$108, x$109, x$110, x$111, x$112, x$113, x$114, x$115, x$116, x$117, x$118, x$119, x$120, x$121, x$122, x$123, newTerm, newNTerm, newEpsilon, newEOF, newRule;
+	pgen = $packages["github.com/DeedleFake/wdte/ast/internal/pgen"];
+	scanner = $packages["github.com/DeedleFake/wdte/scanner"];
+	sliceType = $sliceType(pgen.Token);
+	newTerm = function(t) {
+		var _1, t;
+		_1 = t;
+		if (_1 === ("id")) {
+			return new pgen.Term.ptr(3, "");
+		} else if (_1 === ("string")) {
+			return new pgen.Term.ptr(2, "");
+		} else if (_1 === ("number")) {
+			return new pgen.Term.ptr(1, "");
+		}
+		return new pgen.Term.ptr(4, t);
+	};
+	newNTerm = function(nt) {
+		var nt;
+		return (nt);
+	};
+	newEpsilon = function() {
+		return new pgen.Epsilon.ptr();
+	};
+	newEOF = function() {
+		return new pgen.EOF.ptr();
+	};
+	newRule = function(tokens) {
+		var r, tokens;
+		r = pgen.Rule.nil;
+		r = ($subslice(new pgen.Rule(tokens.$array), tokens.$offset, tokens.$offset + tokens.$length));
+		return r;
+	};
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = pgen.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = scanner.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$pkg.Table = $makeMap(pgen.Lookup.keyFor, [{ k: new pgen.Lookup.ptr((x = newTerm("number"), new x.constructor.elem(x)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$1 = newTerm("string"), new x$1.constructor.elem(x$1)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$2 = newTerm("id"), new x$2.constructor.elem(x$2)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$3 = newTerm("["), new x$3.constructor.elem(x$3)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$4 = newTerm("switch"), new x$4.constructor.elem(x$4)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$5 = newTerm("("), new x$5.constructor.elem(x$5)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$6 = newTerm(":"), new x$6.constructor.elem(x$6)), newNTerm("args")), v: newRule(new sliceType([(x$7 = newEpsilon(), new x$7.constructor.elem(x$7))])) }, { k: new pgen.Lookup.ptr((x$8 = newTerm("->"), new x$8.constructor.elem(x$8)), newNTerm("args")), v: newRule(new sliceType([(x$9 = newEpsilon(), new x$9.constructor.elem(x$9))])) }, { k: new pgen.Lookup.ptr((x$10 = newTerm("--"), new x$10.constructor.elem(x$10)), newNTerm("args")), v: newRule(new sliceType([(x$11 = newEpsilon(), new x$11.constructor.elem(x$11))])) }, { k: new pgen.Lookup.ptr((x$12 = newEOF(), new x$12.constructor.elem(x$12)), newNTerm("args")), v: newRule(new sliceType([(x$13 = newEpsilon(), new x$13.constructor.elem(x$13))])) }, { k: new pgen.Lookup.ptr((x$14 = newTerm("["), new x$14.constructor.elem(x$14)), newNTerm("array")), v: newRule(new sliceType([(x$15 = newTerm("["), new x$15.constructor.elem(x$15)), new pgen.NTerm(newNTerm("exprs")), (x$16 = newTerm("]"), new x$16.constructor.elem(x$16))])) }, { k: new pgen.Lookup.ptr((x$17 = newTerm("->"), new x$17.constructor.elem(x$17)), newNTerm("chain")), v: newRule(new sliceType([(x$18 = newTerm("->"), new x$18.constructor.elem(x$18)), new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$19 = newTerm("--"), new x$19.constructor.elem(x$19)), newNTerm("chain")), v: newRule(new sliceType([(x$20 = newTerm("--"), new x$20.constructor.elem(x$20)), new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$21 = newEOF(), new x$21.constructor.elem(x$21)), newNTerm("chain")), v: newRule(new sliceType([(x$22 = newEpsilon(), new x$22.constructor.elem(x$22))])) }, { k: new pgen.Lookup.ptr((x$23 = newTerm("("), new x$23.constructor.elem(x$23)), newNTerm("compound")), v: newRule(new sliceType([(x$24 = newTerm("("), new x$24.constructor.elem(x$24)), new pgen.NTerm(newNTerm("exprs")), (x$25 = newTerm(")"), new x$25.constructor.elem(x$25))])) }, { k: new pgen.Lookup.ptr((x$26 = newTerm("("), new x$26.constructor.elem(x$26)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain")), (x$27 = newEOF(), new x$27.constructor.elem(x$27))])) }, { k: new pgen.Lookup.ptr((x$28 = newTerm("number"), new x$28.constructor.elem(x$28)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain")), (x$29 = newEOF(), new x$29.constructor.elem(x$29))])) }, { k: new pgen.Lookup.ptr((x$30 = newTerm("string"), new x$30.constructor.elem(x$30)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain")), (x$31 = newEOF(), new x$31.constructor.elem(x$31))])) }, { k: new pgen.Lookup.ptr((x$32 = newTerm("id"), new x$32.constructor.elem(x$32)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain")), (x$33 = newEOF(), new x$33.constructor.elem(x$33))])) }, { k: new pgen.Lookup.ptr((x$34 = newTerm("["), new x$34.constructor.elem(x$34)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain")), (x$35 = newEOF(), new x$35.constructor.elem(x$35))])) }, { k: new pgen.Lookup.ptr((x$36 = newTerm("switch"), new x$36.constructor.elem(x$36)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain")), (x$37 = newEOF(), new x$37.constructor.elem(x$37))])) }, { k: new pgen.Lookup.ptr((x$38 = newTerm("number"), new x$38.constructor.elem(x$38)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$39 = newTerm(";"), new x$39.constructor.elem(x$39)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$40 = newTerm("string"), new x$40.constructor.elem(x$40)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$41 = newTerm(";"), new x$41.constructor.elem(x$41)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$42 = newTerm("id"), new x$42.constructor.elem(x$42)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$43 = newTerm(";"), new x$43.constructor.elem(x$43)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$44 = newTerm("["), new x$44.constructor.elem(x$44)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$45 = newTerm(";"), new x$45.constructor.elem(x$45)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$46 = newTerm("switch"), new x$46.constructor.elem(x$46)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$47 = newTerm(";"), new x$47.constructor.elem(x$47)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$48 = newTerm("("), new x$48.constructor.elem(x$48)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$49 = newTerm(";"), new x$49.constructor.elem(x$49)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$50 = newTerm(")"), new x$50.constructor.elem(x$50)), newNTerm("exprs")), v: newRule(new sliceType([(x$51 = newEpsilon(), new x$51.constructor.elem(x$51))])) }, { k: new pgen.Lookup.ptr((x$52 = newTerm("]"), new x$52.constructor.elem(x$52)), newNTerm("exprs")), v: newRule(new sliceType([(x$53 = newEpsilon(), new x$53.constructor.elem(x$53))])) }, { k: new pgen.Lookup.ptr((x$54 = newTerm("id"), new x$54.constructor.elem(x$54)), newNTerm("func")), v: newRule(new sliceType([(x$55 = newTerm("id"), new x$55.constructor.elem(x$55)), new pgen.NTerm(newNTerm("subfunc"))])) }, { k: new pgen.Lookup.ptr((x$56 = newTerm("number"), new x$56.constructor.elem(x$56)), newNTerm("single")), v: newRule(new sliceType([(x$57 = newTerm("number"), new x$57.constructor.elem(x$57))])) }, { k: new pgen.Lookup.ptr((x$58 = newTerm("string"), new x$58.constructor.elem(x$58)), newNTerm("single")), v: newRule(new sliceType([(x$59 = newTerm("string"), new x$59.constructor.elem(x$59))])) }, { k: new pgen.Lookup.ptr((x$60 = newTerm("id"), new x$60.constructor.elem(x$60)), newNTerm("single")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("func"))])) }, { k: new pgen.Lookup.ptr((x$61 = newTerm("["), new x$61.constructor.elem(x$61)), newNTerm("single")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("array"))])) }, { k: new pgen.Lookup.ptr((x$62 = newTerm("switch"), new x$62.constructor.elem(x$62)), newNTerm("single")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("switch"))])) }, { k: new pgen.Lookup.ptr((x$63 = newTerm("("), new x$63.constructor.elem(x$63)), newNTerm("single")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("compound"))])) }, { k: new pgen.Lookup.ptr((x$64 = newTerm(":"), new x$64.constructor.elem(x$64)), newNTerm("slot")), v: newRule(new sliceType([(x$65 = newTerm(":"), new x$65.constructor.elem(x$65)), (x$66 = newTerm("id"), new x$66.constructor.elem(x$66))])) }, { k: new pgen.Lookup.ptr((x$67 = newTerm("--"), new x$67.constructor.elem(x$67)), newNTerm("slot")), v: newRule(new sliceType([(x$68 = newEpsilon(), new x$68.constructor.elem(x$68))])) }, { k: new pgen.Lookup.ptr((x$69 = newTerm("->"), new x$69.constructor.elem(x$69)), newNTerm("slot")), v: newRule(new sliceType([(x$70 = newEpsilon(), new x$70.constructor.elem(x$70))])) }, { k: new pgen.Lookup.ptr((x$71 = newEOF(), new x$71.constructor.elem(x$71)), newNTerm("slot")), v: newRule(new sliceType([(x$72 = newEpsilon(), new x$72.constructor.elem(x$72))])) }, { k: new pgen.Lookup.ptr((x$73 = newTerm("."), new x$73.constructor.elem(x$73)), newNTerm("subfunc")), v: newRule(new sliceType([(x$74 = newTerm("."), new x$74.constructor.elem(x$74)), (x$75 = newTerm("id"), new x$75.constructor.elem(x$75))])) }, { k: new pgen.Lookup.ptr((x$76 = newEOF(), new x$76.constructor.elem(x$76)), newNTerm("subfunc")), v: newRule(new sliceType([(x$77 = newEpsilon(), new x$77.constructor.elem(x$77))])) }, { k: new pgen.Lookup.ptr((x$78 = newTerm("switch"), new x$78.constructor.elem(x$78)), newNTerm("subfunc")), v: newRule(new sliceType([(x$79 = newEpsilon(), new x$79.constructor.elem(x$79))])) }, { k: new pgen.Lookup.ptr((x$80 = newTerm(":"), new x$80.constructor.elem(x$80)), newNTerm("subfunc")), v: newRule(new sliceType([(x$81 = newEpsilon(), new x$81.constructor.elem(x$81))])) }, { k: new pgen.Lookup.ptr((x$82 = newTerm("--"), new x$82.constructor.elem(x$82)), newNTerm("subfunc")), v: newRule(new sliceType([(x$83 = newEpsilon(), new x$83.constructor.elem(x$83))])) }, { k: new pgen.Lookup.ptr((x$84 = newTerm("->"), new x$84.constructor.elem(x$84)), newNTerm("subfunc")), v: newRule(new sliceType([(x$85 = newEpsilon(), new x$85.constructor.elem(x$85))])) }, { k: new pgen.Lookup.ptr((x$86 = newTerm("string"), new x$86.constructor.elem(x$86)), newNTerm("subfunc")), v: newRule(new sliceType([(x$87 = newEpsilon(), new x$87.constructor.elem(x$87))])) }, { k: new pgen.Lookup.ptr((x$88 = newTerm("["), new x$88.constructor.elem(x$88)), newNTerm("subfunc")), v: newRule(new sliceType([(x$89 = newEpsilon(), new x$89.constructor.elem(x$89))])) }, { k: new pgen.Lookup.ptr((x$90 = newTerm("("), new x$90.constructor.elem(x$90)), newNTerm("subfunc")), v: newRule(new sliceType([(x$91 = newEpsilon(), new x$91.constructor.elem(x$91))])) }, { k: new pgen.Lookup.ptr((x$92 = newTerm("number"), new x$92.constructor.elem(x$92)), newNTerm("subfunc")), v: newRule(new sliceType([(x$93 = newEpsilon(), new x$93.constructor.elem(x$93))])) }, { k: new pgen.Lookup.ptr((x$94 = newTerm("id"), new x$94.constructor.elem(x$94)), newNTerm("subfunc")), v: newRule(new sliceType([(x$95 = newEpsilon(), new x$95.constructor.elem(x$95))])) }, { k: new pgen.Lookup.ptr((x$96 = newTerm("switch"), new x$96.constructor.elem(x$96)), newNTerm("switch")), v: newRule(new sliceType([(x$97 = newTerm("switch"), new x$97.constructor.elem(x$97)), new pgen.NTerm(newNTerm("expr")), (x$98 = newTerm("{"), new x$98.constructor.elem(x$98)), new pgen.NTerm(newNTerm("switches")), (x$99 = newTerm("}"), new x$99.constructor.elem(x$99))])) }, { k: new pgen.Lookup.ptr((x$100 = newTerm("number"), new x$100.constructor.elem(x$100)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$101 = newTerm("=>"), new x$101.constructor.elem(x$101)), new pgen.NTerm(newNTerm("expr")), (x$102 = newTerm(";"), new x$102.constructor.elem(x$102)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$103 = newTerm("string"), new x$103.constructor.elem(x$103)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$104 = newTerm("=>"), new x$104.constructor.elem(x$104)), new pgen.NTerm(newNTerm("expr")), (x$105 = newTerm(";"), new x$105.constructor.elem(x$105)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$106 = newTerm("id"), new x$106.constructor.elem(x$106)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$107 = newTerm("=>"), new x$107.constructor.elem(x$107)), new pgen.NTerm(newNTerm("expr")), (x$108 = newTerm(";"), new x$108.constructor.elem(x$108)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$109 = newTerm("default"), new x$109.constructor.elem(x$109)), newNTerm("switches")), v: newRule(new sliceType([(x$110 = newTerm("default"), new x$110.constructor.elem(x$110)), (x$111 = newTerm("=>"), new x$111.constructor.elem(x$111)), new pgen.NTerm(newNTerm("expr")), (x$112 = newTerm(";"), new x$112.constructor.elem(x$112)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$113 = newTerm("["), new x$113.constructor.elem(x$113)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$114 = newTerm("=>"), new x$114.constructor.elem(x$114)), new pgen.NTerm(newNTerm("expr")), (x$115 = newTerm(";"), new x$115.constructor.elem(x$115)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$116 = newTerm("switch"), new x$116.constructor.elem(x$116)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$117 = newTerm("=>"), new x$117.constructor.elem(x$117)), new pgen.NTerm(newNTerm("expr")), (x$118 = newTerm(";"), new x$118.constructor.elem(x$118)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$119 = newTerm("("), new x$119.constructor.elem(x$119)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$120 = newTerm("=>"), new x$120.constructor.elem(x$120)), new pgen.NTerm(newNTerm("expr")), (x$121 = newTerm(";"), new x$121.constructor.elem(x$121)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$122 = newTerm("}"), new x$122.constructor.elem(x$122)), newNTerm("switches")), v: newRule(new sliceType([(x$123 = newEpsilon(), new x$123.constructor.elem(x$123))])) }]);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
+$packages["github.com/DeedleFake/wdte/ast/internal/pgen/script"] = (function() {
+	var $pkg = {}, $init, pgen, scanner, sliceType, x, x$1, x$2, x$3, x$4, x$5, x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$13, x$14, x$15, x$16, x$17, x$18, x$19, x$20, x$21, x$22, x$23, x$24, x$25, x$26, x$27, x$28, x$29, x$30, x$31, x$32, x$33, x$34, x$35, x$36, x$37, x$38, x$39, x$40, x$41, x$42, x$43, x$44, x$45, x$46, x$47, x$48, x$49, x$50, x$51, x$52, x$53, x$54, x$55, x$56, x$57, x$58, x$59, x$60, x$61, x$62, x$63, x$64, x$65, x$66, x$67, x$68, x$69, x$70, x$71, x$72, x$73, x$74, x$75, x$76, x$77, x$78, x$79, x$80, x$81, x$82, x$83, x$84, x$85, x$86, x$87, x$88, x$89, x$90, x$91, x$92, x$93, x$94, x$95, x$96, x$97, x$98, x$99, x$100, x$101, x$102, x$103, x$104, x$105, x$106, x$107, x$108, x$109, x$110, x$111, x$112, x$113, x$114, x$115, x$116, x$117, x$118, x$119, x$120, x$121, x$122, x$123, x$124, x$125, x$126, x$127, x$128, x$129, x$130, x$131, x$132, x$133, x$134, x$135, x$136, x$137, x$138, x$139, x$140, x$141, x$142, x$143, x$144, x$145, x$146, x$147, x$148, x$149, x$150, x$151, x$152, x$153, x$154, x$155, x$156, x$157, x$158, x$159, x$160, x$161, x$162, x$163, x$164, x$165, x$166, x$167, x$168, x$169, x$170, x$171, newTerm, newNTerm, newEpsilon, newEOF, newRule;
+	pgen = $packages["github.com/DeedleFake/wdte/ast/internal/pgen"];
+	scanner = $packages["github.com/DeedleFake/wdte/scanner"];
+	sliceType = $sliceType(pgen.Token);
+	newTerm = function(t) {
+		var _1, t;
+		_1 = t;
+		if (_1 === ("id")) {
+			return new pgen.Term.ptr(3, "");
+		} else if (_1 === ("string")) {
+			return new pgen.Term.ptr(2, "");
+		} else if (_1 === ("number")) {
+			return new pgen.Term.ptr(1, "");
+		}
+		return new pgen.Term.ptr(4, t);
+	};
+	newNTerm = function(nt) {
+		var nt;
+		return (nt);
+	};
+	newEpsilon = function() {
+		return new pgen.Epsilon.ptr();
+	};
+	newEOF = function() {
+		return new pgen.EOF.ptr();
+	};
+	newRule = function(tokens) {
+		var r, tokens;
+		r = pgen.Rule.nil;
+		r = ($subslice(new pgen.Rule(tokens.$array), tokens.$offset, tokens.$offset + tokens.$length));
+		return r;
+	};
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = pgen.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = scanner.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$pkg.Table = $makeMap(pgen.Lookup.keyFor, [{ k: new pgen.Lookup.ptr((x = newTerm("id"), new x.constructor.elem(x)), newNTerm("argdecls")), v: newRule(new sliceType([(x$1 = newTerm("id"), new x$1.constructor.elem(x$1)), new pgen.NTerm(newNTerm("argdecls"))])) }, { k: new pgen.Lookup.ptr((x$2 = newTerm("=>"), new x$2.constructor.elem(x$2)), newNTerm("argdecls")), v: newRule(new sliceType([(x$3 = newEpsilon(), new x$3.constructor.elem(x$3))])) }, { k: new pgen.Lookup.ptr((x$4 = newTerm("number"), new x$4.constructor.elem(x$4)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$5 = newTerm("string"), new x$5.constructor.elem(x$5)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$6 = newTerm("id"), new x$6.constructor.elem(x$6)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$7 = newTerm("["), new x$7.constructor.elem(x$7)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$8 = newTerm("switch"), new x$8.constructor.elem(x$8)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$9 = newTerm("("), new x$9.constructor.elem(x$9)), newNTerm("args")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args"))])) }, { k: new pgen.Lookup.ptr((x$10 = newTerm(";"), new x$10.constructor.elem(x$10)), newNTerm("args")), v: newRule(new sliceType([(x$11 = newEpsilon(), new x$11.constructor.elem(x$11))])) }, { k: new pgen.Lookup.ptr((x$12 = newTerm("{"), new x$12.constructor.elem(x$12)), newNTerm("args")), v: newRule(new sliceType([(x$13 = newEpsilon(), new x$13.constructor.elem(x$13))])) }, { k: new pgen.Lookup.ptr((x$14 = newTerm("=>"), new x$14.constructor.elem(x$14)), newNTerm("args")), v: newRule(new sliceType([(x$15 = newEpsilon(), new x$15.constructor.elem(x$15))])) }, { k: new pgen.Lookup.ptr((x$16 = newTerm(":"), new x$16.constructor.elem(x$16)), newNTerm("args")), v: newRule(new sliceType([(x$17 = newEpsilon(), new x$17.constructor.elem(x$17))])) }, { k: new pgen.Lookup.ptr((x$18 = newTerm("->"), new x$18.constructor.elem(x$18)), newNTerm("args")), v: newRule(new sliceType([(x$19 = newEpsilon(), new x$19.constructor.elem(x$19))])) }, { k: new pgen.Lookup.ptr((x$20 = newTerm("--"), new x$20.constructor.elem(x$20)), newNTerm("args")), v: newRule(new sliceType([(x$21 = newEpsilon(), new x$21.constructor.elem(x$21))])) }, { k: new pgen.Lookup.ptr((x$22 = newTerm("["), new x$22.constructor.elem(x$22)), newNTerm("array")), v: newRule(new sliceType([(x$23 = newTerm("["), new x$23.constructor.elem(x$23)), new pgen.NTerm(newNTerm("exprs")), (x$24 = newTerm("]"), new x$24.constructor.elem(x$24))])) }, { k: new pgen.Lookup.ptr((x$25 = newTerm("->"), new x$25.constructor.elem(x$25)), newNTerm("chain")), v: newRule(new sliceType([(x$26 = newTerm("->"), new x$26.constructor.elem(x$26)), new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$27 = newTerm("--"), new x$27.constructor.elem(x$27)), newNTerm("chain")), v: newRule(new sliceType([(x$28 = newTerm("--"), new x$28.constructor.elem(x$28)), new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$29 = newTerm(";"), new x$29.constructor.elem(x$29)), newNTerm("chain")), v: newRule(new sliceType([(x$30 = newEpsilon(), new x$30.constructor.elem(x$30))])) }, { k: new pgen.Lookup.ptr((x$31 = newTerm("{"), new x$31.constructor.elem(x$31)), newNTerm("chain")), v: newRule(new sliceType([(x$32 = newEpsilon(), new x$32.constructor.elem(x$32))])) }, { k: new pgen.Lookup.ptr((x$33 = newTerm("=>"), new x$33.constructor.elem(x$33)), newNTerm("chain")), v: newRule(new sliceType([(x$34 = newEpsilon(), new x$34.constructor.elem(x$34))])) }, { k: new pgen.Lookup.ptr((x$35 = newTerm("("), new x$35.constructor.elem(x$35)), newNTerm("compound")), v: newRule(new sliceType([(x$36 = newTerm("("), new x$36.constructor.elem(x$36)), new pgen.NTerm(newNTerm("exprs")), (x$37 = newTerm(")"), new x$37.constructor.elem(x$37))])) }, { k: new pgen.Lookup.ptr((x$38 = newTerm("string"), new x$38.constructor.elem(x$38)), newNTerm("decl")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("import"))])) }, { k: new pgen.Lookup.ptr((x$39 = newTerm("memo"), new x$39.constructor.elem(x$39)), newNTerm("decl")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("funcdecl"))])) }, { k: new pgen.Lookup.ptr((x$40 = newTerm("id"), new x$40.constructor.elem(x$40)), newNTerm("decl")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("funcdecl"))])) }, { k: new pgen.Lookup.ptr((x$41 = newTerm("id"), new x$41.constructor.elem(x$41)), newNTerm("decls")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("decl")), new pgen.NTerm(newNTerm("decls"))])) }, { k: new pgen.Lookup.ptr((x$42 = newTerm("memo"), new x$42.constructor.elem(x$42)), newNTerm("decls")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("decl")), new pgen.NTerm(newNTerm("decls"))])) }, { k: new pgen.Lookup.ptr((x$43 = newTerm("string"), new x$43.constructor.elem(x$43)), newNTerm("decls")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("decl")), new pgen.NTerm(newNTerm("decls"))])) }, { k: new pgen.Lookup.ptr((x$44 = newEOF(), new x$44.constructor.elem(x$44)), newNTerm("decls")), v: newRule(new sliceType([(x$45 = newEpsilon(), new x$45.constructor.elem(x$45))])) }, { k: new pgen.Lookup.ptr((x$46 = newTerm("switch"), new x$46.constructor.elem(x$46)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$47 = newTerm("("), new x$47.constructor.elem(x$47)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$48 = newTerm("number"), new x$48.constructor.elem(x$48)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$49 = newTerm("string"), new x$49.constructor.elem(x$49)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$50 = newTerm("id"), new x$50.constructor.elem(x$50)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$51 = newTerm("["), new x$51.constructor.elem(x$51)), newNTerm("expr")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("single")), new pgen.NTerm(newNTerm("args")), new pgen.NTerm(newNTerm("slot")), new pgen.NTerm(newNTerm("chain"))])) }, { k: new pgen.Lookup.ptr((x$52 = newTerm("["), new x$52.constructor.elem(x$52)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$53 = newTerm(";"), new x$53.constructor.elem(x$53)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$54 = newTerm("switch"), new x$54.constructor.elem(x$54)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$55 = newTerm(";"), new x$55.constructor.elem(x$55)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$56 = newTerm("("), new x$56.constructor.elem(x$56)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$57 = newTerm(";"), new x$57.constructor.elem(x$57)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$58 = newTerm("number"), new x$58.constructor.elem(x$58)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$59 = newTerm(";"), new x$59.constructor.elem(x$59)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$60 = newTerm("string"), new x$60.constructor.elem(x$60)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$61 = newTerm(";"), new x$61.constructor.elem(x$61)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$62 = newTerm("id"), new x$62.constructor.elem(x$62)), newNTerm("exprs")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$63 = newTerm(";"), new x$63.constructor.elem(x$63)), new pgen.NTerm(newNTerm("exprs"))])) }, { k: new pgen.Lookup.ptr((x$64 = newTerm("]"), new x$64.constructor.elem(x$64)), newNTerm("exprs")), v: newRule(new sliceType([(x$65 = newEpsilon(), new x$65.constructor.elem(x$65))])) }, { k: new pgen.Lookup.ptr((x$66 = newTerm(")"), new x$66.constructor.elem(x$66)), newNTerm("exprs")), v: newRule(new sliceType([(x$67 = newEpsilon(), new x$67.constructor.elem(x$67))])) }, { k: new pgen.Lookup.ptr((x$68 = newTerm("id"), new x$68.constructor.elem(x$68)), newNTerm("func")), v: newRule(new sliceType([(x$69 = newTerm("id"), new x$69.constructor.elem(x$69)), new pgen.NTerm(newNTerm("subfunc"))])) }, { k: new pgen.Lookup.ptr((x$70 = newTerm("memo"), new x$70.constructor.elem(x$70)), newNTerm("funcdecl")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("funcmods")), (x$71 = newTerm("id"), new x$71.constructor.elem(x$71)), new pgen.NTerm(newNTerm("argdecls")), (x$72 = newTerm("=>"), new x$72.constructor.elem(x$72)), new pgen.NTerm(newNTerm("expr")), (x$73 = newTerm(";"), new x$73.constructor.elem(x$73))])) }, { k: new pgen.Lookup.ptr((x$74 = newTerm("id"), new x$74.constructor.elem(x$74)), newNTerm("funcdecl")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("funcmods")), (x$75 = newTerm("id"), new x$75.constructor.elem(x$75)), new pgen.NTerm(newNTerm("argdecls")), (x$76 = newTerm("=>"), new x$76.constructor.elem(x$76)), new pgen.NTerm(newNTerm("expr")), (x$77 = newTerm(";"), new x$77.constructor.elem(x$77))])) }, { k: new pgen.Lookup.ptr((x$78 = newTerm("memo"), new x$78.constructor.elem(x$78)), newNTerm("funcmod")), v: newRule(new sliceType([(x$79 = newTerm("memo"), new x$79.constructor.elem(x$79))])) }, { k: new pgen.Lookup.ptr((x$80 = newTerm("memo"), new x$80.constructor.elem(x$80)), newNTerm("funcmods")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("funcmod")), new pgen.NTerm(newNTerm("funcmods"))])) }, { k: new pgen.Lookup.ptr((x$81 = newTerm("id"), new x$81.constructor.elem(x$81)), newNTerm("funcmods")), v: newRule(new sliceType([(x$82 = newEpsilon(), new x$82.constructor.elem(x$82))])) }, { k: new pgen.Lookup.ptr((x$83 = newTerm("string"), new x$83.constructor.elem(x$83)), newNTerm("import")), v: newRule(new sliceType([(x$84 = newTerm("string"), new x$84.constructor.elem(x$84)), (x$85 = newTerm("=>"), new x$85.constructor.elem(x$85)), (x$86 = newTerm("id"), new x$86.constructor.elem(x$86)), (x$87 = newTerm(";"), new x$87.constructor.elem(x$87))])) }, { k: new pgen.Lookup.ptr((x$88 = newTerm("string"), new x$88.constructor.elem(x$88)), newNTerm("script")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("decls")), (x$89 = newEOF(), new x$89.constructor.elem(x$89))])) }, { k: new pgen.Lookup.ptr((x$90 = newTerm("memo"), new x$90.constructor.elem(x$90)), newNTerm("script")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("decls")), (x$91 = newEOF(), new x$91.constructor.elem(x$91))])) }, { k: new pgen.Lookup.ptr((x$92 = newEOF(), new x$92.constructor.elem(x$92)), newNTerm("script")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("decls")), (x$93 = newEOF(), new x$93.constructor.elem(x$93))])) }, { k: new pgen.Lookup.ptr((x$94 = newTerm("id"), new x$94.constructor.elem(x$94)), newNTerm("script")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("decls")), (x$95 = newEOF(), new x$95.constructor.elem(x$95))])) }, { k: new pgen.Lookup.ptr((x$96 = newTerm("number"), new x$96.constructor.elem(x$96)), newNTerm("single")), v: newRule(new sliceType([(x$97 = newTerm("number"), new x$97.constructor.elem(x$97))])) }, { k: new pgen.Lookup.ptr((x$98 = newTerm("string"), new x$98.constructor.elem(x$98)), newNTerm("single")), v: newRule(new sliceType([(x$99 = newTerm("string"), new x$99.constructor.elem(x$99))])) }, { k: new pgen.Lookup.ptr((x$100 = newTerm("id"), new x$100.constructor.elem(x$100)), newNTerm("single")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("func"))])) }, { k: new pgen.Lookup.ptr((x$101 = newTerm("["), new x$101.constructor.elem(x$101)), newNTerm("single")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("array"))])) }, { k: new pgen.Lookup.ptr((x$102 = newTerm("switch"), new x$102.constructor.elem(x$102)), newNTerm("single")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("switch"))])) }, { k: new pgen.Lookup.ptr((x$103 = newTerm("("), new x$103.constructor.elem(x$103)), newNTerm("single")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("compound"))])) }, { k: new pgen.Lookup.ptr((x$104 = newTerm(":"), new x$104.constructor.elem(x$104)), newNTerm("slot")), v: newRule(new sliceType([(x$105 = newTerm(":"), new x$105.constructor.elem(x$105)), (x$106 = newTerm("id"), new x$106.constructor.elem(x$106))])) }, { k: new pgen.Lookup.ptr((x$107 = newTerm("->"), new x$107.constructor.elem(x$107)), newNTerm("slot")), v: newRule(new sliceType([(x$108 = newEpsilon(), new x$108.constructor.elem(x$108))])) }, { k: new pgen.Lookup.ptr((x$109 = newTerm("--"), new x$109.constructor.elem(x$109)), newNTerm("slot")), v: newRule(new sliceType([(x$110 = newEpsilon(), new x$110.constructor.elem(x$110))])) }, { k: new pgen.Lookup.ptr((x$111 = newTerm("=>"), new x$111.constructor.elem(x$111)), newNTerm("slot")), v: newRule(new sliceType([(x$112 = newEpsilon(), new x$112.constructor.elem(x$112))])) }, { k: new pgen.Lookup.ptr((x$113 = newTerm(";"), new x$113.constructor.elem(x$113)), newNTerm("slot")), v: newRule(new sliceType([(x$114 = newEpsilon(), new x$114.constructor.elem(x$114))])) }, { k: new pgen.Lookup.ptr((x$115 = newTerm("{"), new x$115.constructor.elem(x$115)), newNTerm("slot")), v: newRule(new sliceType([(x$116 = newEpsilon(), new x$116.constructor.elem(x$116))])) }, { k: new pgen.Lookup.ptr((x$117 = newTerm("."), new x$117.constructor.elem(x$117)), newNTerm("subfunc")), v: newRule(new sliceType([(x$118 = newTerm("."), new x$118.constructor.elem(x$118)), (x$119 = newTerm("id"), new x$119.constructor.elem(x$119))])) }, { k: new pgen.Lookup.ptr((x$120 = newTerm("{"), new x$120.constructor.elem(x$120)), newNTerm("subfunc")), v: newRule(new sliceType([(x$121 = newEpsilon(), new x$121.constructor.elem(x$121))])) }, { k: new pgen.Lookup.ptr((x$122 = newTerm(":"), new x$122.constructor.elem(x$122)), newNTerm("subfunc")), v: newRule(new sliceType([(x$123 = newEpsilon(), new x$123.constructor.elem(x$123))])) }, { k: new pgen.Lookup.ptr((x$124 = newTerm("->"), new x$124.constructor.elem(x$124)), newNTerm("subfunc")), v: newRule(new sliceType([(x$125 = newEpsilon(), new x$125.constructor.elem(x$125))])) }, { k: new pgen.Lookup.ptr((x$126 = newTerm("--"), new x$126.constructor.elem(x$126)), newNTerm("subfunc")), v: newRule(new sliceType([(x$127 = newEpsilon(), new x$127.constructor.elem(x$127))])) }, { k: new pgen.Lookup.ptr((x$128 = newTerm("switch"), new x$128.constructor.elem(x$128)), newNTerm("subfunc")), v: newRule(new sliceType([(x$129 = newEpsilon(), new x$129.constructor.elem(x$129))])) }, { k: new pgen.Lookup.ptr((x$130 = newTerm("("), new x$130.constructor.elem(x$130)), newNTerm("subfunc")), v: newRule(new sliceType([(x$131 = newEpsilon(), new x$131.constructor.elem(x$131))])) }, { k: new pgen.Lookup.ptr((x$132 = newTerm("string"), new x$132.constructor.elem(x$132)), newNTerm("subfunc")), v: newRule(new sliceType([(x$133 = newEpsilon(), new x$133.constructor.elem(x$133))])) }, { k: new pgen.Lookup.ptr((x$134 = newTerm("id"), new x$134.constructor.elem(x$134)), newNTerm("subfunc")), v: newRule(new sliceType([(x$135 = newEpsilon(), new x$135.constructor.elem(x$135))])) }, { k: new pgen.Lookup.ptr((x$136 = newTerm("number"), new x$136.constructor.elem(x$136)), newNTerm("subfunc")), v: newRule(new sliceType([(x$137 = newEpsilon(), new x$137.constructor.elem(x$137))])) }, { k: new pgen.Lookup.ptr((x$138 = newTerm("=>"), new x$138.constructor.elem(x$138)), newNTerm("subfunc")), v: newRule(new sliceType([(x$139 = newEpsilon(), new x$139.constructor.elem(x$139))])) }, { k: new pgen.Lookup.ptr((x$140 = newTerm(";"), new x$140.constructor.elem(x$140)), newNTerm("subfunc")), v: newRule(new sliceType([(x$141 = newEpsilon(), new x$141.constructor.elem(x$141))])) }, { k: new pgen.Lookup.ptr((x$142 = newTerm("["), new x$142.constructor.elem(x$142)), newNTerm("subfunc")), v: newRule(new sliceType([(x$143 = newEpsilon(), new x$143.constructor.elem(x$143))])) }, { k: new pgen.Lookup.ptr((x$144 = newTerm("switch"), new x$144.constructor.elem(x$144)), newNTerm("switch")), v: newRule(new sliceType([(x$145 = newTerm("switch"), new x$145.constructor.elem(x$145)), new pgen.NTerm(newNTerm("expr")), (x$146 = newTerm("{"), new x$146.constructor.elem(x$146)), new pgen.NTerm(newNTerm("switches")), (x$147 = newTerm("}"), new x$147.constructor.elem(x$147))])) }, { k: new pgen.Lookup.ptr((x$148 = newTerm("("), new x$148.constructor.elem(x$148)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$149 = newTerm("=>"), new x$149.constructor.elem(x$149)), new pgen.NTerm(newNTerm("expr")), (x$150 = newTerm(";"), new x$150.constructor.elem(x$150)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$151 = newTerm("default"), new x$151.constructor.elem(x$151)), newNTerm("switches")), v: newRule(new sliceType([(x$152 = newTerm("default"), new x$152.constructor.elem(x$152)), (x$153 = newTerm("=>"), new x$153.constructor.elem(x$153)), new pgen.NTerm(newNTerm("expr")), (x$154 = newTerm(";"), new x$154.constructor.elem(x$154)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$155 = newTerm("number"), new x$155.constructor.elem(x$155)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$156 = newTerm("=>"), new x$156.constructor.elem(x$156)), new pgen.NTerm(newNTerm("expr")), (x$157 = newTerm(";"), new x$157.constructor.elem(x$157)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$158 = newTerm("string"), new x$158.constructor.elem(x$158)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$159 = newTerm("=>"), new x$159.constructor.elem(x$159)), new pgen.NTerm(newNTerm("expr")), (x$160 = newTerm(";"), new x$160.constructor.elem(x$160)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$161 = newTerm("id"), new x$161.constructor.elem(x$161)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$162 = newTerm("=>"), new x$162.constructor.elem(x$162)), new pgen.NTerm(newNTerm("expr")), (x$163 = newTerm(";"), new x$163.constructor.elem(x$163)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$164 = newTerm("["), new x$164.constructor.elem(x$164)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$165 = newTerm("=>"), new x$165.constructor.elem(x$165)), new pgen.NTerm(newNTerm("expr")), (x$166 = newTerm(";"), new x$166.constructor.elem(x$166)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$167 = newTerm("switch"), new x$167.constructor.elem(x$167)), newNTerm("switches")), v: newRule(new sliceType([new pgen.NTerm(newNTerm("expr")), (x$168 = newTerm("=>"), new x$168.constructor.elem(x$168)), new pgen.NTerm(newNTerm("expr")), (x$169 = newTerm(";"), new x$169.constructor.elem(x$169)), new pgen.NTerm(newNTerm("switches"))])) }, { k: new pgen.Lookup.ptr((x$170 = newTerm("}"), new x$170.constructor.elem(x$170)), newNTerm("switches")), v: newRule(new sliceType([(x$171 = newEpsilon(), new x$171.constructor.elem(x$171))])) }]);
 		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.$init = $init;
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte/ast"] = (function() {
-	var $pkg = {}, $init, fmt, pgen, scanner, io, ParseError, Node, Term, NTerm, Epsilon, tokenStack, ptrType, ptrType$1, sliceType, sliceType$1, Parse, tokensEqual, toPGenTerm, parseError;
+	var $pkg = {}, $init, fmt, pgen, pgen$1, pgen$2, scanner, io, ParseError, Node, Term, NTerm, Epsilon, tokenStack, ptrType, ptrType$1, sliceType, sliceType$1, ParseScript, ParseExpr, parse, tokensEqual, toPGenTerm, parseError;
 	fmt = $packages["fmt"];
 	pgen = $packages["github.com/DeedleFake/wdte/ast/internal/pgen"];
+	pgen$1 = $packages["github.com/DeedleFake/wdte/ast/internal/pgen/expr"];
+	pgen$2 = $packages["github.com/DeedleFake/wdte/ast/internal/pgen/script"];
 	scanner = $packages["github.com/DeedleFake/wdte/scanner"];
 	io = $packages["io"];
 	ParseError = $pkg.ParseError = $newType(0, $kindStruct, "ast.ParseError", true, "github.com/DeedleFake/wdte/ast", true, function(Line_, Col_, Err_) {
@@ -21976,13 +22834,28 @@ $packages["github.com/DeedleFake/wdte/ast"] = (function() {
 	ptrType$1 = $ptrType(tokenStack);
 	sliceType = $sliceType($emptyInterface);
 	sliceType$1 = $sliceType(Node);
-	Parse = function(r) {
-		var _arg, _arg$1, _arg$2, _arg$3, _arg$4, _arg$5, _arg$6, _arg$7, _arg$8, _arg$9, _entry, _r, _r$1, _r$10, _r$11, _r$12, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _tmp, _tmp$1, _tmp$10, _tmp$11, _tmp$2, _tmp$3, _tmp$4, _tmp$5, _tmp$6, _tmp$7, _tmp$8, _tmp$9, ast, child, cur, err, g, g$24ptr, gtok, gtok$1, gtok$2, gtok$3, gtok$4, more, r, rule, s, x, x$1, x$2, x$3, x$4, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _arg = $f._arg; _arg$1 = $f._arg$1; _arg$2 = $f._arg$2; _arg$3 = $f._arg$3; _arg$4 = $f._arg$4; _arg$5 = $f._arg$5; _arg$6 = $f._arg$6; _arg$7 = $f._arg$7; _arg$8 = $f._arg$8; _arg$9 = $f._arg$9; _entry = $f._entry; _r = $f._r; _r$1 = $f._r$1; _r$10 = $f._r$10; _r$11 = $f._r$11; _r$12 = $f._r$12; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _r$5 = $f._r$5; _r$6 = $f._r$6; _r$7 = $f._r$7; _r$8 = $f._r$8; _r$9 = $f._r$9; _ref = $f._ref; _tmp = $f._tmp; _tmp$1 = $f._tmp$1; _tmp$10 = $f._tmp$10; _tmp$11 = $f._tmp$11; _tmp$2 = $f._tmp$2; _tmp$3 = $f._tmp$3; _tmp$4 = $f._tmp$4; _tmp$5 = $f._tmp$5; _tmp$6 = $f._tmp$6; _tmp$7 = $f._tmp$7; _tmp$8 = $f._tmp$8; _tmp$9 = $f._tmp$9; ast = $f.ast; child = $f.child; cur = $f.cur; err = $f.err; g = $f.g; g$24ptr = $f.g$24ptr; gtok = $f.gtok; gtok$1 = $f.gtok$1; gtok$2 = $f.gtok$2; gtok$3 = $f.gtok$3; gtok$4 = $f.gtok$4; more = $f.more; r = $f.r; rule = $f.rule; s = $f.s; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; x$3 = $f.x$3; x$4 = $f.x$4; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+	ParseScript = function(r) {
+		var _r, r, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_r = parse(r, new tokenStack([new pgen.NTerm("script")]), pgen$2.Table); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return _r;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: ParseScript }; } $f._r = _r; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.ParseScript = ParseScript;
+	ParseExpr = function(r) {
+		var _r, r, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_r = parse(r, new tokenStack([new pgen.NTerm("expr")]), pgen$1.Table); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return _r;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: ParseExpr }; } $f._r = _r; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.ParseExpr = ParseExpr;
+	parse = function(r, g, table) {
+		var _arg, _arg$1, _arg$2, _arg$3, _arg$4, _arg$5, _arg$6, _arg$7, _arg$8, _arg$9, _entry, _r, _r$1, _r$10, _r$11, _r$12, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _tmp, _tmp$1, _tmp$10, _tmp$11, _tmp$2, _tmp$3, _tmp$4, _tmp$5, _tmp$6, _tmp$7, _tmp$8, _tmp$9, ast, child, cur, err, g, g$24ptr, gtok, gtok$1, gtok$2, gtok$3, gtok$4, more, r, rule, s, table, x, x$1, x$2, x$3, x$4, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _arg = $f._arg; _arg$1 = $f._arg$1; _arg$2 = $f._arg$2; _arg$3 = $f._arg$3; _arg$4 = $f._arg$4; _arg$5 = $f._arg$5; _arg$6 = $f._arg$6; _arg$7 = $f._arg$7; _arg$8 = $f._arg$8; _arg$9 = $f._arg$9; _entry = $f._entry; _r = $f._r; _r$1 = $f._r$1; _r$10 = $f._r$10; _r$11 = $f._r$11; _r$12 = $f._r$12; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _r$5 = $f._r$5; _r$6 = $f._r$6; _r$7 = $f._r$7; _r$8 = $f._r$8; _r$9 = $f._r$9; _ref = $f._ref; _tmp = $f._tmp; _tmp$1 = $f._tmp$1; _tmp$10 = $f._tmp$10; _tmp$11 = $f._tmp$11; _tmp$2 = $f._tmp$2; _tmp$3 = $f._tmp$3; _tmp$4 = $f._tmp$4; _tmp$5 = $f._tmp$5; _tmp$6 = $f._tmp$6; _tmp$7 = $f._tmp$7; _tmp$8 = $f._tmp$8; _tmp$9 = $f._tmp$9; ast = $f.ast; child = $f.child; cur = $f.cur; err = $f.err; g = $f.g; g$24ptr = $f.g$24ptr; gtok = $f.gtok; gtok$1 = $f.gtok$1; gtok$2 = $f.gtok$2; gtok$3 = $f.gtok$3; gtok$4 = $f.gtok$4; more = $f.more; r = $f.r; rule = $f.rule; s = $f.s; table = $f.table; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; x$3 = $f.x$3; x$4 = $f.x$4; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		ast = $ifaceNil;
 		err = $ifaceNil;
 		s = scanner.New(r);
-		g = new tokenStack([new pgen.NTerm("script")]);
 		_r = s.Scan(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		more = _r;
 		cur = ptrType.nil;
@@ -22044,7 +22917,7 @@ $packages["github.com/DeedleFake/wdte/ast"] = (function() {
 			/* } else if ($assertType(_ref, pgen.NTerm, true)[1]) { */ case 11:
 				gtok$2 = _ref.$val;
 				_r$7 = toPGenTerm($clone(s.Tok(), scanner.Token)); /* */ $s = 21; case 21: if($c) { $c = false; _r$7 = _r$7.$blk(); } if (_r$7 && _r$7.$blk !== undefined) { break s; }
-				rule = (_entry = pgen.Table[pgen.Lookup.keyFor(new pgen.Lookup.ptr(_r$7, gtok$2))], _entry !== undefined ? _entry.v : pgen.Rule.nil);
+				rule = (_entry = table[pgen.Lookup.keyFor(new pgen.Lookup.ptr(_r$7, gtok$2))], _entry !== undefined ? _entry.v : pgen.Rule.nil);
 				/* */ if (rule === pgen.Rule.nil) { $s = 22; continue; }
 				/* */ $s = 23; continue;
 				/* if (rule === pgen.Rule.nil) { */ case 22:
@@ -22093,9 +22966,8 @@ $packages["github.com/DeedleFake/wdte/ast"] = (function() {
 			/* } */ case 14:
 		/* } */ $s = 2; continue; case 3:
 		$s = -1; return [ast, err];
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Parse }; } $f._arg = _arg; $f._arg$1 = _arg$1; $f._arg$2 = _arg$2; $f._arg$3 = _arg$3; $f._arg$4 = _arg$4; $f._arg$5 = _arg$5; $f._arg$6 = _arg$6; $f._arg$7 = _arg$7; $f._arg$8 = _arg$8; $f._arg$9 = _arg$9; $f._entry = _entry; $f._r = _r; $f._r$1 = _r$1; $f._r$10 = _r$10; $f._r$11 = _r$11; $f._r$12 = _r$12; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._r$5 = _r$5; $f._r$6 = _r$6; $f._r$7 = _r$7; $f._r$8 = _r$8; $f._r$9 = _r$9; $f._ref = _ref; $f._tmp = _tmp; $f._tmp$1 = _tmp$1; $f._tmp$10 = _tmp$10; $f._tmp$11 = _tmp$11; $f._tmp$2 = _tmp$2; $f._tmp$3 = _tmp$3; $f._tmp$4 = _tmp$4; $f._tmp$5 = _tmp$5; $f._tmp$6 = _tmp$6; $f._tmp$7 = _tmp$7; $f._tmp$8 = _tmp$8; $f._tmp$9 = _tmp$9; $f.ast = ast; $f.child = child; $f.cur = cur; $f.err = err; $f.g = g; $f.g$24ptr = g$24ptr; $f.gtok = gtok; $f.gtok$1 = gtok$1; $f.gtok$2 = gtok$2; $f.gtok$3 = gtok$3; $f.gtok$4 = gtok$4; $f.more = more; $f.r = r; $f.rule = rule; $f.s = s; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.x$4 = x$4; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: parse }; } $f._arg = _arg; $f._arg$1 = _arg$1; $f._arg$2 = _arg$2; $f._arg$3 = _arg$3; $f._arg$4 = _arg$4; $f._arg$5 = _arg$5; $f._arg$6 = _arg$6; $f._arg$7 = _arg$7; $f._arg$8 = _arg$8; $f._arg$9 = _arg$9; $f._entry = _entry; $f._r = _r; $f._r$1 = _r$1; $f._r$10 = _r$10; $f._r$11 = _r$11; $f._r$12 = _r$12; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._r$5 = _r$5; $f._r$6 = _r$6; $f._r$7 = _r$7; $f._r$8 = _r$8; $f._r$9 = _r$9; $f._ref = _ref; $f._tmp = _tmp; $f._tmp$1 = _tmp$1; $f._tmp$10 = _tmp$10; $f._tmp$11 = _tmp$11; $f._tmp$2 = _tmp$2; $f._tmp$3 = _tmp$3; $f._tmp$4 = _tmp$4; $f._tmp$5 = _tmp$5; $f._tmp$6 = _tmp$6; $f._tmp$7 = _tmp$7; $f._tmp$8 = _tmp$8; $f._tmp$9 = _tmp$9; $f.ast = ast; $f.child = child; $f.cur = cur; $f.err = err; $f.g = g; $f.g$24ptr = g$24ptr; $f.gtok = gtok; $f.gtok$1 = gtok$1; $f.gtok$2 = gtok$2; $f.gtok$3 = gtok$3; $f.gtok$4 = gtok$4; $f.more = more; $f.r = r; $f.rule = rule; $f.s = s; $f.table = table; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.x$4 = x$4; $f.$s = $s; $f.$r = $r; return $f;
 	};
-	$pkg.Parse = Parse;
 	tokensEqual = function(stok, gtok) {
 		var _r, _ref, gtok, gtok$1, stok, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _ref = $f._ref; gtok = $f.gtok; gtok$1 = $f.gtok$1; stok = $f.stok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -22241,15 +23113,17 @@ $packages["github.com/DeedleFake/wdte/ast"] = (function() {
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		$r = fmt.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = pgen.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = scanner.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = io.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = pgen$1.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = pgen$2.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = scanner.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = io.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.$init = $init;
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte"] = (function() {
-	var $pkg = {}, $init, bytes, fmt, ast, scanner, io, funcMod, String, Number, Array, Error, Bool, Module, Importer, ImportFunc, ID, Func, Comparer, Frame, GoFunc, DeclFunc, Expr, Chain, External, Local, Compound, Switch, Arg, FramedFunc, Memo, memoCache, ptrType, sliceType, ptrType$1, sliceType$1, ptrType$2, sliceType$2, ptrType$3, sliceType$3, arrayType, sliceType$4, sliceType$5, sliceType$6, arrayType$1, ptrType$4, ptrType$5, ptrType$6, mapType, mapType$1, mapType$2, ptrType$7, mapType$3, flatten, scopeMap, defaultImporter, F;
+	var $pkg = {}, $init, bytes, fmt, ast, scanner, io, funcMod, String, Number, Array, Error, Bool, Module, Importer, ImportFunc, ID, Func, Comparer, Frame, GoFunc, DeclFunc, Expr, Chain, IgnoredChain, External, Local, Compound, Switch, Arg, FramedFunc, Memo, memoCache, ptrType, sliceType, ptrType$1, sliceType$1, ptrType$2, sliceType$2, ptrType$3, sliceType$3, ptrType$4, arrayType, sliceType$4, sliceType$5, sliceType$6, arrayType$1, ptrType$5, ptrType$6, ptrType$7, mapType, mapType$1, ptrType$8, mapType$2, flatten, scopeMap, subScope, defaultImporter, F;
 	bytes = $packages["bytes"];
 	fmt = $packages["fmt"];
 	ast = $packages["github.com/DeedleFake/wdte/ast"];
@@ -22263,21 +23137,19 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.Err = $ifaceNil;
-			this.Frame = new Frame.ptr("", sliceType$2.nil, ptrType$4.nil);
+			this.Frame = new Frame.ptr("", sliceType$2.nil, ptrType$5.nil, 0, 0);
 			return;
 		}
 		this.Err = Err_;
 		this.Frame = Frame_;
 	});
 	Bool = $pkg.Bool = $newType(1, $kindBool, "wdte.Bool", true, "github.com/DeedleFake/wdte", true, null);
-	Module = $pkg.Module = $newType(0, $kindStruct, "wdte.Module", true, "github.com/DeedleFake/wdte", true, function(Imports_, Funcs_) {
+	Module = $pkg.Module = $newType(0, $kindStruct, "wdte.Module", true, "github.com/DeedleFake/wdte", true, function(Funcs_) {
 		this.$val = this;
 		if (arguments.length === 0) {
-			this.Imports = false;
 			this.Funcs = false;
 			return;
 		}
-		this.Imports = Imports_;
 		this.Funcs = Funcs_;
 	});
 	Importer = $pkg.Importer = $newType(8, $kindInterface, "wdte.Importer", true, "github.com/DeedleFake/wdte", true, null);
@@ -22285,17 +23157,21 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	ID = $pkg.ID = $newType(8, $kindString, "wdte.ID", true, "github.com/DeedleFake/wdte", true, null);
 	Func = $pkg.Func = $newType(8, $kindInterface, "wdte.Func", true, "github.com/DeedleFake/wdte", true, null);
 	Comparer = $pkg.Comparer = $newType(8, $kindInterface, "wdte.Comparer", true, "github.com/DeedleFake/wdte", true, null);
-	Frame = $pkg.Frame = $newType(0, $kindStruct, "wdte.Frame", true, "github.com/DeedleFake/wdte", true, function(id_, args_, p_) {
+	Frame = $pkg.Frame = $newType(0, $kindStruct, "wdte.Frame", true, "github.com/DeedleFake/wdte", true, function(id_, args_, p_, cline_, ccol_) {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.id = "";
 			this.args = sliceType$2.nil;
-			this.p = ptrType$4.nil;
+			this.p = ptrType$5.nil;
+			this.cline = 0;
+			this.ccol = 0;
 			return;
 		}
 		this.id = id_;
 		this.args = args_;
 		this.p = p_;
+		this.cline = cline_;
+		this.ccol = ccol_;
 	});
 	GoFunc = $pkg.GoFunc = $newType(4, $kindFunc, "wdte.GoFunc", true, "github.com/DeedleFake/wdte", true, null);
 	DeclFunc = $pkg.DeclFunc = $newType(0, $kindStruct, "wdte.DeclFunc", true, "github.com/DeedleFake/wdte", true, function(ID_, Expr_, Args_, Stored_) {
@@ -22312,49 +23188,75 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		this.Args = Args_;
 		this.Stored = Stored_;
 	});
-	Expr = $pkg.Expr = $newType(0, $kindStruct, "wdte.Expr", true, "github.com/DeedleFake/wdte", true, function(Func_, Args_) {
+	Expr = $pkg.Expr = $newType(0, $kindStruct, "wdte.Expr", true, "github.com/DeedleFake/wdte", true, function(Func_, Args_, Slots_) {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.Func = $ifaceNil;
 			this.Args = sliceType$2.nil;
+			this.Slots = ptrType$4.nil;
 			return;
 		}
 		this.Func = Func_;
 		this.Args = Args_;
+		this.Slots = Slots_;
 	});
-	Chain = $pkg.Chain = $newType(0, $kindStruct, "wdte.Chain", true, "github.com/DeedleFake/wdte", true, function(Func_, Args_, Prev_) {
+	Chain = $pkg.Chain = $newType(0, $kindStruct, "wdte.Chain", true, "github.com/DeedleFake/wdte", true, function(Func_, Args_, Prev_, Slots_) {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.Func = $ifaceNil;
 			this.Args = sliceType$2.nil;
 			this.Prev = $ifaceNil;
+			this.Slots = ptrType$4.nil;
 			return;
 		}
 		this.Func = Func_;
 		this.Args = Args_;
 		this.Prev = Prev_;
+		this.Slots = Slots_;
 	});
-	External = $pkg.External = $newType(0, $kindStruct, "wdte.External", true, "github.com/DeedleFake/wdte", true, function(Module_, Import_, Func_) {
+	IgnoredChain = $pkg.IgnoredChain = $newType(0, $kindStruct, "wdte.IgnoredChain", true, "github.com/DeedleFake/wdte", true, function(Func_, Args_, Prev_, Slots_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.Func = $ifaceNil;
+			this.Args = sliceType$2.nil;
+			this.Prev = $ifaceNil;
+			this.Slots = ptrType$4.nil;
+			return;
+		}
+		this.Func = Func_;
+		this.Args = Args_;
+		this.Prev = Prev_;
+		this.Slots = Slots_;
+	});
+	External = $pkg.External = $newType(0, $kindStruct, "wdte.External", true, "github.com/DeedleFake/wdte", true, function(Module_, Import_, Func_, Line_, Col_) {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.Module = ptrType$1.nil;
-			this.Import = "";
+			this.Import = $ifaceNil;
 			this.Func = "";
+			this.Line = 0;
+			this.Col = 0;
 			return;
 		}
 		this.Module = Module_;
 		this.Import = Import_;
 		this.Func = Func_;
+		this.Line = Line_;
+		this.Col = Col_;
 	});
-	Local = $pkg.Local = $newType(0, $kindStruct, "wdte.Local", true, "github.com/DeedleFake/wdte", true, function(Module_, Func_) {
+	Local = $pkg.Local = $newType(0, $kindStruct, "wdte.Local", true, "github.com/DeedleFake/wdte", true, function(Module_, Func_, Line_, Col_) {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.Module = ptrType$1.nil;
 			this.Func = "";
+			this.Line = 0;
+			this.Col = 0;
 			return;
 		}
 		this.Module = Module_;
 		this.Func = Func_;
+		this.Line = Line_;
+		this.Col = Col_;
 	});
 	Compound = $pkg.Compound = $newType(12, $kindSlice, "wdte.Compound", true, "github.com/DeedleFake/wdte", true, null);
 	Switch = $pkg.Switch = $newType(0, $kindStruct, "wdte.Switch", true, "github.com/DeedleFake/wdte", true, function(Check_, Cases_) {
@@ -22372,7 +23274,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.Func = $ifaceNil;
-			this.Frame = new Frame.ptr("", sliceType$2.nil, ptrType$4.nil);
+			this.Frame = new Frame.ptr("", sliceType$2.nil, ptrType$5.nil, 0, 0);
 			return;
 		}
 		this.Func = Func_;
@@ -22406,19 +23308,19 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	sliceType$2 = $sliceType(Func);
 	ptrType$3 = $ptrType(ast.Epsilon);
 	sliceType$3 = $sliceType(ID);
+	ptrType$4 = $ptrType(sliceType$2);
 	arrayType = $arrayType(Func, 2);
 	sliceType$4 = $sliceType(arrayType);
 	sliceType$5 = $sliceType(ast.Node);
 	sliceType$6 = $sliceType($Uint8);
 	arrayType$1 = $arrayType($Uint8, 64);
-	ptrType$4 = $ptrType(Frame);
-	ptrType$5 = $ptrType(memoCache);
-	ptrType$6 = $ptrType(DeclFunc);
+	ptrType$5 = $ptrType(Frame);
+	ptrType$6 = $ptrType(memoCache);
+	ptrType$7 = $ptrType(DeclFunc);
 	mapType = $mapType(ID, $Int);
-	mapType$1 = $mapType(ID, ptrType$1);
-	mapType$2 = $mapType(ID, Func);
-	ptrType$7 = $ptrType(Memo);
-	mapType$3 = $mapType(Func, ptrType$5);
+	mapType$1 = $mapType(ID, Func);
+	ptrType$8 = $ptrType(Memo);
+	mapType$2 = $mapType(Func, ptrType$6);
 	Module.ptr.prototype.fromScript = function(script, im) {
 		var _r, im, m, script, x, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; im = $f.im; m = $f.m; script = $f.script; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -22435,9 +23337,6 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		var _1, _i, _key, _key$1, _r, _r$1, _r$2, _r$3, _r$4, _r$5, _r$6, _ref, _tuple, d, decls, def, dtype, err, id, im, m, sub, x, x$1, x$2, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _i = $f._i; _key = $f._key; _key$1 = $f._key$1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _r$5 = $f._r$5; _r$6 = $f._r$6; _ref = $f._ref; _tuple = $f._tuple; d = $f.d; decls = $f.decls; def = $f.def; dtype = $f.dtype; err = $f.err; id = $f.id; im = $f.im; m = $f.m; sub = $f.sub; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		m = this;
-		if (m.Imports === false) {
-			m.Imports = {};
-		}
 		if (m.Funcs === false) {
 			m.Funcs = {};
 		}
@@ -22463,7 +23362,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 					if (!($interfaceIsEqual(err, $ifaceNil))) {
 						$s = -1; return [ptrType$1.nil, err];
 					}
-					_key = id; (m.Imports || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: sub };
+					_key = id; (m.Funcs || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: sub };
 					$s = 9; continue;
 				/* } else if (_1 === ("funcdecl")) { */ case 7:
 					_r$4 = d.Children(); /* */ $s = 12; case 12: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
@@ -22573,18 +23472,33 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	Module.prototype.fromArgDecls = function(argdecls) { return this.$val.fromArgDecls(argdecls); };
 	Module.ptr.prototype.fromExpr = function(expr, scope) {
-		var _r, _r$1, _r$2, expr, first, in$1, m, scope, x, x$1, x$2, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; expr = $f.expr; first = $f.first; in$1 = $f.in$1; m = $f.m; scope = $f.scope; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _r, _r$1, _r$2, expr, first, in$1, m, scope, slot, slots, x, x$1, x$2, x$3, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; expr = $f.expr; first = $f.first; in$1 = $f.in$1; m = $f.m; scope = $f.scope; slot = $f.slot; slots = $f.slots; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; x$3 = $f.x$3; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		slots = [slots];
 		m = this;
 		_r = m.fromSingle($assertType((x = $clone(expr, ast.NTerm).Children(), (0 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 0])), ptrType), scope); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		first = _r;
 		_r$1 = m.fromArgs(flatten($assertType((x$1 = $clone(expr, ast.NTerm).Children(), (1 >= x$1.$length ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + 1])), ptrType), 1, new sliceType([0])), scope); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 		in$1 = _r$1;
-		_r$2 = m.fromChain($assertType((x$2 = $clone(expr, ast.NTerm).Children(), (2 >= x$2.$length ? ($throwRuntimeError("index out of range"), undefined) : x$2.$array[x$2.$offset + 2])), ptrType), new Expr.ptr(first, in$1), scope); /* */ $s = 3; case 3: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+		slot = m.fromSlot($assertType((x$2 = $clone(expr, ast.NTerm).Children(), (2 >= x$2.$length ? ($throwRuntimeError("index out of range"), undefined) : x$2.$array[x$2.$offset + 2])), ptrType));
+		scope = subScope(scope, slot);
+		slots[0] = sliceType$2.nil;
+		_r$2 = m.fromChain($assertType((x$3 = $clone(expr, ast.NTerm).Children(), (3 >= x$3.$length ? ($throwRuntimeError("index out of range"), undefined) : x$3.$array[x$3.$offset + 3])), ptrType), new Expr.ptr(first, in$1, (slots.$ptr || (slots.$ptr = new ptrType$4(function() { return this.$target[0]; }, function($v) { this.$target[0] = $v; }, slots)))), (slots.$ptr || (slots.$ptr = new ptrType$4(function() { return this.$target[0]; }, function($v) { this.$target[0] = $v; }, slots))), scope); /* */ $s = 3; case 3: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
 		$s = -1; return _r$2;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Module.ptr.prototype.fromExpr }; } $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f.expr = expr; $f.first = first; $f.in$1 = in$1; $f.m = m; $f.scope = scope; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Module.ptr.prototype.fromExpr }; } $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f.expr = expr; $f.first = first; $f.in$1 = in$1; $f.m = m; $f.scope = scope; $f.slot = slot; $f.slots = slots; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Module.prototype.fromExpr = function(expr, scope) { return this.$val.fromExpr(expr, scope); };
+	Module.ptr.prototype.fromSlot = function(expr) {
+		var _tuple, expr, m, ok, x, x$1;
+		m = this;
+		_tuple = $assertType((x = $clone(expr, ast.NTerm).Children(), (0 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 0])), ptrType$3, true);
+		ok = _tuple[1];
+		if (ok) {
+			return "";
+		}
+		return ($assertType($clone($assertType((x$1 = $clone(expr, ast.NTerm).Children(), (1 >= x$1.$length ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + 1])), ptrType$2), ast.Term).Tok().Val, $String));
+	};
+	Module.prototype.fromSlot = function(expr) { return this.$val.fromSlot(expr); };
 	Module.ptr.prototype.fromSingle = function(single, scope) {
 		var _1, _2, _r, _r$1, _r$2, _r$3, _ref, m, s, s$1, scope, single, x, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _2 = $f._2; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _ref = $f._ref; m = $f.m; s = $f.s; s$1 = $f.s$1; scope = $f.scope; single = $f.single; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -22631,20 +23545,31 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	Module.prototype.fromSingle = function(single, scope) { return this.$val.fromSingle(single, scope); };
 	Module.ptr.prototype.fromFunc = function(f, scope) {
-		var _entry, _tuple, arg, f, id, m, ok, scope, sub, x, x$1;
+		var _1, _entry, _entry$1, _tuple, _tuple$1, arg, arg$1, f, id, im, m, ok, ok$1, scope, sub, tok, x, x$1;
 		m = this;
-		id = ($assertType($clone($assertType((x = $clone(f, ast.NTerm).Children(), (0 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 0])), ptrType$2), ast.Term).Tok().Val, $String));
+		tok = $clone($clone($assertType((x = $clone(f, ast.NTerm).Children(), (0 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 0])), ptrType$2), ast.Term).Tok(), scanner.Token);
+		id = ($assertType(tok.Val, $String));
 		sub = m.fromSubfunc($assertType((x$1 = $clone(f, ast.NTerm).Children(), (1 >= x$1.$length ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + 1])), ptrType));
 		if (!(sub === "")) {
-			return new External.ptr(m, id, sub);
+			im = $ifaceNil;
+			_tuple = (_entry = scope[ID.keyFor(id)], _entry !== undefined ? [_entry.v, true] : [0, false]);
+			arg = _tuple[0];
+			ok = _tuple[1];
+			_1 = ok;
+			if (_1) {
+				im = new Arg(((arg >> 0)));
+			} else if (_1 === (false)) {
+				im = new Local.ptr(m, id, tok.Line, tok.Col);
+			}
+			return new External.ptr(m, im, sub, tok.Line, tok.Col);
 		}
-		_tuple = (_entry = scope[ID.keyFor(id)], _entry !== undefined ? [_entry.v, true] : [0, false]);
-		arg = _tuple[0];
-		ok = _tuple[1];
-		if (ok) {
-			return new Arg(((arg >> 0)));
+		_tuple$1 = (_entry$1 = scope[ID.keyFor(id)], _entry$1 !== undefined ? [_entry$1.v, true] : [0, false]);
+		arg$1 = _tuple$1[0];
+		ok$1 = _tuple$1[1];
+		if (ok$1) {
+			return new Arg(((arg$1 >> 0)));
 		}
-		return new Local.ptr(m, id);
+		return new Local.ptr(m, id, tok.Line, tok.Col);
 	};
 	Module.prototype.fromFunc = function(f, scope) { return this.$val.fromFunc(f, scope); };
 	Module.ptr.prototype.fromSubfunc = function(subfunc) {
@@ -22762,9 +23687,9 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Module.ptr.prototype.fromArgs }; } $f._i = _i; $f._r = _r; $f._ref = _ref; $f.arg = arg; $f.args = args; $f.m = m; $f.scope = scope; $f.single = single; $f.singles = singles; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Module.prototype.fromArgs = function(args, scope) { return this.$val.fromArgs(args, scope); };
-	Module.ptr.prototype.fromChain = function(chain, prev, scope) {
-		var _r, _r$1, _r$2, _tuple, chain, first, in$1, m, ok, prev, scope, x, x$1, x$2, x$3, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _tuple = $f._tuple; chain = $f.chain; first = $f.first; in$1 = $f.in$1; m = $f.m; ok = $f.ok; prev = $f.prev; scope = $f.scope; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; x$3 = $f.x$3; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+	Module.ptr.prototype.fromChain = function(chain, prev, slots, scope) {
+		var _1, _r, _r$1, _r$2, _r$3, _r$4, _tuple, chain, first, in$1, m, ok, prev, scope, slot, slots, t, x, x$1, x$2, x$3, x$4, x$5, x$6, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _tuple = $f._tuple; chain = $f.chain; first = $f.first; in$1 = $f.in$1; m = $f.m; ok = $f.ok; prev = $f.prev; scope = $f.scope; slot = $f.slot; slots = $f.slots; t = $f.t; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; x$3 = $f.x$3; x$4 = $f.x$4; x$5 = $f.x$5; x$6 = $f.x$6; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		m = this;
 		_tuple = $assertType((x = $clone(chain, ast.NTerm).Children(), (0 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 0])), ptrType$3, true);
 		ok = _tuple[1];
@@ -22775,11 +23700,28 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		first = _r;
 		_r$1 = m.fromArgs(flatten($assertType((x$2 = $clone(chain, ast.NTerm).Children(), (2 >= x$2.$length ? ($throwRuntimeError("index out of range"), undefined) : x$2.$array[x$2.$offset + 2])), ptrType), 1, new sliceType([0])), scope); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 		in$1 = _r$1;
-		_r$2 = m.fromChain($assertType((x$3 = $clone(chain, ast.NTerm).Children(), (3 >= x$3.$length ? ($throwRuntimeError("index out of range"), undefined) : x$3.$array[x$3.$offset + 3])), ptrType), new Chain.ptr(first, in$1, prev), scope); /* */ $s = 3; case 3: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-		$s = -1; return _r$2;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Module.ptr.prototype.fromChain }; } $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._tuple = _tuple; $f.chain = chain; $f.first = first; $f.in$1 = in$1; $f.m = m; $f.ok = ok; $f.prev = prev; $f.scope = scope; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.$s = $s; $f.$r = $r; return $f;
+		slot = m.fromSlot($assertType((x$3 = $clone(chain, ast.NTerm).Children(), (3 >= x$3.$length ? ($throwRuntimeError("index out of range"), undefined) : x$3.$array[x$3.$offset + 3])), ptrType));
+		scope = subScope(scope, slot);
+			t = $assertType($clone($assertType((x$4 = $clone(chain, ast.NTerm).Children(), (0 >= x$4.$length ? ($throwRuntimeError("index out of range"), undefined) : x$4.$array[x$4.$offset + 0])), ptrType$2), ast.Term).Tok().Val, $String);
+			_1 = t;
+			/* */ if (_1 === ("->")) { $s = 4; continue; }
+			/* */ if (_1 === ("--")) { $s = 5; continue; }
+			/* */ $s = 6; continue;
+			/* if (_1 === ("->")) { */ case 4:
+				_r$2 = m.fromChain($assertType((x$5 = $clone(chain, ast.NTerm).Children(), (4 >= x$5.$length ? ($throwRuntimeError("index out of range"), undefined) : x$5.$array[x$5.$offset + 4])), ptrType), new Chain.ptr(first, in$1, prev, slots), slots, scope); /* */ $s = 8; case 8: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+				$s = -1; return _r$2;
+			/* } else if (_1 === ("--")) { */ case 5:
+				_r$3 = m.fromChain($assertType((x$6 = $clone(chain, ast.NTerm).Children(), (4 >= x$6.$length ? ($throwRuntimeError("index out of range"), undefined) : x$6.$array[x$6.$offset + 4])), ptrType), new IgnoredChain.ptr(first, in$1, prev, slots), slots, scope); /* */ $s = 9; case 9: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+				$s = -1; return _r$3;
+			/* } else { */ case 6:
+				_r$4 = fmt.Errorf("Malformed AST with unexpected chain type: %q", new sliceType$1([new $String(t)])); /* */ $s = 10; case 10: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
+				$panic(_r$4);
+			/* } */ case 7:
+		case 3:
+		$s = -1; return $ifaceNil;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Module.ptr.prototype.fromChain }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._tuple = _tuple; $f.chain = chain; $f.first = first; $f.in$1 = in$1; $f.m = m; $f.ok = ok; $f.prev = prev; $f.scope = scope; $f.slot = slot; $f.slots = slots; $f.t = t; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.x$4 = x$4; $f.x$5 = x$5; $f.x$6 = x$6; $f.$s = $s; $f.$r = $r; return $f;
 	};
-	Module.prototype.fromChain = function(chain, prev, scope) { return this.$val.fromChain(chain, prev, scope); };
+	Module.prototype.fromChain = function(chain, prev, slots, scope) { return this.$val.fromChain(chain, prev, slots, scope); };
 	flatten = function(top, rec, get) {
 		var _i, _ref, _tuple, c, get, i, ok, rec, top, x, x$1, x$2;
 		_tuple = $assertType((x = $clone(top, ast.NTerm).Children(), (0 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 0])), ptrType$3, true);
@@ -22810,6 +23752,27 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			_key = arg; (m || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: i };
 			_i++;
 		}
+		return m;
+	};
+	subScope = function(scope, id) {
+		var _entry, _i, _key, _key$1, _keys, _ref, id, id$1, m, n, scope, x;
+		m = (x = $keys(scope).length + 1 >> 0, ((x < 0 || x > 2147483647) ? $throwRuntimeError("makemap: size out of range") : {}));
+		_ref = scope;
+		_i = 0;
+		_keys = $keys(_ref);
+		while (true) {
+			if (!(_i < _keys.length)) { break; }
+			_entry = _ref[_keys[_i]];
+			if (_entry === undefined) {
+				_i++;
+				continue;
+			}
+			id$1 = _entry.k;
+			n = _entry.v;
+			_key = id$1; (m || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: n };
+			_i++;
+		}
+		_key$1 = id; (m || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$1)] = { k: _key$1, v: $keys(scope).length };
 		return m;
 	};
 	defaultImporter = function(from) {
@@ -22858,9 +23821,21 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	$ptrType(Number).prototype.Compare = function(other) { return new Number(this.$get()).Compare(other); };
 	Array.prototype.Call = function(frame, args) {
-		var a, args, frame;
+		var _i, _r, _ref, a, args, frame, i, n, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _ref = $f._ref; a = $f.a; args = $f.args; frame = $f.frame; i = $f.i; n = $f.n; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		a = this;
-		return a;
+		n = $makeSlice(Array, 0, a.$length);
+		_ref = a;
+		_i = 0;
+		/* while (true) { */ case 1:
+			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 2; continue; }
+			i = _i;
+			_r = ((i < 0 || i >= a.$length) ? ($throwRuntimeError("index out of range"), undefined) : a.$array[a.$offset + i]).Call($clone(frame, Frame), new sliceType$2([])); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			n = $append(n, _r);
+			_i++;
+		/* } */ $s = 1; continue; case 2:
+		$s = -1; return n;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Array.prototype.Call }; } $f._i = _i; $f._r = _r; $f._ref = _ref; $f.a = a; $f.args = args; $f.frame = frame; $f.i = i; $f.n = n; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$ptrType(Array).prototype.Call = function(frame, args) { return this.$get().Call(frame, args); };
 	Error.ptr.prototype.Call = function(frame, args) {
@@ -22876,7 +23851,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		e = this;
 		buf[0] = new bytes.Buffer.ptr(sliceType$6.nil, 0, 0, arrayType$1.zero());
 		_r = $clone(e.Frame, Frame).Backtrace(buf[0]); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		_r;
+		$unused(_r);
 		_r$1 = fmt.Sprintf("WDTE Error: %v\n%s", new sliceType$1([e.Err, buf[0].Bytes()])); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 		$s = -1; return _r$1;
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Error.ptr.prototype.Error }; } $f._r = _r; $f._r$1 = _r$1; $f.buf = buf; $f.e = e; $f.$s = $s; $f.$r = $r; return $f;
@@ -22901,7 +23876,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		var _r, _r$1, _tuple, err, im, m, r, root, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _tuple = $f._tuple; err = $f.err; im = $f.im; m = $f.m; r = $f.r; root = $f.root; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		m = this;
-		_r = ast.Parse(r); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_r = ast.ParseScript(r); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		_tuple = _r;
 		root = _tuple[0];
 		err = _tuple[1];
@@ -22942,12 +23917,34 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 				continue;
 			}
 			id = _entry.k;
-			_key = id; (m.Funcs || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: (x = new Local.ptr(n, id), new x.constructor.elem(x)) };
+			_key = id; (m.Funcs || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: (x = new Local.ptr(n, id, 0, 0), new x.constructor.elem(x)) };
 			_i++;
 		}
 		return m;
 	};
 	Module.prototype.Insert = function(n) { return this.$val.Insert(n); };
+	Module.ptr.prototype.Eval = function(r) {
+		var _r, _r$1, _tuple, err, expr, m, r, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _tuple = $f._tuple; err = $f.err; expr = $f.expr; m = $f.m; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		m = this;
+		_r = ast.ParseExpr(r); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_tuple = _r;
+		expr = _tuple[0];
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return [$ifaceNil, err];
+		}
+		_r$1 = m.fromExpr($assertType(expr, ptrType), false); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		$s = -1; return [_r$1, $ifaceNil];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Module.ptr.prototype.Eval }; } $f._r = _r; $f._r$1 = _r$1; $f._tuple = _tuple; $f.err = err; $f.expr = expr; $f.m = m; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	Module.prototype.Eval = function(r) { return this.$val.Eval(r); };
+	Module.ptr.prototype.Call = function(frame, args) {
+		var args, frame, m;
+		m = this;
+		return m;
+	};
+	Module.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	ImportFunc.prototype.Import = function(from) {
 		var _r, f, from, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; f = $f.f; from = $f.from; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -22958,19 +23955,34 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	$ptrType(ImportFunc).prototype.Import = function(from) { return new ImportFunc(this.$get()).Import(from); };
 	F = function() {
-		return new Frame.ptr("unknown function, maybe Go", sliceType$2.nil, ptrType$4.nil);
+		return new Frame.ptr("unknown function, maybe Go", sliceType$2.nil, ptrType$5.nil, 0, 0);
 	};
 	$pkg.F = F;
 	Frame.ptr.prototype.New = function(id, args) {
 		var args, f, id;
 		f = this;
-		return new Frame.ptr(id, args, f);
+		return new Frame.ptr(id, args, f, 0, 0);
 	};
 	Frame.prototype.New = function(id, args) { return this.$val.New(id, args); };
+	Frame.ptr.prototype.Sub = function(args) {
+		var args, f;
+		f = this;
+		f.args = $appendSlice(f.args, args);
+		return f;
+	};
+	Frame.prototype.Sub = function(args) { return this.$val.Sub(args); };
+	Frame.ptr.prototype.Pos = function(line, col) {
+		var col, f, line;
+		f = this;
+		f.cline = line;
+		f.ccol = col;
+		return f;
+	};
+	Frame.prototype.Pos = function(line, col) { return this.$val.Pos(line, col); };
 	Frame.ptr.prototype.WithID = function(id) {
 		var f, id;
 		f = this;
-		return $clone(f, Frame).New(id, f.args);
+		return new Frame.ptr(id, f.args, f, f.cline, f.ccol);
 	};
 	Frame.prototype.WithID = function(id) { return this.$val.WithID(id); };
 	Frame.ptr.prototype.ID = function() {
@@ -22988,8 +24000,8 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	Frame.ptr.prototype.Parent = function() {
 		var f;
 		f = this;
-		if (f.p === ptrType$4.nil) {
-			return new Frame.ptr("", sliceType$2.nil, ptrType$4.nil);
+		if (f.p === ptrType$5.nil) {
+			return new Frame.ptr("", sliceType$2.nil, ptrType$5.nil, 0, 0);
 		}
 		return f.p;
 	};
@@ -23013,14 +24025,14 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		var _r, _r$1, _tuple, err, f, id, w, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _tuple = $f._tuple; err = $f.err; f = $f.f; id = $f.id; w = $f.w; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		f = this;
-		if (f === ptrType$4.nil) {
+		if (f === ptrType$5.nil) {
 			$s = -1; return $ifaceNil;
 		}
 		id = $clone(f, Frame).ID();
 		if (id === "") {
 			$s = -1; return $ifaceNil;
 		}
-		_r = fmt.Fprintf(w, "\tCalled from %v\n", new sliceType$1([new ID(id)])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_r = fmt.Fprintf(w, "\tCalled from %v (%v:%v)\n", new sliceType$1([new ID(id), new $Int(f.cline), new $Int(f.ccol)])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		_tuple = _r;
 		err = _tuple[1];
 		if (!($interfaceIsEqual(err, $ifaceNil))) {
@@ -23083,52 +24095,73 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	DeclFunc.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	Expr.ptr.prototype.Call = function(frame, args) {
-		var _r, args, f, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; args = $f.args; f = $f.f; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _r, args, f, frame, r, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; args = $f.args; f = $f.f; frame = $f.frame; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		f = this;
 		_r = f.Func.Call($clone(frame, Frame), f.Args); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		$s = -1; return _r;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Expr.ptr.prototype.Call }; } $f._r = _r; $f.args = args; $f.f = f; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+		r = _r;
+		f.Slots.$set($append(f.Slots.$get(), r));
+		$s = -1; return r;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Expr.ptr.prototype.Call }; } $f._r = _r; $f.args = args; $f.f = f; $f.frame = frame; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Expr.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	Chain.ptr.prototype.Call = function(frame, args) {
-		var _arg, _arg$1, _r, _r$1, _r$2, args, f, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _arg = $f._arg; _arg$1 = $f._arg$1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; args = $f.args; f = $f.f; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _r, _r$1, _r$2, args, f, frame, prev, r, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; args = $f.args; f = $f.f; frame = $f.frame; prev = $f.prev; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		f = this;
-		_r = f.Func.Call($clone(frame, Frame), f.Args); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		_arg = $clone(frame, Frame);
-		_r$1 = f.Prev.Call($clone(frame, Frame), new sliceType$2([])); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
-		_arg$1 = _r$1;
-		_r$2 = _r.Call(_arg, new sliceType$2([_arg$1])); /* */ $s = 3; case 3: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-		$s = -1; return _r$2;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Chain.ptr.prototype.Call }; } $f._arg = _arg; $f._arg$1 = _arg$1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f.args = args; $f.f = f; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+		_r = f.Prev.Call($clone(frame, Frame), new sliceType$2([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		prev = _r;
+		Frame.copy(frame, $clone(frame, Frame).Sub(f.Slots.$get()));
+		_r$1 = f.Func.Call($clone(frame, Frame), f.Args); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		_r$2 = _r$1.Call($clone(frame, Frame), new sliceType$2([prev])); /* */ $s = 3; case 3: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+		r = _r$2;
+		f.Slots.$set($append(f.Slots.$get(), r));
+		$s = -1; return r;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Chain.ptr.prototype.Call }; } $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f.args = args; $f.f = f; $f.frame = frame; $f.prev = prev; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Chain.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	IgnoredChain.ptr.prototype.Call = function(frame, args) {
+		var _r, _r$1, _r$2, args, f, frame, prev, r, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; args = $f.args; f = $f.f; frame = $f.frame; prev = $f.prev; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		f = this;
+		_r = f.Prev.Call($clone(frame, Frame), new sliceType$2([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		prev = _r;
+		Frame.copy(frame, $clone(frame, Frame).Sub(f.Slots.$get()));
+		_r$1 = f.Func.Call($clone(frame, Frame), f.Args); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		_r$2 = _r$1.Call($clone(frame, Frame), new sliceType$2([prev])); /* */ $s = 3; case 3: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+		r = _r$2;
+		f.Slots.$set($append(f.Slots.$get(), r));
+		$s = -1; return prev;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: IgnoredChain.ptr.prototype.Call }; } $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f.args = args; $f.f = f; $f.frame = frame; $f.prev = prev; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	IgnoredChain.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	External.ptr.prototype.Call = function(frame, args) {
-		var _entry, _entry$1, _r, _r$1, _r$2, _tuple, _tuple$1, args, e, f, frame, i, ok, x, x$1, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _entry$1 = $f._entry$1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; args = $f.args; e = $f.e; f = $f.f; frame = $f.frame; i = $f.i; ok = $f.ok; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _entry, _r, _r$1, _r$2, _r$3, _tuple, _tuple$1, args, e, f, frame, i, im, ok, x, x$1, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; args = $f.args; e = $f.e; f = $f.f; frame = $f.frame; i = $f.i; im = $f.im; ok = $f.ok; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		e = this;
-		_tuple = (_entry = e.Module.Imports[ID.keyFor(e.Import)], _entry !== undefined ? [_entry.v, true] : [ptrType$1.nil, false]);
+		_r = e.Import.Call($clone(frame, Frame), new sliceType$2([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		im = _r;
+		_tuple = $assertType(im, ptrType$1, true);
 		i = _tuple[0];
 		ok = _tuple[1];
-		/* */ if (!ok) { $s = 1; continue; }
-		/* */ $s = 2; continue;
-		/* if (!ok) { */ case 1:
-			_r = fmt.Errorf("Import %q does not exist", new sliceType$1([new ID(e.Import)])); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-			$s = -1; return (x = new Error.ptr(_r, $clone(frame, Frame)), new x.constructor.elem(x));
-		/* } */ case 2:
-		_tuple$1 = (_entry$1 = i.Funcs[ID.keyFor(e.Func)], _entry$1 !== undefined ? [_entry$1.v, true] : [$ifaceNil, false]);
+		/* */ if (!ok) { $s = 2; continue; }
+		/* */ $s = 3; continue;
+		/* if (!ok) { */ case 2:
+			_r$1 = fmt.Errorf("Function called on non-module %#v", new sliceType$1([im])); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			$s = -1; return (x = new Error.ptr(_r$1, $clone(frame, Frame)), new x.constructor.elem(x));
+		/* } */ case 3:
+		_tuple$1 = (_entry = i.Funcs[ID.keyFor(e.Func)], _entry !== undefined ? [_entry.v, true] : [$ifaceNil, false]);
 		f = _tuple$1[0];
 		ok = _tuple$1[1];
-		/* */ if (!ok) { $s = 4; continue; }
-		/* */ $s = 5; continue;
-		/* if (!ok) { */ case 4:
-			_r$1 = fmt.Errorf("Function %q does not exist in import %q", new sliceType$1([new ID(e.Func), new ID(e.Import)])); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
-			$s = -1; return (x$1 = new Error.ptr(_r$1, $clone(frame, Frame)), new x$1.constructor.elem(x$1));
-		/* } */ case 5:
-		_r$2 = f.Call($clone(frame, Frame), args); /* */ $s = 7; case 7: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-		$s = -1; return _r$2;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: External.ptr.prototype.Call }; } $f._entry = _entry; $f._entry$1 = _entry$1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.args = args; $f.e = e; $f.f = f; $f.frame = frame; $f.i = i; $f.ok = ok; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ if (!ok) { $s = 5; continue; }
+		/* */ $s = 6; continue;
+		/* if (!ok) { */ case 5:
+			_r$2 = fmt.Errorf("Function %q does not exist in import %q", new sliceType$1([new ID(e.Func), e.Import])); /* */ $s = 7; case 7: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+			$s = -1; return (x$1 = new Error.ptr(_r$2, $clone(frame, Frame)), new x$1.constructor.elem(x$1));
+		/* } */ case 6:
+		_r$3 = f.Call($clone($clone(frame, Frame).Pos(e.Line, e.Col), Frame), args); /* */ $s = 8; case 8: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+		$s = -1; return _r$3;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: External.ptr.prototype.Call }; } $f._entry = _entry; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.args = args; $f.e = e; $f.f = f; $f.frame = frame; $f.i = i; $f.im = im; $f.ok = ok; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	External.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	External.ptr.prototype.Compare = function(other) {
@@ -23137,7 +24170,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		_tuple = $assertType(other, External, true);
 		o = $clone(_tuple[0], External);
 		ok = _tuple[1];
-		if (ok && (e.Import === o.Import) && (e.Func === o.Func)) {
+		if (ok && ($interfaceIsEqual(e.Import, o.Import)) && (e.Func === o.Func)) {
 			return [0, false];
 		}
 		return [-1, false];
@@ -23156,7 +24189,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			_r = fmt.Errorf("Function %q does not exist", new sliceType$1([new ID(local.Func)])); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 			$s = -1; return (x = new Error.ptr(_r, $clone(frame, Frame)), new x.constructor.elem(x));
 		/* } */ case 2:
-		_r$1 = f.Call($clone(frame, Frame), args); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		_r$1 = f.Call($clone($clone(frame, Frame).Pos(local.Line, local.Col), Frame), args); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 		$s = -1; return _r$1;
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Local.ptr.prototype.Call }; } $f._entry = _entry; $f._r = _r; $f._r$1 = _r$1; $f._tuple = _tuple; $f.args = args; $f.f = f; $f.frame = frame; $f.local = local; $f.ok = ok; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
 	};
@@ -23291,7 +24324,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	memoCache.ptr.prototype.Get = function(args) {
 		var _entry, args, cache;
 		cache = this;
-		if (cache === ptrType$5.nil) {
+		if (cache === ptrType$6.nil) {
 			return [$ifaceNil, false];
 		}
 		if (args.$length === 0) {
@@ -23300,7 +24333,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		if (cache.next === false) {
 			return [$ifaceNil, false];
 		}
-		return (_entry = cache.next[Func.keyFor((0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]))], _entry !== undefined ? _entry.v : ptrType$5.nil).Get($subslice(args, 1));
+		return (_entry = cache.next[Func.keyFor((0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]))], _entry !== undefined ? _entry.v : ptrType$6.nil).Get($subslice(args, 1));
 	};
 	memoCache.prototype.Get = function(args) { return this.$val.Get(args); };
 	memoCache.ptr.prototype.Set = function(args, val) {
@@ -23323,41 +24356,43 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	Array.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
 	Error.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}, {prop: "Error", name: "Error", pkg: "", typ: $funcType([], [$String], false)}];
 	Bool.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}, {prop: "Compare", name: "Compare", pkg: "", typ: $funcType([Func], [$Int, $Bool], false)}];
-	ptrType$1.methods = [{prop: "fromScript", name: "fromScript", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, Importer], [ptrType$1, $error], false)}, {prop: "fromDecls", name: "fromDecls", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5, Importer], [ptrType$1, $error], false)}, {prop: "fromImport", name: "fromImport", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, Importer], [ID, ptrType$1, $error], false)}, {prop: "fromFuncDecl", name: "fromFuncDecl", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType], [ptrType$6], false)}, {prop: "fromFuncMods", name: "fromFuncMods", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType], [funcMod], false)}, {prop: "fromFuncMod", name: "fromFuncMod", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType], [funcMod], false)}, {prop: "fromArgDecls", name: "fromArgDecls", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5], [sliceType$3], false)}, {prop: "fromExpr", name: "fromExpr", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromSingle", name: "fromSingle", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromFunc", name: "fromFunc", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromSubfunc", name: "fromSubfunc", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType], [ID], false)}, {prop: "fromArray", name: "fromArray", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromSwitch", name: "fromSwitch", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromSwitches", name: "fromSwitches", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5, mapType], [sliceType$4], false)}, {prop: "fromCompound", name: "fromCompound", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromExprs", name: "fromExprs", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5, mapType], [sliceType$2], false)}, {prop: "fromArgs", name: "fromArgs", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5, mapType], [sliceType$2], false)}, {prop: "fromChain", name: "fromChain", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, Func, mapType], [Func], false)}, {prop: "Parse", name: "Parse", pkg: "", typ: $funcType([io.Reader, Importer], [ptrType$1, $error], false)}, {prop: "FromAST", name: "FromAST", pkg: "", typ: $funcType([ast.Node, Importer], [ptrType$1, $error], false)}, {prop: "Insert", name: "Insert", pkg: "", typ: $funcType([ptrType$1], [ptrType$1], false)}];
+	ptrType$1.methods = [{prop: "fromScript", name: "fromScript", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, Importer], [ptrType$1, $error], false)}, {prop: "fromDecls", name: "fromDecls", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5, Importer], [ptrType$1, $error], false)}, {prop: "fromImport", name: "fromImport", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, Importer], [ID, ptrType$1, $error], false)}, {prop: "fromFuncDecl", name: "fromFuncDecl", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType], [ptrType$7], false)}, {prop: "fromFuncMods", name: "fromFuncMods", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType], [funcMod], false)}, {prop: "fromFuncMod", name: "fromFuncMod", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType], [funcMod], false)}, {prop: "fromArgDecls", name: "fromArgDecls", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5], [sliceType$3], false)}, {prop: "fromExpr", name: "fromExpr", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromSlot", name: "fromSlot", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType], [ID], false)}, {prop: "fromSingle", name: "fromSingle", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromFunc", name: "fromFunc", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromSubfunc", name: "fromSubfunc", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType], [ID], false)}, {prop: "fromArray", name: "fromArray", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromSwitch", name: "fromSwitch", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromSwitches", name: "fromSwitches", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5, mapType], [sliceType$4], false)}, {prop: "fromCompound", name: "fromCompound", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, mapType], [Func], false)}, {prop: "fromExprs", name: "fromExprs", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5, mapType], [sliceType$2], false)}, {prop: "fromArgs", name: "fromArgs", pkg: "github.com/DeedleFake/wdte", typ: $funcType([sliceType$5, mapType], [sliceType$2], false)}, {prop: "fromChain", name: "fromChain", pkg: "github.com/DeedleFake/wdte", typ: $funcType([ptrType, Func, ptrType$4, mapType], [Func], false)}, {prop: "Parse", name: "Parse", pkg: "", typ: $funcType([io.Reader, Importer], [ptrType$1, $error], false)}, {prop: "FromAST", name: "FromAST", pkg: "", typ: $funcType([ast.Node, Importer], [ptrType$1, $error], false)}, {prop: "Insert", name: "Insert", pkg: "", typ: $funcType([ptrType$1], [ptrType$1], false)}, {prop: "Eval", name: "Eval", pkg: "", typ: $funcType([io.Reader], [Func, $error], false)}, {prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
 	ImportFunc.methods = [{prop: "Import", name: "Import", pkg: "", typ: $funcType([$String], [ptrType$1, $error], false)}];
-	Frame.methods = [{prop: "New", name: "New", pkg: "", typ: $funcType([ID, sliceType$2], [Frame], false)}, {prop: "WithID", name: "WithID", pkg: "", typ: $funcType([ID], [Frame], false)}, {prop: "ID", name: "ID", pkg: "", typ: $funcType([], [ID], false)}, {prop: "Args", name: "Args", pkg: "", typ: $funcType([], [sliceType$2], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [Frame], false)}, {prop: "Backtrace", name: "Backtrace", pkg: "", typ: $funcType([io.Writer], [$error], false)}];
-	ptrType$4.methods = [{prop: "backtrace", name: "backtrace", pkg: "github.com/DeedleFake/wdte", typ: $funcType([io.Writer], [$error], false)}];
+	Frame.methods = [{prop: "New", name: "New", pkg: "", typ: $funcType([ID, sliceType$2], [Frame], false)}, {prop: "Sub", name: "Sub", pkg: "", typ: $funcType([sliceType$2], [Frame], false)}, {prop: "Pos", name: "Pos", pkg: "", typ: $funcType([$Int, $Int], [Frame], false)}, {prop: "WithID", name: "WithID", pkg: "", typ: $funcType([ID], [Frame], false)}, {prop: "ID", name: "ID", pkg: "", typ: $funcType([], [ID], false)}, {prop: "Args", name: "Args", pkg: "", typ: $funcType([], [sliceType$2], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [Frame], false)}, {prop: "Backtrace", name: "Backtrace", pkg: "", typ: $funcType([io.Writer], [$error], false)}];
+	ptrType$5.methods = [{prop: "backtrace", name: "backtrace", pkg: "github.com/DeedleFake/wdte", typ: $funcType([io.Writer], [$error], false)}];
 	GoFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
 	DeclFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
 	Expr.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
 	Chain.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
+	IgnoredChain.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
 	External.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}, {prop: "Compare", name: "Compare", pkg: "", typ: $funcType([Func], [$Int, $Bool], false)}];
 	Local.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}, {prop: "Compare", name: "Compare", pkg: "", typ: $funcType([Func], [$Int, $Bool], false)}];
 	Compound.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
 	Switch.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
 	Arg.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
 	FramedFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
-	ptrType$7.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
-	ptrType$5.methods = [{prop: "Get", name: "Get", pkg: "", typ: $funcType([sliceType$2], [Func, $Bool], false)}, {prop: "Set", name: "Set", pkg: "", typ: $funcType([sliceType$2, Func], [], false)}];
+	ptrType$8.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}];
+	ptrType$6.methods = [{prop: "Get", name: "Get", pkg: "", typ: $funcType([sliceType$2], [Func, $Bool], false)}, {prop: "Set", name: "Set", pkg: "", typ: $funcType([sliceType$2, Func], [], false)}];
 	Array.init(Func);
 	Error.init("", [{prop: "Err", name: "Err", anonymous: false, exported: true, typ: $error, tag: ""}, {prop: "Frame", name: "Frame", anonymous: false, exported: true, typ: Frame, tag: ""}]);
-	Module.init("", [{prop: "Imports", name: "Imports", anonymous: false, exported: true, typ: mapType$1, tag: ""}, {prop: "Funcs", name: "Funcs", anonymous: false, exported: true, typ: mapType$2, tag: ""}]);
+	Module.init("", [{prop: "Funcs", name: "Funcs", anonymous: false, exported: true, typ: mapType$1, tag: ""}]);
 	Importer.init([{prop: "Import", name: "Import", pkg: "", typ: $funcType([$String], [ptrType$1, $error], false)}]);
 	ImportFunc.init([$String], [ptrType$1, $error], false);
 	Func.init([{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$2], [Func], true)}]);
 	Comparer.init([{prop: "Compare", name: "Compare", pkg: "", typ: $funcType([Func], [$Int, $Bool], false)}]);
-	Frame.init("github.com/DeedleFake/wdte", [{prop: "id", name: "id", anonymous: false, exported: false, typ: ID, tag: ""}, {prop: "args", name: "args", anonymous: false, exported: false, typ: sliceType$2, tag: ""}, {prop: "p", name: "p", anonymous: false, exported: false, typ: ptrType$4, tag: ""}]);
+	Frame.init("github.com/DeedleFake/wdte", [{prop: "id", name: "id", anonymous: false, exported: false, typ: ID, tag: ""}, {prop: "args", name: "args", anonymous: false, exported: false, typ: sliceType$2, tag: ""}, {prop: "p", name: "p", anonymous: false, exported: false, typ: ptrType$5, tag: ""}, {prop: "cline", name: "cline", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "ccol", name: "ccol", anonymous: false, exported: false, typ: $Int, tag: ""}]);
 	GoFunc.init([Frame, sliceType$2], [Func], true);
 	DeclFunc.init("", [{prop: "ID", name: "ID", anonymous: false, exported: true, typ: ID, tag: ""}, {prop: "Expr", name: "Expr", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: $Int, tag: ""}, {prop: "Stored", name: "Stored", anonymous: false, exported: true, typ: sliceType$2, tag: ""}]);
-	Expr.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$2, tag: ""}]);
-	Chain.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$2, tag: ""}, {prop: "Prev", name: "Prev", anonymous: false, exported: true, typ: Func, tag: ""}]);
-	External.init("", [{prop: "Module", name: "Module", anonymous: false, exported: true, typ: ptrType$1, tag: ""}, {prop: "Import", name: "Import", anonymous: false, exported: true, typ: ID, tag: ""}, {prop: "Func", name: "Func", anonymous: false, exported: true, typ: ID, tag: ""}]);
-	Local.init("", [{prop: "Module", name: "Module", anonymous: false, exported: true, typ: ptrType$1, tag: ""}, {prop: "Func", name: "Func", anonymous: false, exported: true, typ: ID, tag: ""}]);
+	Expr.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$2, tag: ""}, {prop: "Slots", name: "Slots", anonymous: false, exported: true, typ: ptrType$4, tag: ""}]);
+	Chain.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$2, tag: ""}, {prop: "Prev", name: "Prev", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Slots", name: "Slots", anonymous: false, exported: true, typ: ptrType$4, tag: ""}]);
+	IgnoredChain.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$2, tag: ""}, {prop: "Prev", name: "Prev", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Slots", name: "Slots", anonymous: false, exported: true, typ: ptrType$4, tag: ""}]);
+	External.init("", [{prop: "Module", name: "Module", anonymous: false, exported: true, typ: ptrType$1, tag: ""}, {prop: "Import", name: "Import", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Func", name: "Func", anonymous: false, exported: true, typ: ID, tag: ""}, {prop: "Line", name: "Line", anonymous: false, exported: true, typ: $Int, tag: ""}, {prop: "Col", name: "Col", anonymous: false, exported: true, typ: $Int, tag: ""}]);
+	Local.init("", [{prop: "Module", name: "Module", anonymous: false, exported: true, typ: ptrType$1, tag: ""}, {prop: "Func", name: "Func", anonymous: false, exported: true, typ: ID, tag: ""}, {prop: "Line", name: "Line", anonymous: false, exported: true, typ: $Int, tag: ""}, {prop: "Col", name: "Col", anonymous: false, exported: true, typ: $Int, tag: ""}]);
 	Compound.init(Func);
 	Switch.init("", [{prop: "Check", name: "Check", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Cases", name: "Cases", anonymous: false, exported: true, typ: sliceType$4, tag: ""}]);
 	FramedFunc.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Frame", name: "Frame", anonymous: false, exported: true, typ: Frame, tag: ""}]);
 	Memo.init("github.com/DeedleFake/wdte", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "cache", name: "cache", anonymous: false, exported: false, typ: memoCache, tag: ""}]);
-	memoCache.init("github.com/DeedleFake/wdte", [{prop: "val", name: "val", anonymous: false, exported: false, typ: Func, tag: ""}, {prop: "next", name: "next", anonymous: false, exported: false, typ: mapType$3, tag: ""}]);
+	memoCache.init("github.com/DeedleFake/wdte", [{prop: "val", name: "val", anonymous: false, exported: false, typ: Func, tag: ""}, {prop: "next", name: "next", anonymous: false, exported: false, typ: mapType$2, tag: ""}]);
 	$init = function() {
 		$pkg.$init = function() {};
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -23371,14 +24406,1376 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	$pkg.$init = $init;
 	return $pkg;
 })();
-$packages["github.com/DeedleFake/wdte/std"] = (function() {
-	var $pkg = {}, $init, fmt, wdte, math, sliceType, ptrType, sliceType$1, save, Add, Sub, Mult, Div, Mod, Equals, Less, Greater, LessEqual, GreaterEqual, Module;
+$packages["github.com/DeedleFake/wdte/std/io"] = (function() {
+	var $pkg = {}, $init, bufio, bytes, fmt, wdte, io, os, strings, reader, Reader, writer, Writer, stringReader, scanner, runeStream, sliceType, ptrType, sliceType$1, sliceType$2, sliceType$3, ptrType$1, sliceType$4, arrayType, ptrType$2, Seek, Close, Combine, Copy, ReadString, String, Lines, Words, Scan, Runes, write, Write, Writeln, Module;
+	bufio = $packages["bufio"];
+	bytes = $packages["bytes"];
 	fmt = $packages["fmt"];
 	wdte = $packages["github.com/DeedleFake/wdte"];
+	io = $packages["io"];
+	os = $packages["os"];
+	strings = $packages["strings"];
+	reader = $pkg.reader = $newType(8, $kindInterface, "io.reader", true, "github.com/DeedleFake/wdte/std/io", false, null);
+	Reader = $pkg.Reader = $newType(0, $kindStruct, "io.Reader", true, "github.com/DeedleFake/wdte/std/io", true, function(Reader_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.Reader = $ifaceNil;
+			return;
+		}
+		this.Reader = Reader_;
+	});
+	writer = $pkg.writer = $newType(8, $kindInterface, "io.writer", true, "github.com/DeedleFake/wdte/std/io", false, null);
+	Writer = $pkg.Writer = $newType(0, $kindStruct, "io.Writer", true, "github.com/DeedleFake/wdte/std/io", true, function(Writer_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.Writer = $ifaceNil;
+			return;
+		}
+		this.Writer = Writer_;
+	});
+	stringReader = $pkg.stringReader = $newType(0, $kindStruct, "io.stringReader", true, "github.com/DeedleFake/wdte/std/io", false, function(Reader_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.Reader = ptrType$1.nil;
+			return;
+		}
+		this.Reader = Reader_;
+	});
+	scanner = $pkg.scanner = $newType(0, $kindStruct, "io.scanner", true, "github.com/DeedleFake/wdte/std/io", false, function(s_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.s = ptrType$2.nil;
+			return;
+		}
+		this.s = s_;
+	});
+	runeStream = $pkg.runeStream = $newType(0, $kindStruct, "io.runeStream", true, "github.com/DeedleFake/wdte/std/io", false, function(r_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.r = $ifaceNil;
+			return;
+		}
+		this.r = r_;
+	});
+	sliceType = $sliceType(wdte.Func);
+	ptrType = $ptrType(wdte.Frame);
+	sliceType$1 = $sliceType(io.Reader);
+	sliceType$2 = $sliceType(io.Writer);
+	sliceType$3 = $sliceType($emptyInterface);
+	ptrType$1 = $ptrType(strings.Reader);
+	sliceType$4 = $sliceType($Uint8);
+	arrayType = $arrayType($Uint8, 64);
+	ptrType$2 = $ptrType(bufio.Scanner);
+	Reader.ptr.prototype.Call = function(frame, args) {
+		var args, frame, r;
+		r = this;
+		return new r.constructor.elem(r);
+	};
+	Reader.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	Writer.ptr.prototype.Call = function(frame, args) {
+		var args, frame, w;
+		w = this;
+		return new w.constructor.elem(w);
+	};
+	Writer.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	Seek = function(frame, args) {
+		var _r, _r$1, _r$2, _r$3, _tuple, args, err, frame, off, rel, s, w, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _tuple = $f._tuple; args = $f.args; err = $f.err; frame = $f.frame; off = $f.off; rel = $f.rel; s = $f.s; w = $f.w; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		args = [args];
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("seek"));
+		/* */ if (args[0].$length < 3) { $s = 1; continue; }
+		/* */ $s = 2; continue;
+		/* if (args[0].$length < 3) { */ case 1:
+			$s = -1; return new wdte.GoFunc(((function(args) { return function $b(frame$1, more) {
+				var _r, frame$1, more, $s, $r;
+				/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; more = $f.more; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+				_r = Seek($clone(frame$1, wdte.Frame), $appendSlice(more, args[0])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+				$s = -1; return _r;
+				/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.more = more; $f.$s = $s; $f.$r = $r; return $f;
+			}; })(args)));
+		/* } */ case 2:
+		_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		s = $assertType(_r, io.Seeker);
+		_r$1 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		off = (new $Int64(0, $assertType(_r$1, wdte.Number)));
+		_r$2 = (2 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 2]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+		rel = $assertType(_r$2, wdte.Number);
+		w = 0;
+		if (rel < 0) {
+			w = 2;
+		} else if ((rel === 0)) {
+			w = 1;
+		} else if (rel > 0) {
+			w = 0;
+		}
+		_r$3 = s.Seek(off, w); /* */ $s = 6; case 6: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+		_tuple = _r$3;
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return (x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x));
+		}
+		$s = -1; return $assertType(s, wdte.Func);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Seek }; } $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._tuple = _tuple; $f.args = args; $f.err = err; $f.frame = frame; $f.off = off; $f.rel = rel; $f.s = s; $f.w = w; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Seek = Seek;
+	Close = function(frame, args) {
+		var _r, _r$1, args, c, err, frame, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; args = $f.args; c = $f.c; err = $f.err; frame = $f.frame; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("close"));
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Close));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		c = $assertType(_r, io.Closer);
+		_r$1 = c.Close(); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		err = _r$1;
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return (x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x));
+		}
+		$s = -1; return $assertType(c, wdte.Func);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Close }; } $f._r = _r; $f._r$1 = _r$1; $f.args = args; $f.c = c; $f.err = err; $f.frame = frame; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Close = Close;
+	Combine = function(frame, args) {
+		var _1, _i, _i$1, _r, _r$1, _r$2, _r$3, _ref, _ref$1, _ref$2, a, a$1, a0, a0$1, a0$2, args, frame, r, w, x, x$1, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _i = $f._i; _i$1 = $f._i$1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _ref = $f._ref; _ref$1 = $f._ref$1; _ref$2 = $f._ref$2; a = $f.a; a$1 = $f.a$1; a0 = $f.a0; a0$1 = $f.a0$1; a0$2 = $f.a0$2; args = $f.args; frame = $f.frame; r = $f.r; w = $f.w; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		args = [args];
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("combine"));
+			_1 = args[0].$length;
+			if (_1 === (0)) {
+				$s = -1; return new wdte.GoFunc((Combine));
+			} else if (_1 === (1)) {
+				$s = -1; return new wdte.GoFunc(((function(args) { return function $b(frame$1, more) {
+					var _r, frame$1, more, $s, $r;
+					/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; more = $f.more; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+					_r = Combine($clone(frame$1, wdte.Frame), $appendSlice(args[0], more)); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+					$s = -1; return _r;
+					/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.more = more; $f.$s = $s; $f.$r = $r; return $f;
+				}; })(args)));
+			}
+		case 1:
+		_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 2; case 2: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_ref = _r;
+		/* */ if ($assertType(_ref, reader, true)[1]) { $s = 3; continue; }
+		/* */ if ($assertType(_ref, writer, true)[1]) { $s = 4; continue; }
+		/* */ $s = 5; continue;
+		/* if ($assertType(_ref, reader, true)[1]) { */ case 3:
+			a0 = _ref;
+			r = $makeSlice(sliceType$1, 1, args[0].$length);
+			(0 >= r.$length ? ($throwRuntimeError("index out of range"), undefined) : r.$array[r.$offset + 0] = a0);
+			_ref$1 = $subslice(args[0], 1);
+			_i = 0;
+			/* while (true) { */ case 7:
+				/* if (!(_i < _ref$1.$length)) { break; } */ if(!(_i < _ref$1.$length)) { $s = 8; continue; }
+				a = ((_i < 0 || _i >= _ref$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref$1.$array[_ref$1.$offset + _i]);
+				_r$1 = a.Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 9; case 9: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+				r = $append(r, $assertType(_r$1, reader));
+				_i++;
+			/* } */ $s = 7; continue; case 8:
+			$s = -1; return (x = new Reader.ptr(io.MultiReader(r)), new x.constructor.elem(x));
+		/* } else if ($assertType(_ref, writer, true)[1]) { */ case 4:
+			a0$1 = _ref;
+			w = $makeSlice(sliceType$2, 1, args[0].$length);
+			(0 >= w.$length ? ($throwRuntimeError("index out of range"), undefined) : w.$array[w.$offset + 0] = a0$1);
+			_ref$2 = $subslice(args[0], 1);
+			_i$1 = 0;
+			/* while (true) { */ case 10:
+				/* if (!(_i$1 < _ref$2.$length)) { break; } */ if(!(_i$1 < _ref$2.$length)) { $s = 11; continue; }
+				a$1 = ((_i$1 < 0 || _i$1 >= _ref$2.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref$2.$array[_ref$2.$offset + _i$1]);
+				_r$2 = a$1.Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 12; case 12: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+				w = $append(w, $assertType(_r$2, writer));
+				_i$1++;
+			/* } */ $s = 10; continue; case 11:
+			$s = -1; return (x$1 = new Writer.ptr(io.MultiWriter(w)), new x$1.constructor.elem(x$1));
+		/* } else { */ case 5:
+			a0$2 = _ref;
+			_r$3 = fmt.Errorf("Unexpected argument type: %T", new sliceType$3([a0$2])); /* */ $s = 13; case 13: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+			$panic(_r$3);
+		/* } */ case 6:
+		$s = -1; return $ifaceNil;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Combine }; } $f._1 = _1; $f._i = _i; $f._i$1 = _i$1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._ref = _ref; $f._ref$1 = _ref$1; $f._ref$2 = _ref$2; $f.a = a; $f.a$1 = a$1; $f.a0 = a0; $f.a0$1 = a0$1; $f.a0$2 = a0$2; $f.args = args; $f.frame = frame; $f.r = r; $f.w = w; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Combine = Combine;
+	Copy = function(frame, args) {
+		var _1, _r, _r$1, _r$2, _r$3, _ref, _tuple, a0, a0$1, a1, args, err, frame, r, w, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _ref = $f._ref; _tuple = $f._tuple; a0 = $f.a0; a0$1 = $f.a0$1; a1 = $f.a1; args = $f.args; err = $f.err; frame = $f.frame; r = $f.r; w = $f.w; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		args = [args];
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("copy"));
+			_1 = args[0].$length;
+			if (_1 === (0)) {
+				$s = -1; return new wdte.GoFunc((Copy));
+			} else if (_1 === (1)) {
+				$s = -1; return new wdte.GoFunc(((function(args) { return function $b(frame$1, more) {
+					var _r, frame$1, more, $s, $r;
+					/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; more = $f.more; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+					_r = Copy($clone(frame$1, wdte.Frame), $appendSlice(args[0], more)); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+					$s = -1; return _r;
+					/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.more = more; $f.$s = $s; $f.$r = $r; return $f;
+				}; })(args)));
+			}
+		case 1:
+		w = $ifaceNil;
+		r = $ifaceNil;
+		a1 = $ifaceNil;
+		_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 2; case 2: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_ref = _r;
+		/* */ if ($assertType(_ref, writer, true)[1]) { $s = 3; continue; }
+		/* */ if ($assertType(_ref, reader, true)[1]) { $s = 4; continue; }
+		/* */ $s = 5; continue;
+		/* if ($assertType(_ref, writer, true)[1]) { */ case 3:
+			a0 = _ref;
+			w = a0;
+			_r$1 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			r = $assertType(_r$1, reader);
+			a1 = r;
+			$s = 5; continue;
+		/* } else if ($assertType(_ref, reader, true)[1]) { */ case 4:
+			a0$1 = _ref;
+			_r$2 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 7; case 7: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+			w = $assertType(_r$2, writer);
+			r = a0$1;
+			a1 = w;
+		/* } */ case 5:
+		_r$3 = io.Copy(w, r); /* */ $s = 8; case 8: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+		_tuple = _r$3;
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return (x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x));
+		}
+		$s = -1; return a1;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Copy }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._ref = _ref; $f._tuple = _tuple; $f.a0 = a0; $f.a0$1 = a0$1; $f.a1 = a1; $f.args = args; $f.err = err; $f.frame = frame; $f.r = r; $f.w = w; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Copy = Copy;
+	stringReader.ptr.prototype.Call = function(frame, args) {
+		var args, frame, r;
+		r = this;
+		return new r.constructor.elem(r);
+	};
+	stringReader.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	ReadString = function(frame, args) {
+		var _r, args, frame, s, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; args = $f.args; frame = $f.frame; s = $f.s; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("readString"));
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((ReadString));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		s = $assertType(_r, wdte.String);
+		$s = -1; return (x = new stringReader.ptr(strings.NewReader((s))), new x.constructor.elem(x));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: ReadString }; } $f._r = _r; $f.args = args; $f.frame = frame; $f.s = s; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.ReadString = ReadString;
+	String = function(frame, args) {
+		var _r, _r$1, _tuple, args, buf, err, frame, r, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _tuple = $f._tuple; args = $f.args; buf = $f.buf; err = $f.err; frame = $f.frame; r = $f.r; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		buf = [buf];
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("string"));
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((String));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		r = $assertType(_r, reader);
+		buf[0] = new bytes.Buffer.ptr(sliceType$4.nil, 0, 0, arrayType.zero());
+		_r$1 = io.Copy(buf[0], r); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		_tuple = _r$1;
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return (x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x));
+		}
+		$s = -1; return new wdte.String((buf[0].String()));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: String }; } $f._r = _r; $f._r$1 = _r$1; $f._tuple = _tuple; $f.args = args; $f.buf = buf; $f.err = err; $f.frame = frame; $f.r = r; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.String = String;
+	scanner.ptr.prototype.Call = function(frame, args) {
+		var args, frame, s;
+		s = this;
+		return new s.constructor.elem(s);
+	};
+	scanner.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	scanner.ptr.prototype.Next = function(frame) {
+		var _r, err, frame, ok, s, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; err = $f.err; frame = $f.frame; ok = $f.ok; s = $f.s; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		s = this;
+		_r = s.s.Scan(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		ok = _r;
+		if (!ok) {
+			err = s.s.Err();
+			if (!($interfaceIsEqual(err, $ifaceNil))) {
+				$s = -1; return [(x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x)), false];
+			}
+			$s = -1; return [$ifaceNil, false];
+		}
+		$s = -1; return [new wdte.String((s.s.Text())), true];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: scanner.ptr.prototype.Next }; } $f._r = _r; $f.err = err; $f.frame = frame; $f.ok = ok; $f.s = s; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	scanner.prototype.Next = function(frame) { return this.$val.Next(frame); };
+	Lines = function(frame, args) {
+		var _r, args, frame, r, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; args = $f.args; frame = $f.frame; r = $f.r; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("lines"));
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Lines));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		r = $assertType(_r, reader);
+		$s = -1; return (x = new scanner.ptr(bufio.NewScanner(r)), new x.constructor.elem(x));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Lines }; } $f._r = _r; $f.args = args; $f.frame = frame; $f.r = r; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Lines = Lines;
+	Words = function(frame, args) {
+		var _r, args, frame, r, s, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; args = $f.args; frame = $f.frame; r = $f.r; s = $f.s; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("words"));
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Words));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		r = $assertType(_r, reader);
+		s = bufio.NewScanner(r);
+		s.Split(bufio.ScanWords);
+		$s = -1; return (x = new scanner.ptr(s), new x.constructor.elem(x));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Words }; } $f._r = _r; $f.args = args; $f.frame = frame; $f.r = r; $f.s = s; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Words = Words;
+	Scan = function(frame, args) {
+		var _1, _r, _r$1, _r$2, _ref, a0, a0$1, args, frame, r, s, seb, sep, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _ref = $f._ref; a0 = $f.a0; a0$1 = $f.a0$1; args = $f.args; frame = $f.frame; r = $f.r; s = $f.s; seb = $f.seb; sep = $f.sep; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		args = [args];
+		seb = [seb];
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("scan"));
+			_1 = args[0].$length;
+			if (_1 === (0)) {
+				$s = -1; return new wdte.GoFunc((Scan));
+			} else if (_1 === (1)) {
+				$s = -1; return new wdte.GoFunc(((function(args, seb) { return function $b(frame$1, next) {
+					var _r, frame$1, next, $s, $r;
+					/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; next = $f.next; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+					_r = Scan($clone(frame$1, wdte.Frame), $appendSlice(args[0], next)); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+					$s = -1; return _r;
+					/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.next = next; $f.$s = $s; $f.$r = $r; return $f;
+				}; })(args, seb)));
+			}
+		case 1:
+		r = $ifaceNil;
+		sep = "";
+		_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 2; case 2: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_ref = _r;
+		/* */ if ($assertType(_ref, reader, true)[1]) { $s = 3; continue; }
+		/* */ if ($assertType(_ref, wdte.String, true)[1]) { $s = 4; continue; }
+		/* */ $s = 5; continue;
+		/* if ($assertType(_ref, reader, true)[1]) { */ case 3:
+			a0 = _ref;
+			r = a0;
+			_r$1 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			sep = $assertType(_r$1, wdte.String);
+			$s = 5; continue;
+		/* } else if ($assertType(_ref, wdte.String, true)[1]) { */ case 4:
+			a0$1 = _ref.$val;
+			_r$2 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 7; case 7: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+			r = $assertType(_r$2, reader);
+			sep = a0$1;
+		/* } */ case 5:
+		seb[0] = (new sliceType$4($stringToBytes(sep)));
+		s = bufio.NewScanner(r);
+		s.Split((function(args, seb) { return function(data, eof) {
+			var data, eof, start;
+			start = bytes.Index(data, seb[0]);
+			if (start < 0) {
+				if (eof) {
+					if (data.$length === 0) {
+						return [1, sliceType$4.nil, $ifaceNil];
+					}
+					return [data.$length, data, $ifaceNil];
+				}
+				return [0, sliceType$4.nil, $ifaceNil];
+			}
+			return [start + seb[0].$length >> 0, $subslice(data, 0, start), $ifaceNil];
+		}; })(args, seb));
+		$s = -1; return (x = new scanner.ptr(s), new x.constructor.elem(x));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Scan }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._ref = _ref; $f.a0 = a0; $f.a0$1 = a0$1; $f.args = args; $f.frame = frame; $f.r = r; $f.s = s; $f.seb = seb; $f.sep = sep; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Scan = Scan;
+	runeStream.ptr.prototype.Call = function(frame, args) {
+		var args, frame, r;
+		r = this;
+		return new r.constructor.elem(r);
+	};
+	runeStream.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	runeStream.ptr.prototype.Next = function(frame) {
+		var _r, _tuple, c, err, frame, r, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; c = $f.c; err = $f.err; frame = $f.frame; r = $f.r; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		r = this;
+		_r = r.r.ReadRune(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_tuple = _r;
+		c = _tuple[0];
+		err = _tuple[2];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			if ($interfaceIsEqual(err, io.EOF)) {
+				$s = -1; return [$ifaceNil, false];
+			}
+			$s = -1; return [(x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x)), true];
+		}
+		$s = -1; return [new wdte.Number((c)), true];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: runeStream.ptr.prototype.Next }; } $f._r = _r; $f._tuple = _tuple; $f.c = c; $f.err = err; $f.frame = frame; $f.r = r; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	runeStream.prototype.Next = function(frame) { return this.$val.Next(frame); };
+	Runes = function(frame, args) {
+		var _r, _r$1, _ref, a, a$1, a$2, a$3, args, frame, r, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _ref = $f._ref; a = $f.a; a$1 = $f.a$1; a$2 = $f.a$2; a$3 = $f.a$3; args = $f.args; frame = $f.frame; r = $f.r; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("runes"));
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Runes));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		a = _r;
+		r = $ifaceNil;
+		_ref = a;
+		/* */ if ($assertType(_ref, io.RuneReader, true)[1]) { $s = 2; continue; }
+		/* */ if ($assertType(_ref, io.Reader, true)[1]) { $s = 3; continue; }
+		/* */ $s = 4; continue;
+		/* if ($assertType(_ref, io.RuneReader, true)[1]) { */ case 2:
+			a$1 = _ref;
+			r = a$1;
+			$s = 5; continue;
+		/* } else if ($assertType(_ref, io.Reader, true)[1]) { */ case 3:
+			a$2 = _ref;
+			r = bufio.NewReader(a$2);
+			$s = 5; continue;
+		/* } else { */ case 4:
+			a$3 = _ref;
+			_r$1 = fmt.Errorf("Unexpected argument type: %T", new sliceType$3([a$3])); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			$panic(_r$1);
+		/* } */ case 5:
+		$s = -1; return (x = new runeStream.ptr(r), new x.constructor.elem(x));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Runes }; } $f._r = _r; $f._r$1 = _r$1; $f._ref = _ref; $f.a = a; $f.a$1 = a$1; $f.a$2 = a$2; $f.a$3 = a$3; $f.args = args; $f.frame = frame; $f.r = r; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Runes = Runes;
+	write = function(f) {
+		var f, gf;
+		gf = $throwNilPointerError;
+		gf = (function $b(frame, args) {
+			var _1, _r, _r$1, _r$2, _r$3, _ref, a0, a0$1, args, d, err, frame, w, x, $s, $r;
+			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _ref = $f._ref; a0 = $f.a0; a0$1 = $f.a0$1; args = $f.args; d = $f.d; err = $f.err; frame = $f.frame; w = $f.w; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+			args = [args];
+				_1 = args[0].$length;
+				if (_1 === (0)) {
+					$s = -1; return new wdte.GoFunc(gf);
+				} else if (_1 === (1)) {
+					$s = -1; return new wdte.GoFunc(((function(args) { return function $b(frame$1, more) {
+						var _r, frame$1, more, $s, $r;
+						/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; more = $f.more; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+						_r = gf($clone(frame$1, wdte.Frame), $appendSlice(more, args[0])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+						$s = -1; return _r;
+						/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.more = more; $f.$s = $s; $f.$r = $r; return $f;
+					}; })(args)));
+				}
+			case 1:
+			w = $ifaceNil;
+			d = $ifaceNil;
+			_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 2; case 2: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			_ref = _r;
+			/* */ if ($assertType(_ref, writer, true)[1]) { $s = 3; continue; }
+			/* */ if ($assertType(_ref, wdte.Func, true)[1]) { $s = 4; continue; }
+			/* */ $s = 5; continue;
+			/* if ($assertType(_ref, writer, true)[1]) { */ case 3:
+				a0 = _ref;
+				w = a0;
+				_r$1 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+				d = _r$1;
+				$s = 5; continue;
+			/* } else if ($assertType(_ref, wdte.Func, true)[1]) { */ case 4:
+				a0$1 = _ref;
+				d = a0$1;
+				_r$2 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 7; case 7: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+				w = $assertType(_r$2, writer);
+			/* } */ case 5:
+			_r$3 = f(w, d); /* */ $s = 8; case 8: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+			err = _r$3;
+			if (!($interfaceIsEqual(err, $ifaceNil))) {
+				$s = -1; return (x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x));
+			}
+			$s = -1; return w;
+			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._ref = _ref; $f.a0 = a0; $f.a0$1 = a0$1; $f.args = args; $f.d = d; $f.err = err; $f.frame = frame; $f.w = w; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+		});
+		return new wdte.GoFunc(gf);
+	};
+	Write = function(frame, args) {
+		var _r, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("write"));
+		_r = write((function $b(w, v) {
+			var _r, _tuple, err, v, w, $s, $r;
+			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; err = $f.err; v = $f.v; w = $f.w; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+			_r = fmt.Fprint(w, new sliceType$3([v])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			_tuple = _r;
+			err = _tuple[1];
+			$s = -1; return err;
+			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f._tuple = _tuple; $f.err = err; $f.v = v; $f.w = w; $f.$s = $s; $f.$r = $r; return $f;
+		})).Call($clone(frame, wdte.Frame), args); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return _r;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Write }; } $f._r = _r; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Write = Write;
+	Writeln = function(frame, args) {
+		var _r, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("writeln"));
+		_r = write((function $b(w, v) {
+			var _r, _tuple, err, v, w, $s, $r;
+			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; err = $f.err; v = $f.v; w = $f.w; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+			_r = fmt.Fprintln(w, new sliceType$3([v])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			_tuple = _r;
+			err = _tuple[1];
+			$s = -1; return err;
+			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f._tuple = _tuple; $f.err = err; $f.v = v; $f.w = w; $f.$s = $s; $f.$r = $r; return $f;
+		})).Call($clone(frame, wdte.Frame), args); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return _r;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Writeln }; } $f._r = _r; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Writeln = Writeln;
+	Module = function() {
+		var x, x$1, x$2;
+		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "stdin", v: (x = new Reader.ptr(os.Stdin), new x.constructor.elem(x)) }, { k: "stdout", v: (x$1 = new Writer.ptr(os.Stdout), new x$1.constructor.elem(x$1)) }, { k: "stderr", v: (x$2 = new Writer.ptr(os.Stderr), new x$2.constructor.elem(x$2)) }, { k: "seek", v: new wdte.GoFunc((Seek)) }, { k: "close", v: new wdte.GoFunc((Close)) }, { k: "combine", v: new wdte.GoFunc((Combine)) }, { k: "copy", v: new wdte.GoFunc((Copy)) }, { k: "readString", v: new wdte.GoFunc((ReadString)) }, { k: "string", v: new wdte.GoFunc((String)) }, { k: "lines", v: new wdte.GoFunc((Lines)) }, { k: "words", v: new wdte.GoFunc((Words)) }, { k: "scan", v: new wdte.GoFunc((Scan)) }, { k: "runes", v: new wdte.GoFunc((Runes)) }, { k: "write", v: new wdte.GoFunc((Write)) }, { k: "writeln", v: new wdte.GoFunc((Writeln)) }]));
+	};
+	$pkg.Module = Module;
+	Reader.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
+	Writer.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
+	stringReader.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
+	scanner.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
+	runeStream.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
+	reader.init([{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Read", name: "Read", pkg: "", typ: $funcType([sliceType$4], [$Int, $error], false)}]);
+	Reader.init("", [{prop: "Reader", name: "Reader", anonymous: true, exported: true, typ: io.Reader, tag: ""}]);
+	writer.init([{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Write", name: "Write", pkg: "", typ: $funcType([sliceType$4], [$Int, $error], false)}]);
+	Writer.init("", [{prop: "Writer", name: "Writer", anonymous: true, exported: true, typ: io.Writer, tag: ""}]);
+	stringReader.init("", [{prop: "Reader", name: "Reader", anonymous: true, exported: true, typ: ptrType$1, tag: ""}]);
+	scanner.init("github.com/DeedleFake/wdte/std/io", [{prop: "s", name: "s", anonymous: false, exported: false, typ: ptrType$2, tag: ""}]);
+	runeStream.init("github.com/DeedleFake/wdte/std/io", [{prop: "r", name: "r", anonymous: false, exported: false, typ: io.RuneReader, tag: ""}]);
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = bufio.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = bytes.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = fmt.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = wdte.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = io.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = os.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = strings.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
+$packages["github.com/DeedleFake/wdte/std/io/file"] = (function() {
+	var $pkg = {}, $init, wdte, os, File, sliceType, ptrType, ptrType$1, Open, Create, Append, Module;
+	wdte = $packages["github.com/DeedleFake/wdte"];
+	os = $packages["os"];
+	File = $pkg.File = $newType(0, $kindStruct, "file.File", true, "github.com/DeedleFake/wdte/std/io/file", true, function(File_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.File = ptrType$1.nil;
+			return;
+		}
+		this.File = File_;
+	});
+	sliceType = $sliceType(wdte.Func);
+	ptrType = $ptrType(wdte.Frame);
+	ptrType$1 = $ptrType(os.File);
+	File.ptr.prototype.Call = function(frame, args) {
+		var args, f, frame;
+		f = this;
+		return new f.constructor.elem(f);
+	};
+	File.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	Open = function(frame, args) {
+		var _r, _tuple, args, err, file, frame, path, x, x$1, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; args = $f.args; err = $f.err; file = $f.file; frame = $f.frame; path = $f.path; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("open"));
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Open));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		path = $assertType(_r, wdte.String);
+		_tuple = os.Open((path));
+		file = _tuple[0];
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return (x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x));
+		}
+		$s = -1; return (x$1 = new File.ptr(file), new x$1.constructor.elem(x$1));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Open }; } $f._r = _r; $f._tuple = _tuple; $f.args = args; $f.err = err; $f.file = file; $f.frame = frame; $f.path = path; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Open = Open;
+	Create = function(frame, args) {
+		var _r, _tuple, args, err, file, frame, path, x, x$1, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; args = $f.args; err = $f.err; file = $f.file; frame = $f.frame; path = $f.path; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("create"));
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Create));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		path = $assertType(_r, wdte.String);
+		_tuple = os.Create((path));
+		file = _tuple[0];
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return (x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x));
+		}
+		$s = -1; return (x$1 = new File.ptr(file), new x$1.constructor.elem(x$1));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Create }; } $f._r = _r; $f._tuple = _tuple; $f.args = args; $f.err = err; $f.file = file; $f.frame = frame; $f.path = path; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Create = Create;
+	Append = function(frame, args) {
+		var _r, _tuple, args, err, file, frame, path, x, x$1, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; args = $f.args; err = $f.err; file = $f.file; frame = $f.frame; path = $f.path; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("append"));
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Append));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		path = $assertType(_r, wdte.String);
+		_tuple = os.OpenFile((path), 1089, 438);
+		file = _tuple[0];
+		err = _tuple[1];
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return (x = new wdte.Error.ptr(err, $clone(frame, wdte.Frame)), new x.constructor.elem(x));
+		}
+		$s = -1; return (x$1 = new File.ptr(file), new x$1.constructor.elem(x$1));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Append }; } $f._r = _r; $f._tuple = _tuple; $f.args = args; $f.err = err; $f.file = file; $f.frame = frame; $f.path = path; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Append = Append;
+	Module = function() {
+		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "open", v: new wdte.GoFunc((Open)) }, { k: "create", v: new wdte.GoFunc((Create)) }, { k: "append", v: new wdte.GoFunc((Append)) }]));
+	};
+	$pkg.Module = Module;
+	File.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
+	File.init("", [{prop: "File", name: "File", anonymous: true, exported: true, typ: ptrType$1, tag: ""}]);
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = wdte.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = os.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
+$packages["github.com/DeedleFake/wdte/std/math"] = (function() {
+	var $pkg = {}, $init, wdte, math, sliceType, Pi, Sin, Cos, Tan, Floor, Ceil, Abs, Module;
+	wdte = $packages["github.com/DeedleFake/wdte"];
+	math = $packages["math"];
+	sliceType = $sliceType(wdte.Func);
+	Pi = function(frame, args) {
+		var args, frame;
+		return new wdte.Number(3.141592653589793);
+	};
+	$pkg.Pi = Pi;
+	Sin = function(frame, args) {
+		var _r, a, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Sin));
+		}
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("sin"));
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		a = $assertType(_r, wdte.Number);
+		$s = -1; return new wdte.Number((math.Sin((a))));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Sin }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Sin = Sin;
+	Cos = function(frame, args) {
+		var _r, a, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Cos));
+		}
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("cos"));
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		a = $assertType(_r, wdte.Number);
+		$s = -1; return new wdte.Number((math.Cos((a))));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Cos }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Cos = Cos;
+	Tan = function(frame, args) {
+		var _r, a, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Tan));
+		}
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("tan"));
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		a = $assertType(_r, wdte.Number);
+		$s = -1; return new wdte.Number((math.Tan((a))));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Tan }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Tan = Tan;
+	Floor = function(frame, args) {
+		var _r, a, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Floor));
+		}
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("floor"));
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		a = $assertType(_r, wdte.Number);
+		$s = -1; return new wdte.Number((math.Floor((a))));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Floor }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Floor = Floor;
+	Ceil = function(frame, args) {
+		var _r, a, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Ceil));
+		}
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("ceil"));
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		a = $assertType(_r, wdte.Number);
+		$s = -1; return new wdte.Number((math.Ceil((a))));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Ceil }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Ceil = Ceil;
+	Abs = function(frame, args) {
+		var _r, a, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Abs));
+		}
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("abs"));
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		a = $assertType(_r, wdte.Number);
+		$s = -1; return new wdte.Number((math.Abs((a))));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Abs }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Abs = Abs;
+	Module = function() {
+		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "pi", v: new wdte.GoFunc((Pi)) }, { k: "sin", v: new wdte.GoFunc((Sin)) }, { k: "cos", v: new wdte.GoFunc((Cos)) }, { k: "tan", v: new wdte.GoFunc((Tan)) }, { k: "floor", v: new wdte.GoFunc((Floor)) }, { k: "ceil", v: new wdte.GoFunc((Ceil)) }, { k: "abs", v: new wdte.GoFunc((Abs)) }]));
+	};
+	$pkg.Module = Module;
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = wdte.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = math.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
+$packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
+	var $pkg = {}, $init, wdte, mapper, filter, flatMapper, array, rng, Stream, NextFunc, sliceType, ptrType, ptrType$1, ptrType$2, ptrType$3, Collect, Drain, Reduce, Any, All, Map, Filter, FlatMap, New, Range, Concat, Module;
+	wdte = $packages["github.com/DeedleFake/wdte"];
+	mapper = $pkg.mapper = $newType(0, $kindStruct, "stream.mapper", true, "github.com/DeedleFake/wdte/std/stream", false, function(m_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.m = $ifaceNil;
+			return;
+		}
+		this.m = m_;
+	});
+	filter = $pkg.filter = $newType(0, $kindStruct, "stream.filter", true, "github.com/DeedleFake/wdte/std/stream", false, function(f_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.f = $ifaceNil;
+			return;
+		}
+		this.f = f_;
+	});
+	flatMapper = $pkg.flatMapper = $newType(0, $kindStruct, "stream.flatMapper", true, "github.com/DeedleFake/wdte/std/stream", false, function(m_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.m = $ifaceNil;
+			return;
+		}
+		this.m = m_;
+	});
+	array = $pkg.array = $newType(0, $kindStruct, "stream.array", true, "github.com/DeedleFake/wdte/std/stream", false, function(a_, i_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.a = wdte.Array.nil;
+			this.i = 0;
+			return;
+		}
+		this.a = a_;
+		this.i = i_;
+	});
+	rng = $pkg.rng = $newType(0, $kindStruct, "stream.rng", true, "github.com/DeedleFake/wdte/std/stream", false, function(i_, m_, s_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.i = 0;
+			this.m = 0;
+			this.s = 0;
+			return;
+		}
+		this.i = i_;
+		this.m = m_;
+		this.s = s_;
+	});
+	Stream = $pkg.Stream = $newType(8, $kindInterface, "stream.Stream", true, "github.com/DeedleFake/wdte/std/stream", true, null);
+	NextFunc = $pkg.NextFunc = $newType(4, $kindFunc, "stream.NextFunc", true, "github.com/DeedleFake/wdte/std/stream", true, null);
+	sliceType = $sliceType(wdte.Func);
+	ptrType = $ptrType(mapper);
+	ptrType$1 = $ptrType(flatMapper);
+	ptrType$2 = $ptrType(array);
+	ptrType$3 = $ptrType(rng);
+	Collect = function(frame, args) {
+		var _1, _r, _r$1, _r$2, _tuple, _tuple$1, _tuple$2, a, args, frame, n, ok, ok$1, ok$2, r, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; a = $f.a; args = $f.args; frame = $f.frame; n = $f.n; ok = $f.ok; ok$1 = $f.ok$1; ok$2 = $f.ok$2; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((Collect));
+		}
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("collect"));
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_tuple = $assertType(_r, Stream, true);
+		a = _tuple[0];
+		ok = _tuple[1];
+		if (!ok) {
+			$s = -1; return (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]);
+		}
+		r = new wdte.Array([]);
+		/* while (true) { */ case 2:
+			_r$1 = a.Next($clone(frame, wdte.Frame)); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			_tuple$1 = _r$1;
+			n = _tuple$1[0];
+			ok$1 = _tuple$1[1];
+			if (!ok$1) {
+				/* break; */ $s = 3; continue;
+			}
+			_tuple$2 = $assertType(n, $error, true);
+			ok$2 = _tuple$2[1];
+			if (ok$2) {
+				$s = -1; return n;
+			}
+			_r$2 = n.Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+			r = $append(r, _r$2);
+		/* } */ $s = 2; continue; case 3:
+		$s = -1; return r;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Collect }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f.a = a; $f.args = args; $f.frame = frame; $f.n = n; $f.ok = ok; $f.ok$1 = ok$1; $f.ok$2 = ok$2; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Collect = Collect;
+	Drain = function(frame, args) {
+		var _1, _r, _r$1, _tuple, _tuple$1, args, frame, n, ok, ok$1, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; args = $f.args; frame = $f.frame; n = $f.n; ok = $f.ok; ok$1 = $f.ok$1; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((Drain));
+		}
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("drain"));
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		s = $assertType(_r, Stream);
+		/* while (true) { */ case 2:
+			_r$1 = s.Next($clone(frame, wdte.Frame)); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			_tuple = _r$1;
+			n = _tuple[0];
+			ok = _tuple[1];
+			if (!ok) {
+				$s = -1; return s;
+			}
+			_tuple$1 = $assertType(n, $error, true);
+			ok$1 = _tuple$1[1];
+			if (ok$1) {
+				$s = -1; return n;
+			}
+		/* } */ $s = 2; continue; case 3:
+		$s = -1; return $ifaceNil;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Drain }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.args = args; $f.frame = frame; $f.n = n; $f.ok = ok; $f.ok$1 = ok$1; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Drain = Drain;
+	Reduce = function(frame, args) {
+		var _1, _r, _r$1, _r$2, _r$3, _r$4, _tuple, args, cur, frame, n, ok, r, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _tuple = $f._tuple; args = $f.args; cur = $f.cur; frame = $f.frame; n = $f.n; ok = $f.ok; r = $f.r; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		args = [args];
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("reduce"));
+			_1 = args[0].$length;
+			if (_1 === (0)) {
+				$s = -1; return new wdte.GoFunc((Reduce));
+			} else if ((_1 === (1)) || (_1 === (2))) {
+				$s = -1; return new wdte.GoFunc(((function(args) { return function $b(frame$1, next) {
+					var _r, frame$1, next, $s, $r;
+					/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; next = $f.next; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+					_r = Reduce($clone(frame$1, wdte.Frame), $appendSlice(next, args[0])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+					$s = -1; return _r;
+					/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.next = next; $f.$s = $s; $f.$r = $r; return $f;
+				}; })(args)));
+			}
+		case 1:
+		_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 2; case 2: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		s = $assertType(_r, Stream);
+		_r$1 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		cur = _r$1;
+		_r$2 = (2 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 2]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 4; case 4: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+		r = _r$2;
+		/* while (true) { */ case 5:
+			_r$3 = s.Next($clone(frame, wdte.Frame)); /* */ $s = 7; case 7: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+			_tuple = _r$3;
+			n = _tuple[0];
+			ok = _tuple[1];
+			if (!ok) {
+				$s = -1; return cur;
+			}
+			_r$4 = r.Call($clone(frame, wdte.Frame), new sliceType([cur, n])); /* */ $s = 8; case 8: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
+			cur = _r$4;
+		/* } */ $s = 5; continue; case 6:
+		$s = -1; return $ifaceNil;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Reduce }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._tuple = _tuple; $f.args = args; $f.cur = cur; $f.frame = frame; $f.n = n; $f.ok = ok; $f.r = r; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Reduce = Reduce;
+	Any = function(frame, args) {
+		var _1, _r, _r$1, _r$2, _r$3, _tuple, _tuple$1, args, b, f, frame, n, ok, ok$1, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; args = $f.args; b = $f.b; f = $f.f; frame = $f.frame; n = $f.n; ok = $f.ok; ok$1 = $f.ok$1; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		args = [args];
+			_1 = args[0].$length;
+			if (_1 === (0)) {
+				$s = -1; return new wdte.GoFunc((Any));
+			} else if (_1 === (1)) {
+				$s = -1; return new wdte.GoFunc(((function(args) { return function $b(frame$1, next) {
+					var _r, frame$1, next, $s, $r;
+					/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; next = $f.next; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+					_r = Any($clone(frame$1, wdte.Frame), $appendSlice(next, args[0])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+					$s = -1; return _r;
+					/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.next = next; $f.$s = $s; $f.$r = $r; return $f;
+				}; })(args)));
+			}
+		case 1:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("any"));
+		_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 2; case 2: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		s = $assertType(_r, Stream);
+		_r$1 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		f = _r$1;
+		/* while (true) { */ case 4:
+			_r$2 = s.Next($clone(frame, wdte.Frame)); /* */ $s = 6; case 6: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+			_tuple = _r$2;
+			n = _tuple[0];
+			ok = _tuple[1];
+			if (!ok) {
+				$s = -1; return new wdte.Bool(false);
+			}
+			_r$3 = f.Call($clone(frame, wdte.Frame), new sliceType([n])); /* */ $s = 7; case 7: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+			_tuple$1 = $assertType(_r$3, wdte.Bool, true);
+			b = _tuple$1[0];
+			ok$1 = _tuple$1[1];
+			if ((b) && ok$1) {
+				$s = -1; return new wdte.Bool(true);
+			}
+		/* } */ $s = 4; continue; case 5:
+		$s = -1; return $ifaceNil;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Any }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.args = args; $f.b = b; $f.f = f; $f.frame = frame; $f.n = n; $f.ok = ok; $f.ok$1 = ok$1; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Any = Any;
+	All = function(frame, args) {
+		var _1, _r, _r$1, _r$2, _r$3, _tuple, _tuple$1, args, b, f, frame, n, ok, ok$1, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; args = $f.args; b = $f.b; f = $f.f; frame = $f.frame; n = $f.n; ok = $f.ok; ok$1 = $f.ok$1; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		args = [args];
+			_1 = args[0].$length;
+			if (_1 === (0)) {
+				$s = -1; return new wdte.GoFunc((All));
+			} else if (_1 === (1)) {
+				$s = -1; return new wdte.GoFunc(((function(args) { return function $b(frame$1, next) {
+					var _r, frame$1, next, $s, $r;
+					/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; next = $f.next; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+					_r = All($clone(frame$1, wdte.Frame), $appendSlice(next, args[0])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+					$s = -1; return _r;
+					/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.next = next; $f.$s = $s; $f.$r = $r; return $f;
+				}; })(args)));
+			}
+		case 1:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("all"));
+		_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 2; case 2: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		s = $assertType(_r, Stream);
+		_r$1 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		f = _r$1;
+		/* while (true) { */ case 4:
+			_r$2 = s.Next($clone(frame, wdte.Frame)); /* */ $s = 6; case 6: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+			_tuple = _r$2;
+			n = _tuple[0];
+			ok = _tuple[1];
+			if (!ok) {
+				$s = -1; return new wdte.Bool(true);
+			}
+			_r$3 = f.Call($clone(frame, wdte.Frame), new sliceType([n])); /* */ $s = 7; case 7: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+			_tuple$1 = $assertType(_r$3, wdte.Bool, true);
+			b = _tuple$1[0];
+			ok$1 = _tuple$1[1];
+			if ((!b) || !ok$1) {
+				$s = -1; return new wdte.Bool(false);
+			}
+		/* } */ $s = 4; continue; case 5:
+		$s = -1; return $ifaceNil;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: All }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.args = args; $f.b = b; $f.f = f; $f.frame = frame; $f.n = n; $f.ok = ok; $f.ok$1 = ok$1; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.All = All;
+	Map = function(frame, args) {
+		var _1, _r, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((Map));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return new mapper.ptr(_r);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Map }; } $f._1 = _1; $f._r = _r; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Map = Map;
+	mapper.ptr.prototype.Call = function(frame, args) {
+		var _1, _r, _tuple, a, args, frame, m, ok, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _tuple = $f._tuple; a = $f.a; args = $f.args; frame = $f.frame; m = $f.m; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		a = [a];
+		m = [m];
+		m[0] = this;
+			_1 = args.$length;
+			/* */ if (_1 === (1)) { $s = 2; continue; }
+			/* */ $s = 3; continue;
+			/* if (_1 === (1)) { */ case 2:
+				_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 4; case 4: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+				_tuple = $assertType(_r, Stream, true);
+				a[0] = _tuple[0];
+				ok = _tuple[1];
+				if (ok) {
+					$s = -1; return new NextFunc(((function(a, m) { return function $b(frame$1) {
+						var _r$1, _r$2, _tuple$1, frame$1, n, ok$1, $s, $r;
+						/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r$1 = $f._r$1; _r$2 = $f._r$2; _tuple$1 = $f._tuple$1; frame$1 = $f.frame$1; n = $f.n; ok$1 = $f.ok$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+						_r$1 = a[0].Next($clone(frame$1, wdte.Frame)); /* */ $s = 1; case 1: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+						_tuple$1 = _r$1;
+						n = _tuple$1[0];
+						ok$1 = _tuple$1[1];
+						if (!ok$1) {
+							$s = -1; return [$ifaceNil, false];
+						}
+						wdte.Frame.copy(frame$1, $clone(frame$1, wdte.Frame).WithID("map"));
+						_r$2 = m[0].m.Call($clone(frame$1, wdte.Frame), new sliceType([n])); /* */ $s = 2; case 2: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+						$s = -1; return [_r$2, true];
+						/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r$1 = _r$1; $f._r$2 = _r$2; $f._tuple$1 = _tuple$1; $f.frame$1 = frame$1; $f.n = n; $f.ok$1 = ok$1; $f.$s = $s; $f.$r = $r; return $f;
+					}; })(a, m)));
+				}
+			/* } */ case 3:
+		case 1:
+		$s = -1; return m[0];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: mapper.ptr.prototype.Call }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a = a; $f.args = args; $f.frame = frame; $f.m = m; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	mapper.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	Filter = function(frame, args) {
+		var _1, _r, args, frame, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; args = $f.args; frame = $f.frame; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((Filter));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return (x = new filter.ptr(_r), new x.constructor.elem(x));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Filter }; } $f._1 = _1; $f._r = _r; $f.args = args; $f.frame = frame; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Filter = Filter;
+	filter.ptr.prototype.Call = function(frame, args) {
+		var _1, _r, _tuple, a, args, f, frame, ok, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _tuple = $f._tuple; a = $f.a; args = $f.args; f = $f.f; frame = $f.frame; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		a = [a];
+		f = [f];
+		f[0] = this;
+			_1 = args.$length;
+			/* */ if (_1 === (1)) { $s = 2; continue; }
+			/* */ $s = 3; continue;
+			/* if (_1 === (1)) { */ case 2:
+				_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 4; case 4: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+				_tuple = $assertType(_r, Stream, true);
+				a[0] = _tuple[0];
+				ok = _tuple[1];
+				if (ok) {
+					$s = -1; return new NextFunc(((function(a, f) { return function $b(frame$1) {
+						var _r$1, _r$2, _tuple$1, frame$1, n, ok$1, $s, $r;
+						/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r$1 = $f._r$1; _r$2 = $f._r$2; _tuple$1 = $f._tuple$1; frame$1 = $f.frame$1; n = $f.n; ok$1 = $f.ok$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+						/* while (true) { */ case 1:
+							_r$1 = a[0].Next($clone(frame$1, wdte.Frame)); /* */ $s = 3; case 3: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+							_tuple$1 = _r$1;
+							n = _tuple$1[0];
+							ok$1 = _tuple$1[1];
+							if (!ok$1) {
+								$s = -1; return [$ifaceNil, false];
+							}
+							wdte.Frame.copy(frame$1, $clone(frame$1, wdte.Frame).WithID("filter"));
+							_r$2 = f[0].f.Call($clone(frame$1, wdte.Frame), new sliceType([n])); /* */ $s = 6; case 6: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+							/* */ if ($interfaceIsEqual(_r$2, new wdte.Bool(true))) { $s = 4; continue; }
+							/* */ $s = 5; continue;
+							/* if ($interfaceIsEqual(_r$2, new wdte.Bool(true))) { */ case 4:
+								$s = -1; return [n, true];
+							/* } */ case 5:
+						/* } */ $s = 1; continue; case 2:
+						$s = -1; return [$ifaceNil, false];
+						/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r$1 = _r$1; $f._r$2 = _r$2; $f._tuple$1 = _tuple$1; $f.frame$1 = frame$1; $f.n = n; $f.ok$1 = ok$1; $f.$s = $s; $f.$r = $r; return $f;
+					}; })(a, f)));
+				}
+			/* } */ case 3:
+		case 1:
+		$s = -1; return new f[0].constructor.elem(f[0]);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: filter.ptr.prototype.Call }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a = a; $f.args = args; $f.f = f; $f.frame = frame; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	filter.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	FlatMap = function(frame, args) {
+		var _1, _r, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((Map));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return new flatMapper.ptr(_r);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: FlatMap }; } $f._1 = _1; $f._r = _r; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.FlatMap = FlatMap;
+	flatMapper.ptr.prototype.Call = function(frame, args) {
+		var _1, _r, _tuple, a, args, cur, frame, i, m, ok, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _tuple = $f._tuple; a = $f.a; args = $f.args; cur = $f.cur; frame = $f.frame; i = $f.i; m = $f.m; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		a = [a];
+		cur = [cur];
+		i = [i];
+		m = [m];
+		m[0] = this;
+			_1 = args.$length;
+			/* */ if (_1 === (1)) { $s = 2; continue; }
+			/* */ $s = 3; continue;
+			/* if (_1 === (1)) { */ case 2:
+				_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 4; case 4: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+				_tuple = $assertType(_r, Stream, true);
+				a[0] = _tuple[0];
+				ok = _tuple[1];
+				if (ok) {
+					i[0] = 0;
+					cur[0] = wdte.Array.nil;
+					$s = -1; return new NextFunc(((function(a, cur, i, m) { return function $b(frame$1) {
+						var _r$1, _r$2, _r$3, _tuple$1, _tuple$2, frame$1, n, ok$1, ok$2, r, r$1, r$2, $s, $r;
+						/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; frame$1 = $f.frame$1; n = $f.n; ok$1 = $f.ok$1; ok$2 = $f.ok$2; r = $f.r; r$1 = $f.r$1; r$2 = $f.r$2; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+						/* while (true) { */ case 1:
+							if ((!(cur[0] === wdte.Array.nil)) && (i[0] < cur[0].$length)) {
+								r = ((i[0] < 0 || i[0] >= cur[0].$length) ? ($throwRuntimeError("index out of range"), undefined) : cur[0].$array[cur[0].$offset + i[0]]);
+								i[0] = i[0] + (1) >> 0;
+								$s = -1; return [r, true];
+							}
+							_r$1 = a[0].Next($clone(frame$1, wdte.Frame)); /* */ $s = 3; case 3: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+							_tuple$1 = _r$1;
+							n = _tuple$1[0];
+							ok$1 = _tuple$1[1];
+							if (!ok$1) {
+								$s = -1; return [$ifaceNil, false];
+							}
+							wdte.Frame.copy(frame$1, $clone(frame$1, wdte.Frame).WithID("flatMap"));
+							_r$2 = m[0].m.Call($clone(frame$1, wdte.Frame), new sliceType([n])); /* */ $s = 4; case 4: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+							_r$3 = _r$2.Call($clone(frame$1, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+							r$1 = _r$3;
+							_tuple$2 = $assertType(r$1, wdte.Array, true);
+							r$2 = _tuple$2[0];
+							ok$2 = _tuple$2[1];
+							if (ok$2) {
+								if (r$2.$length === 0) {
+									/* continue; */ $s = 1; continue;
+								}
+								cur[0] = r$2;
+								i[0] = 1;
+								$s = -1; return [(0 >= r$2.$length ? ($throwRuntimeError("index out of range"), undefined) : r$2.$array[r$2.$offset + 0]), true];
+							}
+							$s = -1; return [r$1, true];
+						/* } */ $s = 1; continue; case 2:
+						$s = -1; return [$ifaceNil, false];
+						/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f.frame$1 = frame$1; $f.n = n; $f.ok$1 = ok$1; $f.ok$2 = ok$2; $f.r = r; $f.r$1 = r$1; $f.r$2 = r$2; $f.$s = $s; $f.$r = $r; return $f;
+					}; })(a, cur, i, m)));
+				}
+			/* } */ case 3:
+		case 1:
+		$s = -1; return m[0];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: flatMapper.ptr.prototype.Call }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a = a; $f.args = args; $f.cur = cur; $f.frame = frame; $f.i = i; $f.m = m; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	flatMapper.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	New = function(frame, args) {
+		var _1, _r, _tuple, a1, args, frame, ok, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _tuple = $f._tuple; a1 = $f.a1; args = $f.args; frame = $f.frame; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+			_1 = args.$length;
+			/* */ if (_1 === (0)) { $s = 2; continue; }
+			/* */ if (_1 === (1)) { $s = 3; continue; }
+			/* */ $s = 4; continue;
+			/* if (_1 === (0)) { */ case 2:
+				$s = -1; return new wdte.GoFunc((New));
+			/* } else if (_1 === (1)) { */ case 3:
+				_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+				_tuple = $assertType(_r, wdte.Array, true);
+				a1 = _tuple[0];
+				ok = _tuple[1];
+				if (ok) {
+					wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("new"));
+					$s = -1; return new array.ptr(a1, 0);
+				}
+			/* } */ case 4:
+		case 1:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("new"));
+		$s = -1; return new array.ptr($subslice(new wdte.Array(args.$array), args.$offset, args.$offset + args.$length), 0);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: New }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a1 = a1; $f.args = args; $f.frame = frame; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.New = New;
+	array.ptr.prototype.Call = function(frame, args) {
+		var a, args, frame;
+		a = this;
+		return a;
+	};
+	array.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	array.ptr.prototype.Next = function(frame) {
+		var a, frame, r, x, x$1;
+		a = this;
+		if (a.i >= a.a.$length) {
+			return [$ifaceNil, false];
+		}
+		r = (x = a.a, x$1 = a.i, ((x$1 < 0 || x$1 >= x.$length) ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + x$1]));
+		a.i = a.i + (1) >> 0;
+		return [r, true];
+	};
+	array.prototype.Next = function(frame) { return this.$val.Next(frame); };
+	Range = function(frame, args) {
+		var _1, _r, _r$1, _r$2, _r$3, _r$4, _r$5, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _r$5 = $f._r$5; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		if (args.$length === 0) {
+			$s = -1; return new wdte.GoFunc((Range));
+		}
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("range"));
+			_1 = args.$length;
+			/* */ if (_1 === (1)) { $s = 2; continue; }
+			/* */ if (_1 === (2)) { $s = 3; continue; }
+			/* */ $s = 4; continue;
+			/* if (_1 === (1)) { */ case 2:
+				_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+				$s = -1; return new rng.ptr(0, $assertType(_r, wdte.Number), 1);
+			/* } else if (_1 === (2)) { */ case 3:
+				_r$1 = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+				_r$2 = (1 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 7; case 7: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+				$s = -1; return new rng.ptr($assertType(_r$1, wdte.Number), $assertType(_r$2, wdte.Number), 1);
+			/* } */ case 4:
+		case 1:
+		_r$3 = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 8; case 8: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+		_r$4 = (1 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 9; case 9: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
+		_r$5 = (2 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 2]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 10; case 10: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
+		$s = -1; return new rng.ptr($assertType(_r$3, wdte.Number), $assertType(_r$4, wdte.Number), $assertType(_r$5, wdte.Number));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Range }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._r$5 = _r$5; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Range = Range;
+	rng.ptr.prototype.Call = function(frame, args) {
+		var args, frame, r;
+		r = this;
+		return r;
+	};
+	rng.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	rng.ptr.prototype.Next = function(frame) {
+		var frame, n, r;
+		r = this;
+		if (r.i >= r.m) {
+			return [$ifaceNil, false];
+		}
+		n = r.i;
+		r.i = r.i + (r.s);
+		return [new wdte.Number(n), true];
+	};
+	rng.prototype.Next = function(frame) { return this.$val.Next(frame); };
+	Concat = function(frame, args) {
+		var _1, _r, args, cur, frame, i, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; args = $f.args; cur = $f.cur; frame = $f.frame; i = $f.i; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		args = [args];
+		cur = [cur];
+		i = [i];
+			_1 = args[0].$length;
+			if (_1 === (0)) {
+				$s = -1; return new wdte.GoFunc((Concat));
+			} else if (_1 === (1)) {
+				$s = -1; return new wdte.GoFunc(((function(args, cur, i) { return function $b(frame$1, next) {
+					var _r, frame$1, next, $s, $r;
+					/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; next = $f.next; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+					_r = Concat($clone(frame$1, wdte.Frame), $appendSlice(args[0], next)); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+					$s = -1; return _r;
+					/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.next = next; $f.$s = $s; $f.$r = $r; return $f;
+				}; })(args, cur, i)));
+			}
+		case 1:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("concat"));
+		i[0] = 0;
+		_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 2; case 2: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		cur[0] = $assertType(_r, Stream);
+		$s = -1; return new NextFunc(((function(args, cur, i) { return function $b(frame$1) {
+			var _r$1, _r$2, _tuple, frame$1, n, ok, $s, $r;
+			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r$1 = $f._r$1; _r$2 = $f._r$2; _tuple = $f._tuple; frame$1 = $f.frame$1; n = $f.n; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+			if (i[0] >= args[0].$length) {
+				$s = -1; return [$ifaceNil, false];
+			}
+			/* while (true) { */ case 1:
+				_r$1 = cur[0].Next($clone(frame$1, wdte.Frame)); /* */ $s = 3; case 3: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+				_tuple = _r$1;
+				n = _tuple[0];
+				ok = _tuple[1];
+				/* */ if (!ok) { $s = 4; continue; }
+				/* */ $s = 5; continue;
+				/* if (!ok) { */ case 4:
+					i[0] = i[0] + (1) >> 0;
+					if (i[0] >= args[0].$length) {
+						$s = -1; return [$ifaceNil, false];
+					}
+					_r$2 = ((i[0] < 0 || i[0] >= args[0].$length) ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + i[0]]).Call($clone(frame$1, wdte.Frame), new sliceType([])); /* */ $s = 6; case 6: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+					cur[0] = $assertType(_r$2, Stream);
+					/* continue; */ $s = 1; continue;
+				/* } */ case 5:
+				$s = -1; return [n, ok];
+			/* } */ $s = 1; continue; case 2:
+			$s = -1; return [$ifaceNil, false];
+			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r$1 = _r$1; $f._r$2 = _r$2; $f._tuple = _tuple; $f.frame$1 = frame$1; $f.n = n; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
+		}; })(args, cur, i)));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Concat }; } $f._1 = _1; $f._r = _r; $f.args = args; $f.cur = cur; $f.frame = frame; $f.i = i; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Concat = Concat;
+	NextFunc.prototype.Call = function(frame, args) {
+		var args, frame, n;
+		n = this.$val;
+		return new NextFunc(n);
+	};
+	$ptrType(NextFunc).prototype.Call = function(frame, args) { return new NextFunc(this.$get()).Call(frame, args); };
+	NextFunc.prototype.Next = function(frame) {
+		var _r, frame, n, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame = $f.frame; n = $f.n; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		n = this.$val;
+		_r = n($clone(frame, wdte.Frame)); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return _r;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: NextFunc.prototype.Next }; } $f._r = _r; $f.frame = frame; $f.n = n; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$ptrType(NextFunc).prototype.Next = function(frame) { return new NextFunc(this.$get()).Next(frame); };
+	Module = function() {
+		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "new", v: new wdte.GoFunc((New)) }, { k: "range", v: new wdte.GoFunc((Range)) }, { k: "concat", v: new wdte.GoFunc((Concat)) }, { k: "map", v: new wdte.GoFunc((Map)) }, { k: "filter", v: new wdte.GoFunc((Filter)) }, { k: "flatMap", v: new wdte.GoFunc((FlatMap)) }, { k: "collect", v: new wdte.GoFunc((Collect)) }, { k: "drain", v: new wdte.GoFunc((Drain)) }, { k: "reduce", v: new wdte.GoFunc((Reduce)) }, { k: "any", v: new wdte.GoFunc((Any)) }, { k: "all", v: new wdte.GoFunc((All)) }]));
+	};
+	$pkg.Module = Module;
+	ptrType.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
+	filter.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
+	ptrType$1.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
+	ptrType$2.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
+	ptrType$3.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
+	NextFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
+	mapper.init("github.com/DeedleFake/wdte/std/stream", [{prop: "m", name: "m", anonymous: false, exported: false, typ: wdte.Func, tag: ""}]);
+	filter.init("github.com/DeedleFake/wdte/std/stream", [{prop: "f", name: "f", anonymous: false, exported: false, typ: wdte.Func, tag: ""}]);
+	flatMapper.init("github.com/DeedleFake/wdte/std/stream", [{prop: "m", name: "m", anonymous: false, exported: false, typ: wdte.Func, tag: ""}]);
+	array.init("github.com/DeedleFake/wdte/std/stream", [{prop: "a", name: "a", anonymous: false, exported: false, typ: wdte.Array, tag: ""}, {prop: "i", name: "i", anonymous: false, exported: false, typ: $Int, tag: ""}]);
+	rng.init("github.com/DeedleFake/wdte/std/stream", [{prop: "i", name: "i", anonymous: false, exported: false, typ: wdte.Number, tag: ""}, {prop: "m", name: "m", anonymous: false, exported: false, typ: wdte.Number, tag: ""}, {prop: "s", name: "s", anonymous: false, exported: false, typ: wdte.Number, tag: ""}]);
+	Stream.init([{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}]);
+	NextFunc.init([wdte.Frame], [wdte.Func, $Bool], false);
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = wdte.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
+$packages["github.com/DeedleFake/wdte/std"] = (function() {
+	var $pkg = {}, $init, fmt, wdte, io, file, math$1, stream, math, sliceType, ptrType, sliceType$1, ptrType$1, save, Add, Sub, Mult, Div, Mod, Equals, Less, Greater, LessEqual, GreaterEqual, Module, stdImporter;
+	fmt = $packages["fmt"];
+	wdte = $packages["github.com/DeedleFake/wdte"];
+	io = $packages["github.com/DeedleFake/wdte/std/io"];
+	file = $packages["github.com/DeedleFake/wdte/std/io/file"];
+	math$1 = $packages["github.com/DeedleFake/wdte/std/math"];
+	stream = $packages["github.com/DeedleFake/wdte/std/stream"];
 	math = $packages["math"];
 	sliceType = $sliceType(wdte.Func);
 	ptrType = $ptrType(wdte.Frame);
 	sliceType$1 = $sliceType($emptyInterface);
+	ptrType$1 = $ptrType(wdte.Module);
 	save = function(f, saved) {
 		var f, saved;
 		return new wdte.GoFunc(((function $b(frame, args) {
@@ -23777,364 +26174,37 @@ $packages["github.com/DeedleFake/wdte/std"] = (function() {
 	};
 	$pkg.GreaterEqual = GreaterEqual;
 	Module = function() {
-		return new wdte.Module.ptr(false, $makeMap(wdte.ID.keyFor, [{ k: "+", v: new wdte.GoFunc((Add)) }, { k: "-", v: new wdte.GoFunc((Sub)) }, { k: "*", v: new wdte.GoFunc((Mult)) }, { k: "/", v: new wdte.GoFunc((Div)) }, { k: "%", v: new wdte.GoFunc((Mod)) }, { k: "==", v: new wdte.GoFunc((Equals)) }, { k: "<", v: new wdte.GoFunc((Less)) }, { k: ">", v: new wdte.GoFunc((Greater)) }, { k: "<=", v: new wdte.GoFunc((LessEqual)) }, { k: ">=", v: new wdte.GoFunc((GreaterEqual)) }]));
+		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "+", v: new wdte.GoFunc((Add)) }, { k: "-", v: new wdte.GoFunc((Sub)) }, { k: "*", v: new wdte.GoFunc((Mult)) }, { k: "/", v: new wdte.GoFunc((Div)) }, { k: "%", v: new wdte.GoFunc((Mod)) }, { k: "==", v: new wdte.GoFunc((Equals)) }, { k: "<", v: new wdte.GoFunc((Less)) }, { k: ">", v: new wdte.GoFunc((Greater)) }, { k: "<=", v: new wdte.GoFunc((LessEqual)) }, { k: ">=", v: new wdte.GoFunc((GreaterEqual)) }]));
 	};
 	$pkg.Module = Module;
+	stdImporter = function(from) {
+		var _1, _r, from, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; from = $f.from; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_1 = from;
+		if (_1 === ("stream")) {
+			$s = -1; return [stream.Module(), $ifaceNil];
+		} else if (_1 === ("math")) {
+			$s = -1; return [math$1.Module(), $ifaceNil];
+		} else if (_1 === ("io")) {
+			$s = -1; return [io.Module(), $ifaceNil];
+		} else if (_1 === ("io/file")) {
+			$s = -1; return [file.Module(), $ifaceNil];
+		}
+		_r = fmt.Errorf("Unknown import: %q", new sliceType$1([new $String(from)])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return [ptrType$1.nil, _r];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: stdImporter }; } $f._1 = _1; $f._r = _r; $f.from = from; $f.$s = $s; $f.$r = $r; return $f;
+	};
 	$init = function() {
 		$pkg.$init = function() {};
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		$r = fmt.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = wdte.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = math.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.$init = $init;
-	return $pkg;
-})();
-$packages["github.com/DeedleFake/wdte/std/math"] = (function() {
-	var $pkg = {}, $init, wdte, math, sliceType, Pi, Sin, Cos, Tan, Floor, Ceil, Abs, Module;
-	wdte = $packages["github.com/DeedleFake/wdte"];
-	math = $packages["math"];
-	sliceType = $sliceType(wdte.Func);
-	Pi = function(frame, args) {
-		var args, frame;
-		return new wdte.Number(3.141592653589793);
-	};
-	$pkg.Pi = Pi;
-	Sin = function(frame, args) {
-		var _r, a, args, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		if (args.$length === 0) {
-			$s = -1; return new wdte.GoFunc((Sin));
-		}
-		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("sin"));
-		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		a = $assertType(_r, wdte.Number);
-		$s = -1; return new wdte.Number((math.Sin((a))));
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Sin }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.Sin = Sin;
-	Cos = function(frame, args) {
-		var _r, a, args, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		if (args.$length === 0) {
-			$s = -1; return new wdte.GoFunc((Cos));
-		}
-		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("cos"));
-		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		a = $assertType(_r, wdte.Number);
-		$s = -1; return new wdte.Number((math.Cos((a))));
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Cos }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.Cos = Cos;
-	Tan = function(frame, args) {
-		var _r, a, args, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		if (args.$length === 0) {
-			$s = -1; return new wdte.GoFunc((Tan));
-		}
-		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("tan"));
-		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		a = $assertType(_r, wdte.Number);
-		$s = -1; return new wdte.Number((math.Tan((a))));
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Tan }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.Tan = Tan;
-	Floor = function(frame, args) {
-		var _r, a, args, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		if (args.$length === 0) {
-			$s = -1; return new wdte.GoFunc((Floor));
-		}
-		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("floor"));
-		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		a = $assertType(_r, wdte.Number);
-		$s = -1; return new wdte.Number((math.Floor((a))));
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Floor }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.Floor = Floor;
-	Ceil = function(frame, args) {
-		var _r, a, args, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		if (args.$length === 0) {
-			$s = -1; return new wdte.GoFunc((Ceil));
-		}
-		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("ceil"));
-		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		a = $assertType(_r, wdte.Number);
-		$s = -1; return new wdte.Number((math.Ceil((a))));
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Ceil }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.Ceil = Ceil;
-	Abs = function(frame, args) {
-		var _r, a, args, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; a = $f.a; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		if (args.$length === 0) {
-			$s = -1; return new wdte.GoFunc((Abs));
-		}
-		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("abs"));
-		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		a = $assertType(_r, wdte.Number);
-		$s = -1; return new wdte.Number((math.Abs((a))));
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Abs }; } $f._r = _r; $f.a = a; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.Abs = Abs;
-	Module = function() {
-		return new wdte.Module.ptr(false, $makeMap(wdte.ID.keyFor, [{ k: "pi", v: new wdte.GoFunc((Pi)) }, { k: "sin", v: new wdte.GoFunc((Sin)) }, { k: "cos", v: new wdte.GoFunc((Cos)) }, { k: "tan", v: new wdte.GoFunc((Tan)) }, { k: "floor", v: new wdte.GoFunc((Floor)) }, { k: "ceil", v: new wdte.GoFunc((Ceil)) }, { k: "abs", v: new wdte.GoFunc((Abs)) }]));
-	};
-	$pkg.Module = Module;
-	$init = function() {
-		$pkg.$init = function() {};
-		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		$r = wdte.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = math.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.$init = $init;
-	return $pkg;
-})();
-$packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
-	var $pkg = {}, $init, wdte, Stream, NextFunc, array, rng, mapper, sliceType, ptrType, ptrType$1, ptrType$2, New, Range, Map, Collect, Module;
-	wdte = $packages["github.com/DeedleFake/wdte"];
-	Stream = $pkg.Stream = $newType(8, $kindInterface, "stream.Stream", true, "github.com/DeedleFake/wdte/std/stream", true, null);
-	NextFunc = $pkg.NextFunc = $newType(4, $kindFunc, "stream.NextFunc", true, "github.com/DeedleFake/wdte/std/stream", true, null);
-	array = $pkg.array = $newType(0, $kindStruct, "stream.array", true, "github.com/DeedleFake/wdte/std/stream", false, function(a_, i_) {
-		this.$val = this;
-		if (arguments.length === 0) {
-			this.a = wdte.Array.nil;
-			this.i = 0;
-			return;
-		}
-		this.a = a_;
-		this.i = i_;
-	});
-	rng = $pkg.rng = $newType(0, $kindStruct, "stream.rng", true, "github.com/DeedleFake/wdte/std/stream", false, function(i_, m_, s_) {
-		this.$val = this;
-		if (arguments.length === 0) {
-			this.i = 0;
-			this.m = 0;
-			this.s = 0;
-			return;
-		}
-		this.i = i_;
-		this.m = m_;
-		this.s = s_;
-	});
-	mapper = $pkg.mapper = $newType(0, $kindStruct, "stream.mapper", true, "github.com/DeedleFake/wdte/std/stream", false, function(m_) {
-		this.$val = this;
-		if (arguments.length === 0) {
-			this.m = $ifaceNil;
-			return;
-		}
-		this.m = m_;
-	});
-	sliceType = $sliceType(wdte.Func);
-	ptrType = $ptrType(array);
-	ptrType$1 = $ptrType(rng);
-	ptrType$2 = $ptrType(mapper);
-	NextFunc.prototype.Call = function(frame, args) {
-		var args, frame, n;
-		n = this.$val;
-		return new NextFunc(n);
-	};
-	$ptrType(NextFunc).prototype.Call = function(frame, args) { return new NextFunc(this.$get()).Call(frame, args); };
-	NextFunc.prototype.Next = function(frame) {
-		var _r, frame, n, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame = $f.frame; n = $f.n; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		n = this.$val;
-		_r = n($clone(frame, wdte.Frame)); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		$s = -1; return _r;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: NextFunc.prototype.Next }; } $f._r = _r; $f.frame = frame; $f.n = n; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$ptrType(NextFunc).prototype.Next = function(frame) { return new NextFunc(this.$get()).Next(frame); };
-	New = function(frame, args) {
-		var _1, _r, _tuple, a1, args, frame, ok, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _tuple = $f._tuple; a1 = $f.a1; args = $f.args; frame = $f.frame; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-			_1 = args.$length;
-			/* */ if (_1 === (0)) { $s = 2; continue; }
-			/* */ if (_1 === (1)) { $s = 3; continue; }
-			/* */ $s = 4; continue;
-			/* if (_1 === (0)) { */ case 2:
-				$s = -1; return new wdte.GoFunc((New));
-			/* } else if (_1 === (1)) { */ case 3:
-				_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-				_tuple = $assertType(_r, wdte.Array, true);
-				a1 = _tuple[0];
-				ok = _tuple[1];
-				if (ok) {
-					wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("new"));
-					$s = -1; return new array.ptr(a1, 0);
-				}
-			/* } */ case 4:
-		case 1:
-		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("new"));
-		$s = -1; return new array.ptr($subslice(new wdte.Array(args.$array), args.$offset, args.$offset + args.$length), 0);
-		/* */ } return; } if ($f === undefined) { $f = { $blk: New }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a1 = a1; $f.args = args; $f.frame = frame; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.New = New;
-	array.ptr.prototype.Call = function(frame, args) {
-		var a, args, frame;
-		a = this;
-		return a;
-	};
-	array.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
-	array.ptr.prototype.Next = function(frame) {
-		var a, frame, r, x, x$1;
-		a = this;
-		if (a.i >= a.a.$length) {
-			return [$ifaceNil, false];
-		}
-		r = (x = a.a, x$1 = a.i, ((x$1 < 0 || x$1 >= x.$length) ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + x$1]));
-		a.i = a.i + (1) >> 0;
-		return [r, true];
-	};
-	array.prototype.Next = function(frame) { return this.$val.Next(frame); };
-	Range = function(frame, args) {
-		var _1, _r, _r$1, _r$2, _r$3, _r$4, _r$5, args, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _r$5 = $f._r$5; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		if (args.$length === 0) {
-			$s = -1; return new wdte.GoFunc((Range));
-		}
-		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("range"));
-			_1 = args.$length;
-			/* */ if (_1 === (1)) { $s = 2; continue; }
-			/* */ if (_1 === (2)) { $s = 3; continue; }
-			/* */ $s = 4; continue;
-			/* if (_1 === (1)) { */ case 2:
-				_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-				$s = -1; return new rng.ptr(0, $assertType(_r, wdte.Number), 1);
-			/* } else if (_1 === (2)) { */ case 3:
-				_r$1 = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
-				_r$2 = (1 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 7; case 7: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-				$s = -1; return new rng.ptr($assertType(_r$1, wdte.Number), $assertType(_r$2, wdte.Number), 1);
-			/* } */ case 4:
-		case 1:
-		_r$3 = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 8; case 8: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
-		_r$4 = (1 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 9; case 9: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
-		_r$5 = (2 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 2]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 10; case 10: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
-		$s = -1; return new rng.ptr($assertType(_r$3, wdte.Number), $assertType(_r$4, wdte.Number), $assertType(_r$5, wdte.Number));
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Range }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._r$5 = _r$5; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.Range = Range;
-	rng.ptr.prototype.Call = function(frame, args) {
-		var args, frame, r;
-		r = this;
-		return r;
-	};
-	rng.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
-	rng.ptr.prototype.Next = function(frame) {
-		var frame, n, r;
-		r = this;
-		if (r.i >= r.m) {
-			return [$ifaceNil, false];
-		}
-		n = r.i;
-		r.i = r.i + (r.s);
-		return [new wdte.Number(n), true];
-	};
-	rng.prototype.Next = function(frame) { return this.$val.Next(frame); };
-	Map = function(frame, args) {
-		var _1, _r, args, frame, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		_1 = args.$length;
-		if (_1 === (0)) {
-			$s = -1; return new wdte.GoFunc((Map));
-		}
-		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		$s = -1; return new mapper.ptr(_r);
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Map }; } $f._1 = _1; $f._r = _r; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.Map = Map;
-	mapper.ptr.prototype.Call = function(frame, args) {
-		var _1, _r, _tuple, a, args, frame, m, ok, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _tuple = $f._tuple; a = $f.a; args = $f.args; frame = $f.frame; m = $f.m; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		a = [a];
-		m = [m];
-		m[0] = this;
-			_1 = args.$length;
-			/* */ if (_1 === (1)) { $s = 2; continue; }
-			/* */ $s = 3; continue;
-			/* if (_1 === (1)) { */ case 2:
-				_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 4; case 4: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-				_tuple = $assertType(_r, Stream, true);
-				a[0] = _tuple[0];
-				ok = _tuple[1];
-				if (ok) {
-					$s = -1; return new NextFunc(((function(a, m) { return function $b(frame$1) {
-						var _r$1, _r$2, _tuple$1, frame$1, n, ok$1, $s, $r;
-						/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r$1 = $f._r$1; _r$2 = $f._r$2; _tuple$1 = $f._tuple$1; frame$1 = $f.frame$1; n = $f.n; ok$1 = $f.ok$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-						_r$1 = a[0].Next($clone(frame$1, wdte.Frame)); /* */ $s = 1; case 1: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
-						_tuple$1 = _r$1;
-						n = _tuple$1[0];
-						ok$1 = _tuple$1[1];
-						if (!ok$1) {
-							$s = -1; return [$ifaceNil, false];
-						}
-						wdte.Frame.copy(frame$1, $clone(frame$1, wdte.Frame).WithID("map"));
-						_r$2 = m[0].m.Call($clone(frame$1, wdte.Frame), new sliceType([n])); /* */ $s = 2; case 2: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-						$s = -1; return [_r$2, true];
-						/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r$1 = _r$1; $f._r$2 = _r$2; $f._tuple$1 = _tuple$1; $f.frame$1 = frame$1; $f.n = n; $f.ok$1 = ok$1; $f.$s = $s; $f.$r = $r; return $f;
-					}; })(a, m)));
-				}
-			/* } */ case 3:
-		case 1:
-		$s = -1; return m[0];
-		/* */ } return; } if ($f === undefined) { $f = { $blk: mapper.ptr.prototype.Call }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a = a; $f.args = args; $f.frame = frame; $f.m = m; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	mapper.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
-	Collect = function(frame, args) {
-		var _1, _r, _r$1, _r$2, _tuple, _tuple$1, _tuple$2, a, args, frame, n, ok, ok$1, ok$2, r, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; a = $f.a; args = $f.args; frame = $f.frame; n = $f.n; ok = $f.ok; ok$1 = $f.ok$1; ok$2 = $f.ok$2; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		_1 = args.$length;
-		if (_1 === (0)) {
-			$s = -1; return new wdte.GoFunc((Collect));
-		}
-		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("collect"));
-		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		_tuple = $assertType(_r, Stream, true);
-		a = _tuple[0];
-		ok = _tuple[1];
-		if (!ok) {
-			$s = -1; return (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]);
-		}
-		r = new wdte.Array([]);
-		/* while (true) { */ case 2:
-			_r$1 = a.Next($clone(frame, wdte.Frame)); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
-			_tuple$1 = _r$1;
-			n = _tuple$1[0];
-			ok$1 = _tuple$1[1];
-			if (!ok$1) {
-				/* break; */ $s = 3; continue;
-			}
-			_tuple$2 = $assertType(n, $error, true);
-			ok$2 = _tuple$2[1];
-			if (ok$2) {
-				$s = -1; return n;
-			}
-			_r$2 = n.Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-			r = $append(r, _r$2);
-		/* } */ $s = 2; continue; case 3:
-		$s = -1; return r;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Collect }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f.a = a; $f.args = args; $f.frame = frame; $f.n = n; $f.ok = ok; $f.ok$1 = ok$1; $f.ok$2 = ok$2; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
-	};
-	$pkg.Collect = Collect;
-	Module = function() {
-		return new wdte.Module.ptr(false, $makeMap(wdte.ID.keyFor, [{ k: "new", v: new wdte.GoFunc((New)) }, { k: "range", v: new wdte.GoFunc((Range)) }, { k: "map", v: new wdte.GoFunc((Map)) }, { k: "collect", v: new wdte.GoFunc((Collect)) }]));
-	};
-	$pkg.Module = Module;
-	NextFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
-	ptrType.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
-	ptrType$1.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
-	ptrType$2.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
-	Stream.init([{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}]);
-	NextFunc.init([wdte.Frame], [wdte.Func, $Bool], false);
-	array.init("github.com/DeedleFake/wdte/std/stream", [{prop: "a", name: "a", anonymous: false, exported: false, typ: wdte.Array, tag: ""}, {prop: "i", name: "i", anonymous: false, exported: false, typ: $Int, tag: ""}]);
-	rng.init("github.com/DeedleFake/wdte/std/stream", [{prop: "i", name: "i", anonymous: false, exported: false, typ: wdte.Number, tag: ""}, {prop: "m", name: "m", anonymous: false, exported: false, typ: wdte.Number, tag: ""}, {prop: "s", name: "s", anonymous: false, exported: false, typ: wdte.Number, tag: ""}]);
-	mapper.init("github.com/DeedleFake/wdte/std/stream", [{prop: "m", name: "m", anonymous: false, exported: false, typ: wdte.Func, tag: ""}]);
-	$init = function() {
-		$pkg.$init = function() {};
-		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		$r = wdte.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = io.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = file.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = math$1.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = stream.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = math.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$pkg.Import = (stdImporter);
 		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.$init = $init;
@@ -24515,12 +26585,10 @@ $packages["log"] = (function() {
 	return $pkg;
 })();
 $packages["."] = (function() {
-	var $pkg = {}, $init, fmt, wdte, std, math, stream, js, io, log, strings, Drawer, drawFunc, color, rect, Pather, pathFunc, move, line, pathShape, elementWriter, sliceType, ptrType, sliceType$1, funcType, sliceType$2, ptrType$1, examples, document, stdin, stdout, stderr, canvas, canvasCtx, example, in$1, out, Start, Color, Rect, Draw, Path, Move, Line, Close, CanvasModule, im, main;
+	var $pkg = {}, $init, fmt, wdte, std, js, io, log, strings, Drawer, drawFunc, color, rect, Pather, pathFunc, move, line, pathShape, elementWriter, sliceType, ptrType, sliceType$1, funcType, sliceType$2, ptrType$1, examples, document, stdin, stdout, stderr, canvas, canvasCtx, example, in$1, out, Start, Color, Rect, Draw, Path, Move, Line, Close, CanvasModule, im, main;
 	fmt = $packages["fmt"];
 	wdte = $packages["github.com/DeedleFake/wdte"];
 	std = $packages["github.com/DeedleFake/wdte/std"];
-	math = $packages["github.com/DeedleFake/wdte/std/math"];
-	stream = $packages["github.com/DeedleFake/wdte/std/stream"];
 	js = $packages["github.com/gopherjs/gopherjs/js"];
 	io = $packages["io"];
 	log = $packages["log"];
@@ -24787,7 +26855,7 @@ $packages["."] = (function() {
 	};
 	pathShape.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	CanvasModule = function() {
-		return new wdte.Module.ptr(false, $makeMap(wdte.ID.keyFor, [{ k: "start", v: new wdte.GoFunc((Start)) }, { k: "color", v: new wdte.GoFunc((Color)) }, { k: "rect", v: new wdte.GoFunc((Rect)) }, { k: "draw", v: new wdte.GoFunc((Draw)) }, { k: "path", v: new wdte.GoFunc((Path)) }, { k: "move", v: new wdte.GoFunc((Move)) }, { k: "line", v: new wdte.GoFunc((Line)) }, { k: "close", v: new wdte.GoFunc((Close)) }]));
+		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "start", v: new wdte.GoFunc((Start)) }, { k: "color", v: new wdte.GoFunc((Color)) }, { k: "rect", v: new wdte.GoFunc((Rect)) }, { k: "draw", v: new wdte.GoFunc((Draw)) }, { k: "path", v: new wdte.GoFunc((Path)) }, { k: "move", v: new wdte.GoFunc((Move)) }, { k: "line", v: new wdte.GoFunc((Line)) }, { k: "close", v: new wdte.GoFunc((Close)) }]));
 	};
 	$pkg.CanvasModule = CanvasModule;
 	elementWriter.ptr.prototype.Write = function(data) {
@@ -24806,22 +26874,25 @@ $packages["."] = (function() {
 	};
 	elementWriter.prototype.WriteString = function(data) { return this.$val.WriteString(data); };
 	im = function(from) {
-		var _1, _r, from, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; from = $f.from; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-		_1 = from;
-		if (_1 === ("math")) {
-			$s = -1; return [math.Module(), $ifaceNil];
-		} else if (_1 === ("stream")) {
-			$s = -1; return [stream.Module(), $ifaceNil];
-		} else if (_1 === ("canvas")) {
-			stdout.style.display = $externalize("none", $String);
-			canvas.style.display = $externalize("block", $String);
-			out = new elementWriter.ptr(stderr);
-			$s = -1; return [CanvasModule(), $ifaceNil];
-		}
-		_r = fmt.Errorf("Unknown import: %q", new sliceType$1([new $String(from)])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		$s = -1; return [ptrType.nil, _r];
-		/* */ } return; } if ($f === undefined) { $f = { $blk: im }; } $f._1 = _1; $f._r = _r; $f.from = from; $f.$s = $s; $f.$r = $r; return $f;
+		var _1, _r, _r$1, from, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; from = $f.from; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+			_1 = from;
+			/* */ if (_1 === ("canvas")) { $s = 2; continue; }
+			/* */ if (_1 === ("io") || _1 === ("io/file")) { $s = 3; continue; }
+			/* */ $s = 4; continue;
+			/* if (_1 === ("canvas")) { */ case 2:
+				stdout.style.display = $externalize("none", $String);
+				canvas.style.display = $externalize("block", $String);
+				out = new elementWriter.ptr(stderr);
+				$s = -1; return [CanvasModule(), $ifaceNil];
+			/* } else if (_1 === ("io") || _1 === ("io/file")) { */ case 3:
+				_r = fmt.Errorf("%q is disabled in the playground", new sliceType$1([new $String(from)])); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+				$s = -1; return [ptrType.nil, _r];
+			/* } */ case 4:
+		case 1:
+		_r$1 = std.Import(from); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		$s = -1; return _r$1;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: im }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f.from = from; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	main = function() {
 		document = $global.document;
@@ -24843,7 +26914,7 @@ $packages["."] = (function() {
 			out = new elementWriter.ptr(stdout);
 			canvasCtx.fillStyle = $externalize("white", $String);
 			canvasCtx.fillRect(0, 0, 640, 480);
-			_r = new wdte.Module.ptr(false, false).Insert(std.Module()).Parse(in$1, new wdte.ImportFunc((im))); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			_r = new wdte.Module.ptr(false).Insert(std.Module()).Parse(in$1, new wdte.ImportFunc((im))); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 			_tuple = _r;
 			m[0] = _tuple[0];
 			err = _tuple[1];
@@ -24958,12 +27029,10 @@ $packages["."] = (function() {
 		$r = fmt.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = wdte.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = std.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = math.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = stream.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = js.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = io.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = log.$init(); /* */ $s = 8; case 8: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = strings.$init(); /* */ $s = 9; case 9: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = js.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = io.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = log.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = strings.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		document = null;
 		stdin = null;
 		stdout = null;
@@ -24973,7 +27042,7 @@ $packages["."] = (function() {
 		example = null;
 		in$1 = $ifaceNil;
 		out = $ifaceNil;
-		examples = $makeMap($String.keyFor, [{ k: "fib", v: "# Welcome to the WDTE playground, a browser based evaluation\n# environment for WDTE. This playground's features includes the\n# standard function set as well as a number of importable modules.\n#\n# If you have never seen WDTE before and are completely confused at\n# the moment, try reading the overview on the WDTE project's wiki:\n# https://github.com/DeedleFake/wdte/wiki\n#\n# For documentation on the standard function set, see\n# https://godoc.org/github.com/DeedleFake/wdte/std\n#\n# Importable modules:\n# * 'math' (https://godoc.org/github.com/DeedleFake/wdte/std/math)\n# * 'stream' (https://godoc.org/github.com/DeedleFake/wdte/std/stream)\n# * 'canvas' (See the 'Canvas' example.)\n#\n# In addition, a print function is provided which uses the Go fmt\n# package to create a string representation of its arguments. This\n# string is printed to the output pane and then returned.\n\n'math' => m;\n'stream' => s;\n\nmemo fib n => switch n {\n\t== 0 => 0;\n\t== 1 => 1;\n\tdefault => + (fib (- n 1)) (fib (- n 2));\n};\n\nmemo ! n => switch n {\n\t<= 1 => 1;\n\tdefault => - n 1 -> ! -> * n;\n};\n\nmain => (\n\tfib 50 -> print;\n\n\ts.range (* m.pi -1) m.pi (/ m.pi 2)\n\t-> s.map m.sin\n\t-> s.collect\n\t-> print;\n);" }, { k: "canvas", v: "# This example demonstrates the canvas module. This module is a module\n# implemented just for this playground. Importing it automatically\n# puts the playground in canvas mode, which allows for drawing to the\n# output pane. It also redirects the normal output into the error pane.\n\n'math' => m;\n'canvas' => c;\n\n# circleRec is the recursive part of circle.\ncircleRec r cx cy res t p => switch t {\n\t> (* 2 m.pi) => p -> c.close;\n\tdefault => p\n             -> c.line (+ cx (* (m.cos t) r)) (+ cy (* (m.sin t) r))\n             -> circleRec r cx cy res (+ t (/ m.pi res));\n};\n\n# circle returns a circular path centered at (cx, cy) with radius r\n# and resolution res.\ncircle r cx cy res => c.path\n                  -> c.move (+ cx r) cy\n                  -> circleRec r cx cy res (/ m.pi res);\n\nmain => (\n\tc.start\n\t-> c.color 'purple'\n\t-> c.rect 10 10 100 50\n\t-> c.draw;\n\n\tc.start\n\t-> c.color 'pink'\n\t-> (\n\t\tc.path\n\t\t-> c.move 10 50\n\t\t-> c.line 30 30\n\t\t-> c.line 50 30\n\t\t-> c.line 100 100\n\t\t-> c.close\n\t)\n\t-> c.draw;\n\n\tc.start\n\t-> c.color 'red'\n\t-> circle 30 100 100 6\n\t-> c.draw;\n);" }]);
+		examples = $makeMap($String.keyFor, [{ k: "fib", v: "# Welcome to the WDTE playground, a browser based evaluation\n# environment for WDTE. This playground's features includes the\n# standard function set as well as a number of importable modules.\n#\n# If you have never seen WDTE before and are completely confused at\n# the moment, try reading the overview on the WDTE project's wiki:\n# https://github.com/DeedleFake/wdte/wiki\n#\n# For documentation on the standard function set, see\n# https://godoc.org/github.com/DeedleFake/wdte/std\n#\n# Special modules:\n# * 'canvas' (See the 'Canvas' example.)\n# * 'io/file' (This makes no sense in a browser, so it's disabled.)\n# * 'io' (Disabled pending https://github.com/gopherjs/gopherjs/issues/705.)\n#\n# For other modules, the standard importer is used as a fallback.\n#\n# In addition, a print function is provided which uses the Go fmt\n# package to create a string representation of its arguments. This\n# string is printed to the output pane and then returned.\n\n'math' => m;\n'stream' => s;\n\nmemo fib n => switch n {\n\t== 0 => 0;\n\t== 1 => 1;\n\tdefault => + (fib (- n 1)) (fib (- n 2));\n};\n\nmemo ! n => switch n {\n\t<= 1 => 1;\n\tdefault => - n 1 -> ! -> * n;\n};\n\nmain => (\n\tfib 50 -> print;\n\n\ts.range (* m.pi -1) m.pi (/ m.pi 2)\n\t-> s.map m.sin\n\t-> s.collect\n\t-> print;\n);" }, { k: "canvas", v: "# This example demonstrates the canvas module. This module is a module\n# implemented just for this playground. Importing it automatically\n# puts the playground in canvas mode, which allows for drawing to the\n# output pane. It also redirects the normal output into the error pane.\n\n'math' => m;\n'canvas' => c;\n\n# circleRec is the recursive part of circle.\ncircleRec r cx cy res t p => switch t {\n\t> (* 2 m.pi) => p -> c.close;\n\tdefault => p\n             -> c.line (+ cx (* (m.cos t) r)) (+ cy (* (m.sin t) r))\n             -> circleRec r cx cy res (+ t (/ m.pi res));\n};\n\n# circle returns a circular path centered at (cx, cy) with radius r\n# and resolution res.\ncircle r cx cy res => c.path\n                  -> c.move (+ cx r) cy\n                  -> circleRec r cx cy res (/ m.pi res);\n\nmain => (\n\tc.start\n\t-> c.color 'purple'\n\t-> c.rect 10 10 100 50\n\t-> c.draw;\n\n\tc.start\n\t-> c.color 'pink'\n\t-> (\n\t\tc.path\n\t\t-> c.move 10 50\n\t\t-> c.line 30 30\n\t\t-> c.line 50 30\n\t\t-> c.line 100 100\n\t\t-> c.close\n\t)\n\t-> c.draw;\n\n\tc.start\n\t-> c.color 'red'\n\t-> circle 30 100 100 6\n\t-> c.draw;\n);" }]);
 		if ($pkg === $mainPkg) {
 			main();
 			$mainFinished = true;
