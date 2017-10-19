@@ -357,6 +357,11 @@ func TestStr(t *testing.T) {
 			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.suffix "t") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("test")},
 		},
+		{
+			name:   "Len",
+			script: `'strings' => str; main => str.len 'abc';`,
+			ret:    wdte.Number(3),
+		},
 	})
 }
 

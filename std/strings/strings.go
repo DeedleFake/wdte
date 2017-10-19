@@ -70,12 +70,26 @@ func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(strings.HasSuffix(string(haystack), string(needle)))
 }
 
+// Len returns the length of its argument.
+func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("len")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Len)
+	}
+
+	return wdte.Number(len(string(args[0].Call(frame).(wdte.String))))
+}
+
 func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
 			"contains": wdte.GoFunc(Contains),
 			"prefix":   wdte.GoFunc(Prefix),
 			"suffix":   wdte.GoFunc(Suffix),
+
+			"len": wdte.GoFunc(Len),
 		},
 	}
 }
