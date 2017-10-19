@@ -82,6 +82,30 @@ func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Number(len(string(args[0].Call(frame).(wdte.String))))
 }
 
+// Upper returns its argument converted to uppercase.
+func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("upper")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Upper)
+	}
+
+	return wdte.String(strings.ToUpper(string(args[0].Call(frame).(wdte.String))))
+}
+
+// Lower returns its argument converted to lowercase.
+func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("lower")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Lower)
+	}
+
+	return wdte.String(strings.ToLower(string(args[0].Call(frame).(wdte.String))))
+}
+
 func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
@@ -90,6 +114,9 @@ func Module() *wdte.Module {
 			"suffix":   wdte.GoFunc(Suffix),
 
 			"len": wdte.GoFunc(Len),
+
+			"upper": wdte.GoFunc(Upper),
+			"lower": wdte.GoFunc(Lower),
 		},
 	}
 }
