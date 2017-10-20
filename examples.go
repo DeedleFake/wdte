@@ -12,19 +12,16 @@ var examples = map[string]string{
 # For documentation on the standard function set, see
 # https://godoc.org/github.com/DeedleFake/wdte/std
 #
-# Special modules:
+# The standard library is available for importing, along with the
+# following special modules:
+#
 # * 'canvas' (See the 'Canvas' example.)
 # * 'io/file' (This makes no sense in a browser, so it's disabled.)
 # * 'io' (Disabled pending https://github.com/gopherjs/gopherjs/issues/705.)
 #
-# For other modules, the standard importer is used as a fallback.
-#
 # In addition, a print function is provided which uses the Go fmt
 # package to create a string representation of its arguments. This
 # string is printed to the output pane and then returned.
-
-'math' => m;
-'stream' => s;
 
 memo fib n => switch n {
 	== 0 => 0;
@@ -37,13 +34,54 @@ memo ! n => switch n {
 	default => - n 1 -> ! -> * n;
 };
 
-main => (
-	fib 50 -> print;
+main =>
+	fib 30
+	-- print
+	-> / 5
+	-- print
+	;`,
 
-	s.range (* m.pi -1) m.pi (/ m.pi 2)
+	"stream": `# This example demonstrates the stream module. This module allows
+# classic functional iterator operations, such as map, reduce, and
+# filter.
+
+'math' => m;
+'stream' => s;
+
+main => (
+	print 'Map and filter:';
+	s.range 0 (* m.pi 2) (/ m.pi 2)
 	-> s.map m.sin
+	-> s.filter (>= 0)
+	-> s.map print
+	-> s.drain
+	;
+
+	print 'Reduce:';
+	s.range 5
+	-> s.reduce 1 *
+	-- print
+	;
+);`,
+
+	"strings": `# This example demonstrates the strings module. This module provides
+# basic string operations, such as finding the index of a substring,
+# as well as more complicated operations, such as formatting.
+
+'stream' => s;
+'strings' => str;
+
+main => (
+	s.new ['abc'; 'bcd'; 'cde']
+	-> s.map (str.index 'cd')
 	-> s.collect
-	-> print;
+	-- print
+	;
+
+	'This is the type of English up with which I will not put.'
+	-> str.format '{q}'
+	-- print
+	;
 );`,
 
 	"canvas": `# This example demonstrates the canvas module. This module is a module
