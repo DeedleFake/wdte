@@ -70,6 +70,28 @@ func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(strings.HasSuffix(string(haystack), string(needle)))
 }
 
+// Index searches the first argument for the second argument,
+// returning the index of the beginning of its first instance, or -1
+// if its not present. If only given one argument, Index returns a
+// function which searches other strings for that argument.
+func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("index")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Index)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Index(frame, append(next, args...)...)
+		})
+	}
+
+	haystack := args[0].Call(frame).(wdte.String)
+	needle := args[1].Call(frame).(wdte.String)
+
+	return wdte.Number(strings.Index(string(haystack), string(needle)))
+}
+
 // Len returns the length of its argument.
 func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.WithID("len")
@@ -134,12 +156,15 @@ func Module() *wdte.Module {
 			"contains": wdte.GoFunc(Contains),
 			"prefix":   wdte.GoFunc(Prefix),
 			"suffix":   wdte.GoFunc(Suffix),
+			"index":    wdte.GoFunc(Index),
 
 			"len": wdte.GoFunc(Len),
 			"at":  wdte.GoFunc(At),
 
 			"upper": wdte.GoFunc(Upper),
 			"lower": wdte.GoFunc(Lower),
+
+			"format": wdte.GoFunc(Format),
 		},
 	}
 }

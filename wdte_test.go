@@ -340,7 +340,7 @@ func TestIO(t *testing.T) {
 	})
 }
 
-func TestStr(t *testing.T) {
+func TestStrings(t *testing.T) {
 	runTests(t, []test{
 		{
 			name:   "Contains",
@@ -353,9 +353,14 @@ func TestStr(t *testing.T) {
 			ret:    wdte.Array{wdte.String("is")},
 		},
 		{
-			name:   "Contains",
+			name:   "Suffix",
 			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.suffix "t") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("test")},
+		},
+		{
+			name:   "Index",
+			script: `'stream' => s; 'strings' => str; main => s.new ['abcde'; 'bcdef'; 'cdefg'; 'defgh'; 'efghi'] -> s.map (str.index 'cd') -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(2), wdte.Number(1), wdte.Number(0), wdte.Number(-1), wdte.Number(-1)},
 		},
 		{
 			name:   "Len",
@@ -376,6 +381,21 @@ func TestStr(t *testing.T) {
 			name:   "Lower",
 			script: `'strings' => str; main => str.lower 'QwErTy';`,
 			ret:    wdte.String("qwerty"),
+		},
+		{
+			name:   "Format",
+			script: `'strings' => str; main => str.format '{#2}{#0}{}' 3 6 9;`,
+			ret:    wdte.String("936"),
+		},
+		{
+			name:   "Format/Type",
+			script: `'strings' => str; main => str.format '{?}' 3;`,
+			ret:    wdte.String("wdte.Number(3)"),
+		},
+		{
+			name:   "Format/Quote",
+			script: `'strings' => str; main => str.format '{q}' 'It is as if the socialists were to accuse us of not wanting persons to eat because we do not want the state to raise grain.';`,
+			ret:    wdte.String(`"It is as if the socialists were to accuse us of not wanting persons to eat because we do not want the state to raise grain."`),
 		},
 	})
 }
