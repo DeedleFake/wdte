@@ -353,9 +353,14 @@ func TestStrings(t *testing.T) {
 			ret:    wdte.Array{wdte.String("is")},
 		},
 		{
-			name:   "Contains",
+			name:   "Suffix",
 			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.suffix "t") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("test")},
+		},
+		{
+			name:   "Index",
+			script: `'stream' => s; 'strings' => str; main => s.new ['abcde'; 'bcdef'; 'cdefg'; 'defgh'; 'efghi'] -> s.map (str.index 'cd') -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(2), wdte.Number(1), wdte.Number(0), wdte.Number(-1), wdte.Number(-1)},
 		},
 		{
 			name:   "Len",
