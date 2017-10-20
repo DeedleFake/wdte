@@ -140,6 +140,8 @@ func Module() *wdte.Module {
 
 			"upper": wdte.GoFunc(Upper),
 			"lower": wdte.GoFunc(Lower),
+
+			"format": wdte.GoFunc(Format),
 		},
 	}
 }
