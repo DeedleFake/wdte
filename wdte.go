@@ -679,20 +679,30 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	next := make([]Func, 1, 1+len(lambda.Stored)+len(args))
-	next[0] = lambda
-	for _, arg := range lambda.Stored {
-		next = append(next, &FramedFunc{
-			Func:  arg,
-			Frame: frame,
-		})
-	}
-	for _, arg := range args {
-		next = append(next, &FramedFunc{
-			Func:  arg,
-			Frame: frame,
-		})
+	framed := make([]*FramedFunc, 1, 1+len(lambda.Stored)+len(args))
+	framed[0] = &FramedFunc{
+		Func: lambda,
 	}
 
-	return lambda.Expr.Call(frame.Sub(next), next...)
+	next := make([]Func, 1, 1+len(lambda.Stored)+len(args))
+	next[0] = framed[0]
+	for _, arg := range lambda.Stored {
+		framed = append(framed, &FramedFunc{
+			Func: arg,
+		})
+		next = append(next, framed[len(framed)-1])
+	}
+	for _, arg := range args {
+		framed = append(framed, &FramedFunc{
+			Func: arg,
+		})
+		next = append(next, framed[len(framed)-1])
+	}
+
+	frame = frame.Sub(next)
+	for _, f := range framed {
+		f.Frame = frame
+	}
+
+	return lambda.Expr.Call(frame, next...)
 }

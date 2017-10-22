@@ -193,11 +193,11 @@ func TestBasics(t *testing.T) {
 			script: `test a => a 3; main => test (@ t n => * n 2);`,
 			ret:    wdte.Number(6),
 		},
-		//{
-		//	name:   "Lambda/Recursive",
-		//	script: `test a => a 5; main => test (@ t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
-		//	ret:    wdte.Number(39088169),
-		//},
+		{
+			name:   "Lambda/Fib",
+			script: `test a => a 5; main => test (@ t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
+			ret:    wdte.Number(8),
+		},
 	})
 }
 

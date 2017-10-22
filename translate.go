@@ -266,6 +266,7 @@ func (m *Module) fromLambda(lambda *ast.NTerm, scope map[ID]int) Func {
 
 	return &Lambda{
 		Expr: expr,
+		Args: len(args),
 	}
 }
 
