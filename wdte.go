@@ -317,7 +317,7 @@ func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 	if len(args) < f.Args {
 		return &DeclFunc{
 			ID:     f.ID,
-			Expr:   f,
+			Expr:   f.Expr,
 			Args:   f.Args - len(args),
 			Stored: args,
 		}
@@ -673,7 +673,7 @@ type Lambda struct {
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	if len(args) < lambda.Args {
 		return &Lambda{
-			Expr:   lambda,
+			Expr:   lambda.Expr,
 			Args:   lambda.Args - len(args),
 			Stored: args,
 		}
