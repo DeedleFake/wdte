@@ -72,6 +72,9 @@ func (m *Module) Insert(n *Module) *Module {
 
 // Eval parses an expression in the context of the module. It returns
 // the expression unevaluated, despite the name.
+//
+// BUG: Due to #30, this doesn't usually work as expected, and should
+// probably be avoided for now.
 func (m *Module) Eval(r io.Reader) (Func, error) {
 	expr, err := ast.ParseExpr(r)
 	if err != nil {
