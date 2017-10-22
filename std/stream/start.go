@@ -8,20 +8,11 @@ type array struct {
 	i int
 }
 
-// New returns a new stream. If given one argument and that argument
-// is an array, it iterates over the values of the array. If given
-// more than one argument or the first argument is not an array, it
-// iterates over its arguments.
+// New returns a new stream that iterates over any arguments given.
 func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(New)
-
-	case 1:
-		if a1, ok := args[0].Call(frame).(wdte.Array); ok {
-			frame = frame.WithID("new")
-			return &array{a: a1}
-		}
 	}
 
 	frame = frame.WithID("new")

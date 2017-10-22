@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std/arrays"
 	stdio "github.com/DeedleFake/wdte/std/io"
 	"github.com/DeedleFake/wdte/std/io/file"
 	stdmath "github.com/DeedleFake/wdte/std/math"
@@ -371,6 +372,8 @@ func stdImporter(from string) (*wdte.Module, error) {
 
 	case "strings":
 		return strings.Module(), nil
+	case "arrays":
+		return arrays.Module(), nil
 	}
 
 	return nil, fmt.Errorf("Unknown import: %q", from)

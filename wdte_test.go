@@ -181,7 +181,7 @@ func TestBasics(t *testing.T) {
 		},
 		{
 			name:   "Array/Args",
-			script: `'io' => io; 'stream' => s; test a => [a]; main => s.new (test 3) -> s.map (io.writeln io.stdout) -> s.drain;`,
+			script: `'io' => io; 'arrays' => a; 'stream' => s; test a => [a]; main => a.stream (test 3) -> s.map (io.writeln io.stdout) -> s.drain;`,
 			out:    "3\n",
 		},
 		//{
@@ -344,22 +344,22 @@ func TestStrings(t *testing.T) {
 	runTests(t, []test{
 		{
 			name:   "Contains",
-			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.contains "t") -> s.collect;`,
+			script: `'stream' => s; 'strings' => str; main => s.new "this" "is" "a" "test" -> s.filter (str.contains "t") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("this"), wdte.String("test")},
 		},
 		{
 			name:   "Prefix",
-			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.prefix "i") -> s.collect;`,
+			script: `'stream' => s; 'strings' => str; main => s.new "this" "is" "a" "test" -> s.filter (str.prefix "i") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("is")},
 		},
 		{
 			name:   "Suffix",
-			script: `'stream' => s; 'strings' => str; main => s.new ["this"; "is"; "a"; "test"] -> s.filter (str.suffix "t") -> s.collect;`,
+			script: `'stream' => s; 'strings' => str; main => s.new "this" "is" "a" "test" -> s.filter (str.suffix "t") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("test")},
 		},
 		{
 			name:   "Index",
-			script: `'stream' => s; 'strings' => str; main => s.new ['abcde'; 'bcdef'; 'cdefg'; 'defgh'; 'efghi'] -> s.map (str.index 'cd') -> s.collect;`,
+			script: `'stream' => s; 'strings' => str; main => s.new 'abcde' 'bcdef' 'cdefg' 'defgh' 'efghi' -> s.map (str.index 'cd') -> s.collect;`,
 			ret:    wdte.Array{wdte.Number(2), wdte.Number(1), wdte.Number(0), wdte.Number(-1), wdte.Number(-1)},
 		},
 		{
@@ -396,6 +396,21 @@ func TestStrings(t *testing.T) {
 			name:   "Format/Quote",
 			script: `'strings' => str; main => str.format '{q}' 'It is as if the socialists were to accuse us of not wanting persons to eat because we do not want the state to raise grain.';`,
 			ret:    wdte.String(`"It is as if the socialists were to accuse us of not wanting persons to eat because we do not want the state to raise grain."`),
+		},
+	})
+}
+
+func TestArrays(t *testing.T) {
+	runTests(t, []test{
+		{
+			name:   "At",
+			script: `'arrays' => a; main => [3; 6; 9] -> a.at 1;`,
+			ret:    wdte.Number(6),
+		},
+		{
+			name:   "Stream",
+			script: `'arrays' => a; 'stream' => s; main => a.stream ['this'; 'is'; 'a'; 'test'] -> s.collect;`,
+			ret:    wdte.Array{wdte.String("this"), wdte.String("is"), wdte.String("a"), wdte.String("test")},
 		},
 	})
 }
