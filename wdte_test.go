@@ -400,6 +400,16 @@ func TestStrings(t *testing.T) {
 	})
 }
 
+func TestArrays(t *testing.T) {
+	runTests(t, []test{
+		{
+			name:   "At",
+			script: `'arrays' => a; main => [3; 6; 9] -> a.at 1;`,
+			ret:    wdte.Number(6),
+		},
+	})
+}
+
 func ExampleModule_Eval() {
 	const src = `
 	'math' => m;
