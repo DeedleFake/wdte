@@ -273,15 +273,18 @@ func (m *Module) fromChain(chain *ast.NTerm, prev Func, slots *[]Func, scope map
 		return prev
 	}
 
-	first := m.fromSingle(chain.Children()[1].(*ast.NTerm), scope)
-	in := m.fromArgs(flatten(chain.Children()[2].(*ast.NTerm), 1, 0), scope)
+	// TODO: Make this properly recursive with m.fromExpr().
+	expr := chain.Children()[1].(*ast.NTerm)
 
-	slot := m.fromSlot(chain.Children()[3].(*ast.NTerm))
+	first := m.fromSingle(expr.Children()[0].(*ast.NTerm), scope)
+	in := m.fromArgs(flatten(expr.Children()[1].(*ast.NTerm), 1, 0), scope)
+
+	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
 	scope = subScope(scope, slot)
 
 	switch t := chain.Children()[0].(*ast.Term).Tok().Val.(string); t {
 	case "->":
-		return m.fromChain(chain.Children()[4].(*ast.NTerm), &Chain{
+		return m.fromChain(expr.Children()[3].(*ast.NTerm), &Chain{
 			Func:  first,
 			Args:  in,
 			Prev:  prev,
@@ -289,7 +292,7 @@ func (m *Module) fromChain(chain *ast.NTerm, prev Func, slots *[]Func, scope map
 		}, slots, scope)
 
 	case "--":
-		return m.fromChain(chain.Children()[4].(*ast.NTerm), &IgnoredChain{
+		return m.fromChain(expr.Children()[3].(*ast.NTerm), &IgnoredChain{
 			Func:  first,
 			Args:  in,
 			Prev:  prev,

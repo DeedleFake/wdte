@@ -13,8 +13,8 @@
     <expr> -> <single> <args> <slot> <chain>
     <args> -> <single> <args>
             | ε
-   <chain> -> -> <single> <args> <slot> <chain>
-            | -- <single> <args> <slot> <chain>
+   <chain> -> -> <expr>
+            | -- <expr>
             | ε
     <slot> -> : id
             | ε

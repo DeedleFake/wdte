@@ -2,8 +2,6 @@ package wdte_test
 
 import (
 	"bytes"
-	"fmt"
-	"log"
 	"math"
 	"reflect"
 	"strings"
@@ -415,23 +413,23 @@ func TestArrays(t *testing.T) {
 	})
 }
 
-func ExampleModule_Eval() {
-	const src = `
-	'math' => m;
-
-	npi a => * m.pi a;
-`
-
-	m, err := std.Module().Parse(strings.NewReader(src), std.Import)
-	if err != nil {
-		log.Fatalf("Failed to parse module: %v", err)
-	}
-
-	r, err := m.Eval(strings.NewReader("npi 5"))
-	if err != nil {
-		log.Fatalf("Failed to evaluate: %v", err)
-	}
-
-	fmt.Println(r.Call(wdte.F()))
-	// Output: 15.707963267948966
-}
+//func ExampleModule_Eval() {
+//	const src = `
+//	'math' => m;
+//
+//	npi a => * m.pi a;
+//`
+//
+//	m, err := std.Module().Parse(strings.NewReader(src), std.Import)
+//	if err != nil {
+//		log.Fatalf("Failed to parse module: %v", err)
+//	}
+//
+//	r, err := m.Eval(strings.NewReader("npi 5"))
+//	if err != nil {
+//		log.Fatalf("Failed to evaluate: %v", err)
+//	}
+//
+//	fmt.Println(r.Call(wdte.F()))
+//	// Output: 15.707963267948966
+//}
