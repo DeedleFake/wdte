@@ -655,3 +655,13 @@ func (cache *memoCache) Set(args []Func, val Func) {
 	n.Set(args[1:], val)
 	cache.next[args[0]] = n
 }
+
+// A Lambda is a closure. When called, it calls its inner expression
+// with itself and its own arguments appended to its frame.
+type Lambda struct {
+	Expr Func
+}
+
+func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
+	return lambda.Expr.Call(frame.Sub(append([]Func{lambda}, args...)), args...)
+}

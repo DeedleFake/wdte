@@ -188,6 +188,16 @@ func TestBasics(t *testing.T) {
 		//	im:     imFrame,
 		//	ret:    frameFunc{frame},
 		//},
+		{
+			name:   "Lambda",
+			script: `test a => a 3; main => test (@ t n => * n 2);`,
+			ret:    wdte.Number(6),
+		},
+		//{
+		//	name:   "Lambda/Recursive",
+		//	script: `test a => a 30; main => test (@ memo t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
+		//	ret:    wdte.Number(39088169),
+		//},
 	})
 }
 
