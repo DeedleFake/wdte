@@ -16,6 +16,7 @@ var (
 		";":  {},
 		":":  {},
 		"--": {},
+		"(@": {},
 	}
 
 	keywords = map[string]struct{}{
@@ -28,6 +29,18 @@ var (
 func isKeyword(str string) bool {
 	_, ok := keywords[str]
 	return ok
+}
+
+func symbolicPrefix(str string) (f string) {
+	for k := range symbols {
+		if strings.HasPrefix(str, k) {
+			if len(k) > len(f) {
+				f = k
+			}
+		}
+	}
+
+	return
 }
 
 func symbolicSuffix(str string) string {
