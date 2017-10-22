@@ -659,9 +659,40 @@ func (cache *memoCache) Set(args []Func, val Func) {
 // A Lambda is a closure. When called, it calls its inner expression
 // with itself and its own arguments appended to its frame.
 type Lambda struct {
+	// Expr is the expression that the lambda maps to.
 	Expr Func
+
+	// Args is the number of arguments the lambda expects.
+	Args int
+
+	// Stored is the arguments that have already been passed to a
+	// lambda if it was given less arguments than it was declared with.
+	Stored []Func
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
-	return lambda.Expr.Call(frame.Sub(append([]Func{lambda}, args...)), args...)
+	if len(args) < lambda.Args {
+		return &Lambda{
+			Expr:   lambda,
+			Args:   lambda.Args - len(args),
+			Stored: args,
+		}
+	}
+
+	next := make([]Func, 1, 1+len(lambda.Stored)+len(args))
+	next[0] = lambda
+	for _, arg := range lambda.Stored {
+		next = append(next, &FramedFunc{
+			Func:  arg,
+			Frame: frame,
+		})
+	}
+	for _, arg := range args {
+		next = append(next, &FramedFunc{
+			Func:  arg,
+			Frame: frame,
+		})
+	}
+
+	return lambda.Expr.Call(frame.Sub(next), next...)
 }

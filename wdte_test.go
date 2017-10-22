@@ -195,7 +195,7 @@ func TestBasics(t *testing.T) {
 		},
 		//{
 		//	name:   "Lambda/Recursive",
-		//	script: `test a => a 30; main => test (@ memo t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
+		//	script: `test a => a 5; main => test (@ t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
 		//	ret:    wdte.Number(39088169),
 		//},
 	})
