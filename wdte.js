@@ -24589,6 +24589,92 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	$pkg.$init = $init;
 	return $pkg;
 })();
+$packages["github.com/DeedleFake/wdte/std/arrays"] = (function() {
+	var $pkg = {}, $init, wdte, streamer, sliceType, ptrType, At, Stream, Module;
+	wdte = $packages["github.com/DeedleFake/wdte"];
+	streamer = $pkg.streamer = $newType(0, $kindStruct, "arrays.streamer", true, "github.com/DeedleFake/wdte/std/arrays", false, function(a_, i_) {
+		this.$val = this;
+		if (arguments.length === 0) {
+			this.a = wdte.Array.nil;
+			this.i = 0;
+			return;
+		}
+		this.a = a_;
+		this.i = i_;
+	});
+	sliceType = $sliceType(wdte.Func);
+	ptrType = $ptrType(streamer);
+	At = function(frame, args) {
+		var _1, _r, _r$1, a, args, frame, i, x, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; a = $f.a; args = $f.args; frame = $f.frame; i = $f.i; x = $f.x; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		args = [args];
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("at"));
+			_1 = args[0].$length;
+			if (_1 === (0)) {
+				$s = -1; return new wdte.GoFunc((At));
+			} else if (_1 === (1)) {
+				$s = -1; return new wdte.GoFunc(((function(args) { return function $b(frame$1, next) {
+					var _r, frame$1, next, $s, $r;
+					/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; frame$1 = $f.frame$1; next = $f.next; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+					_r = At($clone(frame$1, wdte.Frame), $appendSlice(next, args[0])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+					$s = -1; return _r;
+					/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.frame$1 = frame$1; $f.next = next; $f.$s = $s; $f.$r = $r; return $f;
+				}; })(args)));
+			}
+		case 1:
+		_r = (0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 2; case 2: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		a = $assertType(_r, wdte.Array);
+		_r$1 = (1 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 1]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		i = $assertType(_r$1, wdte.Number);
+		$s = -1; return (x = ((i >> 0)), ((x < 0 || x >= a.$length) ? ($throwRuntimeError("index out of range"), undefined) : a.$array[a.$offset + x]));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: At }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f.a = a; $f.args = args; $f.frame = frame; $f.i = i; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.At = At;
+	Stream = function(frame, args) {
+		var _1, _r, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("stream"));
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((Stream));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return new streamer.ptr($assertType(_r, wdte.Array), 0);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Stream }; } $f._1 = _1; $f._r = _r; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Stream = Stream;
+	streamer.ptr.prototype.Call = function(frame, args) {
+		var a, args, frame;
+		a = this;
+		return a;
+	};
+	streamer.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	streamer.ptr.prototype.Next = function(frame) {
+		var a, frame, r, x, x$1;
+		a = this;
+		if (a.i >= a.a.$length) {
+			return [$ifaceNil, false];
+		}
+		r = (x = a.a, x$1 = a.i, ((x$1 < 0 || x$1 >= x.$length) ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + x$1]));
+		a.i = a.i + (1) >> 0;
+		return [r, true];
+	};
+	streamer.prototype.Next = function(frame) { return this.$val.Next(frame); };
+	Module = function() {
+		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "at", v: new wdte.GoFunc((At)) }, { k: "stream", v: new wdte.GoFunc((Stream)) }]));
+	};
+	$pkg.Module = Module;
+	ptrType.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
+	streamer.init("github.com/DeedleFake/wdte/std/arrays", [{prop: "a", name: "a", anonymous: false, exported: false, typ: wdte.Array, tag: ""}, {prop: "i", name: "i", anonymous: false, exported: false, typ: $Int, tag: ""}]);
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = wdte.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
 $packages["github.com/DeedleFake/wdte/std/io"] = (function() {
 	var $pkg = {}, $init, bufio, bytes, fmt, wdte, io, os, strings, reader, Reader, writer, Writer, stringReader, scanner, runeStream, sliceType, ptrType, sliceType$1, sliceType$2, sliceType$3, ptrType$1, sliceType$4, arrayType, ptrType$2, Seek, Close, Combine, Copy, ReadString, String, Lines, Words, Scan, Runes, write, Write, Writeln, Module;
 	bufio = $packages["bufio"];
@@ -25767,28 +25853,13 @@ $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
 	};
 	flatMapper.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	New = function(frame, args) {
-		var _1, _r, _tuple, a1, args, frame, ok, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _tuple = $f._tuple; a1 = $f.a1; args = $f.args; frame = $f.frame; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-			_1 = args.$length;
-			/* */ if (_1 === (0)) { $s = 2; continue; }
-			/* */ if (_1 === (1)) { $s = 3; continue; }
-			/* */ $s = 4; continue;
-			/* if (_1 === (0)) { */ case 2:
-				$s = -1; return new wdte.GoFunc((New));
-			/* } else if (_1 === (1)) { */ case 3:
-				_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-				_tuple = $assertType(_r, wdte.Array, true);
-				a1 = _tuple[0];
-				ok = _tuple[1];
-				if (ok) {
-					wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("new"));
-					$s = -1; return new array.ptr(a1, 0);
-				}
-			/* } */ case 4:
-		case 1:
+		var _1, args, frame;
+		_1 = args.$length;
+		if (_1 === (0)) {
+			return new wdte.GoFunc((New));
+		}
 		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("new"));
-		$s = -1; return new array.ptr($subslice(new wdte.Array(args.$array), args.$offset, args.$offset + args.$length), 0);
-		/* */ } return; } if ($f === undefined) { $f = { $blk: New }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a1 = a1; $f.args = args; $f.frame = frame; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
+		return new array.ptr($subslice(new wdte.Array(args.$array), args.$offset, args.$offset + args.$length), 0);
 	};
 	$pkg.New = New;
 	array.ptr.prototype.Call = function(frame, args) {
@@ -26305,9 +26376,10 @@ $packages["github.com/DeedleFake/wdte/std/strings"] = (function() {
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte/std"] = (function() {
-	var $pkg = {}, $init, fmt, wdte, io, file, math$1, stream, strings, math, sliceType, ptrType, sliceType$1, ptrType$1, save, Add, Sub, Mult, Div, Mod, Equals, Less, Greater, LessEqual, GreaterEqual, Module, stdImporter;
+	var $pkg = {}, $init, fmt, wdte, arrays, io, file, math$1, stream, strings, math, sliceType, ptrType, sliceType$1, ptrType$1, save, Add, Sub, Mult, Div, Mod, Equals, Less, Greater, LessEqual, GreaterEqual, Module, stdImporter;
 	fmt = $packages["fmt"];
 	wdte = $packages["github.com/DeedleFake/wdte"];
+	arrays = $packages["github.com/DeedleFake/wdte/std/arrays"];
 	io = $packages["github.com/DeedleFake/wdte/std/io"];
 	file = $packages["github.com/DeedleFake/wdte/std/io/file"];
 	math$1 = $packages["github.com/DeedleFake/wdte/std/math"];
@@ -26733,6 +26805,8 @@ $packages["github.com/DeedleFake/wdte/std"] = (function() {
 			$s = -1; return [file.Module(), $ifaceNil];
 		} else if (_1 === ("strings")) {
 			$s = -1; return [strings.Module(), $ifaceNil];
+		} else if (_1 === ("arrays")) {
+			$s = -1; return [arrays.Module(), $ifaceNil];
 		}
 		_r = fmt.Errorf("Unknown import: %q", new sliceType$1([new $String(from)])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		$s = -1; return [ptrType$1.nil, _r];
@@ -26743,12 +26817,13 @@ $packages["github.com/DeedleFake/wdte/std"] = (function() {
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		$r = fmt.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = wdte.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = io.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = file.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = math$1.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = stream.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = strings.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = math.$init(); /* */ $s = 8; case 8: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = arrays.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = io.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = file.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = math$1.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = stream.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = strings.$init(); /* */ $s = 8; case 8: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = math.$init(); /* */ $s = 9; case 9: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$pkg.Import = (stdImporter);
 		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
 	};
