@@ -36,6 +36,6 @@
 <switches> -> <expr> => <expr> ; <switches>
             | default => <expr> ; <switches>
             | ε
-  <lambda> -> (@ <funcmods> id <argdecls> => <expr> )
+  <lambda> -> (@ <funcmods> id <argdecls> => <expr> ; )
 
 # vim: ts=2 sw=2 et
