@@ -249,20 +249,26 @@ func (s *Scanner) escape(r rune) stateFunc {
 }
 
 func (s *Scanner) id(r rune) stateFunc {
+	val := s.tbuf.String() + string(r)
+	if k := symbolicPrefix(val); k != "" {
+		if len(val) == len(k) {
+			s.tbuf.WriteRune(r)
+			return s.id
+		}
+
+		valr := []rune(val)
+		for i := len(val) - 1; i >= len(k); i-- {
+			s.unread(valr[i])
+		}
+
+		s.setTok(Keyword, k)
+		return nil
+	}
+
 	if !unicode.IsSpace(r) {
 		s.tbuf.WriteRune(r)
 
-		// TODO: Find a way to do this without allocating and copying.
-		val := s.tbuf.String()
 		if k := symbolicSuffix(val); k != "" {
-			// BUG: This only works so long as the set of keywords doesn't
-			// contain any which contain other keywords as prefixes.
-			if len(val) == len(k) {
-				t := Keyword
-				s.setTok(t, val)
-				return nil
-			}
-
 			kr := []rune(k)
 			for i := len(k) - 1; i >= 0; i-- {
 				s.unread(kr[i])

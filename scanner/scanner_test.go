@@ -107,6 +107,14 @@ o => print "double\n" 'single\\';`,
 				{Type: scanner.EOF, Val: nil},
 			},
 		},
+		{
+			name: "LongSymbol",
+			in:   `(@`,
+			out: []scanner.Token{
+				{Type: scanner.Keyword, Val: "(@"},
+				{Type: scanner.EOF},
+			},
+		},
 	}
 
 	for _, test := range tests {

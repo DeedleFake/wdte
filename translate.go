@@ -143,6 +143,8 @@ func (m *Module) fromSingle(single *ast.NTerm, scope map[ID]int) Func {
 			return m.fromSwitch(s, scope)
 		case "compound":
 			return m.fromCompound(s, scope)
+		case "lambda":
+			return m.fromLambda(s, scope)
 		}
 	}
 
@@ -249,6 +251,25 @@ func (m *Module) fromCompound(compound *ast.NTerm, scope map[ID]int) Func {
 	return Compound(m.fromExprs(exprs, scope))
 }
 
+func (m *Module) fromLambda(lambda *ast.NTerm, scope map[ID]int) Func {
+	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm))
+	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(string))
+	args := m.fromArgDecls(flatten(lambda.Children()[3].(*ast.NTerm), 1, 0))
+	scope = subScope(scope, append([]ID{id}, args...)...)
+
+	expr := m.fromExpr(lambda.Children()[5].(*ast.NTerm), scope)
+	if mods&funcModMemo != 0 {
+		expr = &Memo{
+			Func: expr,
+		}
+	}
+
+	return &Lambda{
+		Expr: expr,
+		Args: len(args),
+	}
+}
+
 func (m *Module) fromExprs(exprs []ast.Node, scope map[ID]int) []Func {
 	funcs := make([]Func, 0, len(exprs))
 	for _, expr := range exprs {
@@ -268,20 +289,25 @@ func (m *Module) fromArgs(args []ast.Node, scope map[ID]int) []Func {
 	return singles
 }
 
+// TODO: Instead of allocating slots here, wrap the chain in something
+// that allocates the slots when it's called.
 func (m *Module) fromChain(chain *ast.NTerm, prev Func, slots *[]Func, scope map[ID]int) Func {
 	if _, ok := chain.Children()[0].(*ast.Epsilon); ok {
 		return prev
 	}
 
-	first := m.fromSingle(chain.Children()[1].(*ast.NTerm), scope)
-	in := m.fromArgs(flatten(chain.Children()[2].(*ast.NTerm), 1, 0), scope)
+	// TODO: Make this properly recursive with m.fromExpr().
+	expr := chain.Children()[1].(*ast.NTerm)
 
-	slot := m.fromSlot(chain.Children()[3].(*ast.NTerm))
+	first := m.fromSingle(expr.Children()[0].(*ast.NTerm), scope)
+	in := m.fromArgs(flatten(expr.Children()[1].(*ast.NTerm), 1, 0), scope)
+
+	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
 	scope = subScope(scope, slot)
 
 	switch t := chain.Children()[0].(*ast.Term).Tok().Val.(string); t {
 	case "->":
-		return m.fromChain(chain.Children()[4].(*ast.NTerm), &Chain{
+		return m.fromChain(expr.Children()[3].(*ast.NTerm), &Chain{
 			Func:  first,
 			Args:  in,
 			Prev:  prev,
@@ -289,7 +315,7 @@ func (m *Module) fromChain(chain *ast.NTerm, prev Func, slots *[]Func, scope map
 		}, slots, scope)
 
 	case "--":
-		return m.fromChain(chain.Children()[4].(*ast.NTerm), &IgnoredChain{
+		return m.fromChain(expr.Children()[3].(*ast.NTerm), &IgnoredChain{
 			Func:  first,
 			Args:  in,
 			Prev:  prev,
@@ -323,12 +349,15 @@ func scopeMap(args []ID) map[ID]int {
 	return m
 }
 
-func subScope(scope map[ID]int, id ID) map[ID]int {
+func subScope(scope map[ID]int, ids ...ID) map[ID]int {
 	m := make(map[ID]int, len(scope)+1)
 	for id, n := range scope {
 		m[id] = n
 	}
-	m[id] = len(scope)
+
+	for i, id := range ids {
+		m[id] = len(scope) + i
+	}
 
 	return m
 }

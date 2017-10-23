@@ -13,8 +13,8 @@
     <expr> -> <single> <args> <slot> <chain>
     <args> -> <single> <args>
             | ε
-   <chain> -> -> <single> <args> <slot> <chain>
-            | -- <single> <args> <slot> <chain>
+   <chain> -> -> <expr>
+            | -- <expr>
             | ε
     <slot> -> : id
             | ε
@@ -24,6 +24,7 @@
             | <array>
             | <switch>
             | <compound>
+            | <lambda>
     <func> -> id <subfunc>
  <subfunc> -> . id
             | ε
@@ -35,5 +36,6 @@
 <switches> -> <expr> => <expr> ; <switches>
             | default => <expr> ; <switches>
             | ε
+  <lambda> -> (@ <funcmods> id <argdecls> => <expr> ; )
 
 # vim: ts=2 sw=2 et

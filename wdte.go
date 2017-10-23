@@ -72,6 +72,9 @@ func (m *Module) Insert(n *Module) *Module {
 
 // Eval parses an expression in the context of the module. It returns
 // the expression unevaluated, despite the name.
+//
+// BUG: Due to #30, this doesn't usually work as expected, and should
+// probably be avoided for now.
 func (m *Module) Eval(r io.Reader) (Func, error) {
 	expr, err := ast.ParseExpr(r)
 	if err != nil {
@@ -314,7 +317,7 @@ func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 	if len(args) < f.Args {
 		return &DeclFunc{
 			ID:     f.ID,
-			Expr:   f,
+			Expr:   f.Expr,
 			Args:   f.Args - len(args),
 			Stored: args,
 		}
@@ -651,4 +654,55 @@ func (cache *memoCache) Set(args []Func, val Func) {
 	n := new(memoCache)
 	n.Set(args[1:], val)
 	cache.next[args[0]] = n
+}
+
+// A Lambda is a closure. When called, it calls its inner expression
+// with itself and its own arguments appended to its frame.
+type Lambda struct {
+	// Expr is the expression that the lambda maps to.
+	Expr Func
+
+	// Args is the number of arguments the lambda expects.
+	Args int
+
+	// Stored is the arguments that have already been passed to a
+	// lambda if it was given less arguments than it was declared with.
+	Stored []Func
+}
+
+func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
+	if len(args) < lambda.Args {
+		return &Lambda{
+			Expr:   lambda.Expr,
+			Args:   lambda.Args - len(args),
+			Stored: args,
+		}
+	}
+
+	framed := make([]*FramedFunc, 0, len(lambda.Stored)+len(args))
+
+	next := make([]Func, 1, 1+len(lambda.Stored)+len(args))
+	next[0] = &FramedFunc{
+		Func:  lambda,
+		Frame: frame,
+	}
+	for _, arg := range lambda.Stored {
+		framed = append(framed, &FramedFunc{
+			Func: arg,
+		})
+		next = append(next, framed[len(framed)-1])
+	}
+	for _, arg := range args {
+		framed = append(framed, &FramedFunc{
+			Func: arg,
+		})
+		next = append(next, framed[len(framed)-1])
+	}
+
+	frame = frame.Sub(next)
+	for _, f := range framed {
+		f.Frame = frame
+	}
+
+	return lambda.Expr.Call(frame, next...)
 }
