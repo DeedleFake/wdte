@@ -602,13 +602,13 @@ func (m *Memo) Call(frame Frame, args ...Func) Func { // nolint
 		check = append(check, arg.Call(frame))
 	}
 
-	cached, ok := m.cache.Get(args)
+	cached, ok := m.cache.Get(check)
 	if ok {
 		return cached
 	}
 
-	r := m.Func.Call(frame, args...)
-	m.cache.Set(args, r)
+	r := m.Func.Call(frame, check...)
+	m.cache.Set(check, r)
 	return r
 }
 
