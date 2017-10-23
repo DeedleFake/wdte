@@ -107,10 +107,12 @@ func (m *Module) fromExpr(expr *ast.NTerm, scope []ID) Func {
 	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
 	scope = append(scope, slot)
 
-	return m.fromChain(expr.Children()[3].(*ast.NTerm), &Expr{
-		Func: first,
-		Args: in,
-	}, slot, scope)
+	return &Expr{
+		Func:  first,
+		Args:  in,
+		Slot:  slot,
+		Chain: m.fromChain(expr.Children()[3].(*ast.NTerm), scope),
+	}
 }
 
 func (m *Module) fromSlot(expr *ast.NTerm) ID {
@@ -278,9 +280,9 @@ func (m *Module) fromArgs(args []ast.Node, scope []ID) []Func {
 	return singles
 }
 
-func (m *Module) fromChain(chain *ast.NTerm, prev Func, prevSlot ID, scope []ID) Func {
+func (m *Module) fromChain(chain *ast.NTerm, scope []ID) Func {
 	if _, ok := chain.Children()[0].(*ast.Epsilon); ok {
-		return prev
+		return &EndChain{}
 	}
 
 	// TODO: Make this properly recursive with m.fromExpr().
@@ -294,20 +296,20 @@ func (m *Module) fromChain(chain *ast.NTerm, prev Func, prevSlot ID, scope []ID)
 
 	switch t := chain.Children()[0].(*ast.Term).Tok().Val.(string); t {
 	case "->":
-		return m.fromChain(expr.Children()[3].(*ast.NTerm), &Chain{
-			Func:     first,
-			Args:     in,
-			Prev:     prev,
-			PrevSlot: prevSlot,
-		}, slot, scope)
+		return &Chain{
+			Func:  first,
+			Args:  in,
+			Slot:  slot,
+			Chain: m.fromChain(expr.Children()[3].(*ast.NTerm), scope),
+		}
 
 	case "--":
-		return m.fromChain(expr.Children()[3].(*ast.NTerm), &IgnoredChain{
-			Func:     first,
-			Args:     in,
-			Prev:     prev,
-			PrevSlot: prevSlot,
-		}, slot, scope)
+		return &IgnoredChain{
+			Func:  first,
+			Args:  in,
+			Slot:  slot,
+			Chain: m.fromChain(expr.Children()[3].(*ast.NTerm), scope),
+		}
 
 	default:
 		panic(fmt.Errorf("Malformed AST with unexpected chain type: %q", t))

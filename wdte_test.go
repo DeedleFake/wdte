@@ -103,6 +103,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(3),
 		},
 		{
+			name:   "Chain",
+			script: `main => 1 -> + 2 -> - 3;`,
+			ret:    wdte.Number(0),
+		},
+		{
 			name:   "Chain/Slot",
 			script: `main => 1 : a -> + 2 : b -> - (* a 3) -> + b;`,
 			ret:    wdte.Number(3),

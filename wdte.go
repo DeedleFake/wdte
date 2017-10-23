@@ -321,22 +321,22 @@ type DeclFunc struct {
 }
 
 func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
-	vars := make(map[ID]Func)
-	for i, arg := range f.Args {
-		vars[arg] = &FramedFunc{
-			Func:  args[i],
+	vars := make(map[ID]Func, len(f.Args)+len(f.Stored))
+	for i, arg := range args {
+		vars[f.Args[i]] = &FramedFunc{
+			Func:  arg,
 			Frame: frame,
 		}
 	}
-	for id, f := range f.Stored {
-		vars[id] = f
+	for id, arg := range f.Stored {
+		vars[id] = arg
 	}
 
 	if len(args) < len(f.Args) {
 		return &DeclFunc{
 			ID:     f.ID,
 			Expr:   f.Expr,
-			Args:   f.Args[len(args)-1:],
+			Args:   f.Args[len(args):],
 			Stored: vars,
 		}
 	}
@@ -353,10 +353,22 @@ type Expr struct {
 
 	// Args are the arguments to pass to Func.
 	Args []Func
+
+	Chain Func
+
+	Slot ID
 }
 
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
-	return f.Func.Call(frame, f.Args...)
+	n := f.Func.Call(frame, f.Args...)
+	frame = frame.Sub(map[ID]Func{
+		f.Slot: &FramedFunc{
+			Func:  n,
+			Frame: frame,
+		},
+	})
+
+	return f.Chain.Call(frame, n)
 }
 
 // Chain is an unevaluated chain expression.
@@ -367,19 +379,21 @@ type Chain struct {
 	// Args is the arguments to Func.
 	Args []Func
 
-	// Prev is the previous part of the chain.
-	Prev Func
+	Chain Func
 
-	PrevSlot ID
+	Slot ID
 }
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
-	prev := f.Prev.Call(frame)
+	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
 	frame = frame.Sub(map[ID]Func{
-		f.PrevSlot: prev,
+		f.Slot: &FramedFunc{
+			Func:  n,
+			Frame: frame,
+		},
 	})
 
-	return f.Func.Call(frame, f.Args...).Call(frame, prev)
+	return f.Chain.Call(frame, n)
 }
 
 // IgnoredChain is an unevaluated chain expression that returns the
@@ -391,24 +405,28 @@ type IgnoredChain struct {
 	// Args is the arguments to Func.
 	Args []Func
 
-	// Prev is the previous part of the chain.
-	Prev Func
+	Chain Func
 
-	PrevSlot ID
+	Slot ID
 }
 
 func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
-	prev := f.Prev.Call(frame)
+	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
 	frame = frame.Sub(map[ID]Func{
-		f.PrevSlot: &FramedFunc{
-			Func:  prev,
+		f.Slot: &FramedFunc{
+			Func:  n,
 			Frame: frame,
 		},
 	})
 
-	f.Func.Call(frame, f.Args...).Call(frame, prev)
+	return f.Chain.Call(frame, args[0])
+}
 
-	return prev
+type EndChain struct {
+}
+
+func (f EndChain) Call(frame Frame, args ...Func) Func {
+	return args[0]
 }
 
 // External represents a function from an imported module. It looks
@@ -645,23 +663,26 @@ type Lambda struct {
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
-	vars := make(map[ID]Func)
-	for i, arg := range lambda.Args {
-		vars[arg] = &FramedFunc{
-			Func:  args[i],
+	vars := make(map[ID]Func, len(lambda.Args)+len(lambda.Stored))
+	vars[lambda.ID] = &FramedFunc{
+		Func:  lambda,
+		Frame: frame,
+	}
+	for i, arg := range args {
+		vars[lambda.Args[i]] = &FramedFunc{
+			Func:  arg,
 			Frame: frame,
 		}
 	}
-	for id, f := range lambda.Stored {
-		vars[id] = f
+	for id, arg := range lambda.Stored {
+		vars[id] = arg
 	}
-	vars[lambda.ID] = lambda
 
 	if len(args) < len(lambda.Args) {
 		return &Lambda{
 			ID:     lambda.ID,
 			Expr:   lambda.Expr,
-			Args:   lambda.Args[len(args)-1:],
+			Args:   lambda.Args[len(args):],
 			Stored: vars,
 		}
 	}
