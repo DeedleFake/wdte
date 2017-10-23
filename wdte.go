@@ -142,11 +142,10 @@ type Comparer interface {
 
 // A Frame tracks information about the current function call.
 type Frame struct {
-	id   ID
-	args []Func
+	id    ID
+	scope Scope
 
-	p           *Frame
-	cline, ccol int
+	p *Frame
 }
 
 // F returns a top-level frame. This can be used by Go code calling
@@ -157,37 +156,21 @@ func F() Frame {
 	}
 }
 
-func CustomFrame(id ID, args []Func, parent *Frame) Frame { // nolint
-	return Frame{
-		id:   id,
-		args: args,
-		p:    parent,
-	}
-}
-
 // New creates a new frame from a previous frame. id should be the ID
 // of the function that generated the frame, and args should be the
 // arguments given to that function.
-func (f Frame) New(id ID, args []Func) Frame {
+func (f Frame) New(id ID, scope map[ID]Func) Frame {
 	return Frame{
-		id:   id,
-		args: args,
-		p:    &f,
+		id:    id,
+		scope: Scope{vars: scope},
+		p:     &f,
 	}
 }
 
 // Sub returns a sub-scoped frame that has args appended to its
 // argument list.
-func (f Frame) Sub(args []Func) Frame {
-	f.args = append(f.args, args...)
-	return f
-}
-
-// Pos builds a new frame with position information. This is primarily
-// intended for internal use.
-func (f Frame) Pos(line, col int) Frame {
-	f.cline = line
-	f.ccol = col
+func (f Frame) Sub(scope map[ID]Func) Frame {
+	f.scope = f.scope.Sub(scope)
 	return f
 }
 
@@ -195,12 +178,10 @@ func (f Frame) Pos(line, col int) Frame {
 // but the same arguments as the previous frame.
 func (f Frame) WithID(id ID) Frame {
 	return Frame{
-		id:   id,
-		args: f.args,
+		id:    id,
+		scope: f.scope,
 
-		p:     &f,
-		cline: f.cline,
-		ccol:  f.ccol,
+		p: &f,
 	}
 }
 
@@ -210,9 +191,8 @@ func (f Frame) ID() ID {
 	return f.id
 }
 
-// Args returns the arguments of the frame.
-func (f Frame) Args() []Func {
-	return f.args
+func (f Frame) Scope() Scope {
+	return f.scope
 }
 
 // Parent returns the frame that this frame was created from, or a
@@ -245,12 +225,36 @@ func (f *Frame) backtrace(w io.Writer) error {
 		return nil
 	}
 
-	_, err := fmt.Fprintf(w, "\tCalled from %v (%v:%v)\n", id, f.cline, f.ccol)
+	_, err := fmt.Fprintf(w, "\tCalled from %v\n", id)
 	if err != nil {
 		return err
 	}
 
 	return f.p.backtrace(w)
+}
+
+type Scope struct {
+	vars map[ID]Func
+	p    *Scope
+}
+
+func (s *Scope) Get(id ID) Func {
+	if (s == nil) || (s.vars == nil) {
+		return nil
+	}
+
+	if f, ok := s.vars[id]; ok {
+		return f
+	}
+
+	return s.p.Get(id)
+}
+
+func (s Scope) Sub(vars map[ID]Func) Scope {
+	return Scope{
+		vars: vars,
+		p:    &s,
+	}
 }
 
 // A GoFunc is an implementation of Func that calls a Go function.
