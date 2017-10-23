@@ -440,10 +440,12 @@ func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Chain.Call(frame, args[0])
 }
 
+// An EndChain is a no-op that just returns its own first argument.
+// This is used as the last element of a chain.
 type EndChain struct {
 }
 
-func (f EndChain) Call(frame Frame, args ...Func) Func {
+func (f EndChain) Call(frame Frame, args ...Func) Func { // nolint
 	return args[0]
 }
 
@@ -586,9 +588,11 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 	return nil
 }
 
+// A Var represents a local variable. When called, it looks itself up
+// in the frame that it's given and calls whatever it finds.
 type Var ID
 
-func (v Var) Call(frame Frame, args ...Func) Func {
+func (v Var) Call(frame Frame, args ...Func) Func { // nolint
 	return frame.Scope().Get(ID(v)).Call(frame, args...)
 }
 
