@@ -238,7 +238,7 @@ type Scope struct {
 	p    *Scope
 }
 
-func (s *Scope) Get(id ID) Func {
+func (s *Scope) get(id ID) Func {
 	if (s == nil) || (s.vars == nil) {
 		return nil
 	}
@@ -248,6 +248,10 @@ func (s *Scope) Get(id ID) Func {
 	}
 
 	return s.p.Get(id)
+}
+
+func (s Scope) Get(id ID) Func {
+	return s.get(id)
 }
 
 func (s Scope) Sub(vars map[ID]Func) Scope {
@@ -308,40 +312,33 @@ type DeclFunc struct {
 	// Expr is the expression that the function maps to.
 	Expr Func
 
-	// Args is the number of arguments the function expects.
-	Args int
+	Args []ID
 
 	// Stored is the arguments that have already been passed to a
 	// function if it was given less arguments than it was declared
 	// with.
-	Stored []Func
+	Stored map[ID]Func
 }
 
 func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
-	if len(args) < f.Args {
+	vars := make(map[ID]Func)
+	for i, arg := range f.Args {
+		vars[arg] = args[i]
+	}
+	for id, f := range f.Stored {
+		vars[id] = f
+	}
+
+	if len(args) < len(f.Args) {
 		return &DeclFunc{
 			ID:     f.ID,
 			Expr:   f.Expr,
-			Args:   f.Args - len(args),
-			Stored: args,
+			Args:   f.Args[len(args)-1:],
+			Stored: vars,
 		}
 	}
 
-	next := make([]Func, 0, len(f.Stored)+len(args))
-	for _, arg := range f.Stored {
-		next = append(next, &FramedFunc{
-			Func:  arg,
-			Frame: frame,
-		})
-	}
-	for _, arg := range args {
-		next = append(next, &FramedFunc{
-			Func:  arg,
-			Frame: frame,
-		})
-	}
-
-	return f.Expr.Call(frame.New(f.ID, next), next...)
+	return f.Expr.Call(frame.New(f.ID, vars))
 }
 
 // An Expr is an unevaluated expression. This is usually the
@@ -353,17 +350,10 @@ type Expr struct {
 
 	// Args are the arguments to pass to Func.
 	Args []Func
-
-	// Slots is a chain-specific global storage space for expression
-	// slots. This pointer is the same for every instance of Chain in
-	// the same chain, as well as for the initial expression.
-	Slots *[]Func
 }
 
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
-	r := f.Func.Call(frame, f.Args...)
-	*f.Slots = append(*f.Slots, r)
-	return r
+	return f.Func.Call(frame, f.Args...)
 }
 
 // Chain is an unevaluated chain expression.
@@ -377,20 +367,16 @@ type Chain struct {
 	// Prev is the previous part of the chain.
 	Prev Func
 
-	// Slots is a chain-specific global storage space for expression
-	// slots. This pointer is the same for every instance of Chain in
-	// the same chain, as well as for the initial expression.
-	Slots *[]Func
+	PrevSlot ID
 }
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	prev := f.Prev.Call(frame)
+	frame = frame.Sub(map[ID]Func{
+		f.PrevSlot: prev,
+	})
 
-	frame = frame.Sub(*f.Slots)
-	r := f.Func.Call(frame, f.Args...).Call(frame, prev)
-
-	*f.Slots = append(*f.Slots, r)
-	return r
+	return f.Func.Call(frame, f.Args...).Call(frame, prev)
 }
 
 // IgnoredChain is an unevaluated chain expression that returns the
@@ -405,19 +391,17 @@ type IgnoredChain struct {
 	// Prev is the previous part of the chain.
 	Prev Func
 
-	// Slots is a chain-specific global storage space for expression
-	// slots. This pointer is the same for every instance of Chain in
-	// the same chain, as well as for the initial expression.
-	Slots *[]Func
+	PrevSlot ID
 }
 
 func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 	prev := f.Prev.Call(frame)
+	frame = frame.Sub(map[ID]Func{
+		f.PrevSlot: prev,
+	})
 
-	frame = frame.Sub(*f.Slots)
-	r := f.Func.Call(frame, f.Args...).Call(frame, prev)
+	f.Func.Call(frame, f.Args...).Call(frame, prev)
 
-	*f.Slots = append(*f.Slots, r)
 	return prev
 }
 
@@ -438,8 +422,6 @@ type External struct {
 
 	// Func is the ID of the function in the module it was declared in.
 	Func ID
-
-	Line, Col int
 }
 
 func (e External) Call(frame Frame, args ...Func) Func { // nolint
@@ -459,7 +441,7 @@ func (e External) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	return f.Call(frame.Pos(e.Line, e.Col), args...)
+	return f.Call(frame, args...)
 }
 
 func (e External) Compare(other Func) (int, bool) { // nolint
@@ -481,8 +463,6 @@ type Local struct {
 
 	// Func is the ID of the function in the module.
 	Func ID
-
-	Line, Col int
 }
 
 func (local Local) Call(frame Frame, args ...Func) Func { // nolint
@@ -494,7 +474,7 @@ func (local Local) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	return f.Call(frame.Pos(local.Line, local.Col), args...)
+	return f.Call(frame, args...)
 }
 
 func (local Local) Compare(other Func) (int, bool) { // nolint
@@ -564,27 +544,10 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 	return nil
 }
 
-// Arg represents an argument in the current frame. It is the opposite
-// end from DeclFunc of the frame argument that gets passed around all
-// over the place.
-type Arg int
+type Var ID
 
-func (a Arg) Call(frame Frame, args ...Func) Func { // nolint
-	if int(a) >= len(frame.Args()) {
-		// I don't think this can happen normally, but some GoFunc
-		// somewhere could generate an Arg for some bizarre reason and
-		// cause this.
-		return Error{
-			Err: fmt.Errorf(
-				"Attempted to access %vth argument in a frame containing %v",
-				a,
-				len(frame.Args()),
-			),
-			Frame: frame,
-		}
-	}
-
-	return frame.Args()[a].Call(frame, args...)
+func (v Var) Call(frame Frame, args ...Func) Func {
+	return frame.Scope().Get(ID(v)).Call(frame, args...)
 }
 
 // A FramedFunc is a function which keeps track of its own calling
@@ -663,50 +626,35 @@ func (cache *memoCache) Set(args []Func, val Func) {
 // A Lambda is a closure. When called, it calls its inner expression
 // with itself and its own arguments appended to its frame.
 type Lambda struct {
+	ID ID
+
 	// Expr is the expression that the lambda maps to.
 	Expr Func
 
-	// Args is the number of arguments the lambda expects.
-	Args int
+	Args []ID
 
 	// Stored is the arguments that have already been passed to a
 	// lambda if it was given less arguments than it was declared with.
-	Stored []Func
+	Stored map[ID]Func
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
-	if len(args) < lambda.Args {
-		return &Lambda{
+	vars := make(map[ID]Func)
+	vars[lambda.ID] = lambda
+	for i, arg := range lambda.Args {
+		vars[arg] = args[i]
+	}
+	for id, f := range lambda.Stored {
+		vars[id] = f
+	}
+
+	if len(args) < len(lambda.Args) {
+		return &DeclFunc{
 			Expr:   lambda.Expr,
-			Args:   lambda.Args - len(args),
-			Stored: args,
+			Args:   lambda.Args[len(args)-1:],
+			Stored: vars,
 		}
 	}
 
-	framed := make([]*FramedFunc, 0, len(lambda.Stored)+len(args))
-
-	next := make([]Func, 1, 1+len(lambda.Stored)+len(args))
-	next[0] = &FramedFunc{
-		Func:  lambda,
-		Frame: frame,
-	}
-	for _, arg := range lambda.Stored {
-		framed = append(framed, &FramedFunc{
-			Func: arg,
-		})
-		next = append(next, framed[len(framed)-1])
-	}
-	for _, arg := range args {
-		framed = append(framed, &FramedFunc{
-			Func: arg,
-		})
-		next = append(next, framed[len(framed)-1])
-	}
-
-	frame = frame.Sub(next)
-	for _, f := range framed {
-		f.Frame = frame
-	}
-
-	return lambda.Expr.Call(frame, next...)
+	return lambda.Expr.Call(frame.Sub(vars))
 }
