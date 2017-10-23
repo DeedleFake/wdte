@@ -158,7 +158,8 @@ func F() Frame {
 
 // New creates a new frame from a previous frame. id should be the ID
 // of the function that generated the frame, and args should be the
-// arguments given to that function.
+// arguments given to that function. The previous frame is set as the
+// new frame's parent.
 func (f Frame) New(id ID, scope map[ID]Func) Frame {
 	return Frame{
 		id:    id,
@@ -167,21 +168,31 @@ func (f Frame) New(id ID, scope map[ID]Func) Frame {
 	}
 }
 
-// Sub returns a sub-scoped frame that has args appended to its
-// argument list.
+// Sub returns a sub-scoped frame that has the variables in scope
+// added to its scope as new tier.
 func (f Frame) Sub(scope map[ID]Func) Frame {
 	f.scope = f.scope.Sub(scope)
 	return f
 }
 
-// WithID is a convienence function for creating a frame with a new ID
-// but the same arguments as the previous frame.
+// WithID is a convienence function for creating a frame from another
+// frame with a new ID, the same scope, and the other frame as its
+// parent.
 func (f Frame) WithID(id ID) Frame {
 	return Frame{
 		id:    id,
 		scope: f.scope,
+		p:     &f,
+	}
+}
 
-		p: &f,
+// WithScope returns a frame with the same ID and parent frame as the
+// current one, but with the given scope.
+func (f Frame) WithScope(scope Scope) Frame {
+	return Frame{
+		id:    f.id,
+		scope: scope,
+		p:     f.p,
 	}
 }
 
@@ -191,6 +202,7 @@ func (f Frame) ID() ID {
 	return f.id
 }
 
+// Scope returns the scope associated with the frame.
 func (f Frame) Scope() Scope {
 	return f.scope
 }
@@ -233,6 +245,8 @@ func (f *Frame) backtrace(w io.Writer) error {
 	return f.p.backtrace(w)
 }
 
+// Scope is a tiered storage space for local variables. This includes
+// function parameters and chain slots.
 type Scope struct {
 	vars map[ID]Func
 	p    *Scope
@@ -250,10 +264,14 @@ func (s *Scope) get(id ID) Func {
 	return s.p.Get(id)
 }
 
+// Get returns value of the variable with the given id. If the
+// variable doesn't exist in either the current scope or any of its
+// parent scopes, nil is returned.
 func (s Scope) Get(id ID) Func {
 	return s.get(id)
 }
 
+// Sub returns a new subscope with the given variables stored in it.
 func (s Scope) Sub(vars map[ID]Func) Scope {
 	return Scope{
 		vars: vars,
@@ -323,9 +341,9 @@ type DeclFunc struct {
 func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 	vars := make(map[ID]Func, len(f.Args)+len(f.Stored))
 	for i, arg := range args {
-		vars[f.Args[i]] = &FramedFunc{
+		vars[f.Args[i]] = &ScopedFunc{
 			Func:  arg,
-			Frame: frame,
+			Scope: frame.Scope(),
 		}
 	}
 	for id, arg := range f.Stored {
@@ -362,9 +380,9 @@ type Expr struct {
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 	n := f.Func.Call(frame, f.Args...)
 	frame = frame.Sub(map[ID]Func{
-		f.Slot: &FramedFunc{
+		f.Slot: &ScopedFunc{
 			Func:  n,
-			Frame: frame,
+			Scope: frame.Scope(),
 		},
 	})
 
@@ -387,9 +405,9 @@ type Chain struct {
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
 	frame = frame.Sub(map[ID]Func{
-		f.Slot: &FramedFunc{
+		f.Slot: &ScopedFunc{
 			Func:  n,
-			Frame: frame,
+			Scope: frame.Scope(),
 		},
 	})
 
@@ -413,9 +431,9 @@ type IgnoredChain struct {
 func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
 	frame = frame.Sub(map[ID]Func{
-		f.Slot: &FramedFunc{
+		f.Slot: &ScopedFunc{
 			Func:  n,
-			Frame: frame,
+			Scope: frame.Scope(),
 		},
 	})
 
@@ -574,18 +592,18 @@ func (v Var) Call(frame Frame, args ...Func) Func {
 	return frame.Scope().Get(ID(v)).Call(frame, args...)
 }
 
-// A FramedFunc is a function which keeps track of its own calling
-// frame.
-type FramedFunc struct {
+// A ScopedFunc is an expression that uses a predefined scope instead
+// of the one that comes with its frame. This is to make sure that a
+// lazily evaluated expression has access to the correct scope.
+type ScopedFunc struct {
 	// Func is the actual function.
 	Func Func
 
-	// Frame is the frame to call Func with.
-	Frame Frame
+	Scope Scope
 }
 
-func (f FramedFunc) Call(frame Frame, args ...Func) Func { // nolint
-	return f.Func.Call(f.Frame, args...)
+func (f ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
+	return f.Func.Call(frame.WithScope(f.Scope), args...)
 }
 
 // A Memo wraps another function, caching the results of calls with
@@ -665,14 +683,14 @@ type Lambda struct {
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	vars := make(map[ID]Func, len(lambda.Args)+len(lambda.Stored))
-	vars[lambda.ID] = &FramedFunc{
+	vars[lambda.ID] = &ScopedFunc{
 		Func:  lambda,
-		Frame: frame,
+		Scope: frame.Scope(),
 	}
 	for i, arg := range args {
-		vars[lambda.Args[i]] = &FramedFunc{
+		vars[lambda.Args[i]] = &ScopedFunc{
 			Func:  arg,
-			Frame: frame,
+			Scope: frame.Scope(),
 		}
 	}
 	for id, arg := range lambda.Stored {
