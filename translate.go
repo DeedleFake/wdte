@@ -30,8 +30,8 @@ func (m *Module) fromDecls(decls []ast.Node, im Importer) (*Module, error) {
 			m.Funcs[id] = sub
 
 		case "funcdecl":
-			def := m.fromFuncDecl(d.Children()[0].(*ast.NTerm))
-			m.Funcs[def.ID] = def
+			id, def := m.fromFuncDecl(d.Children()[0].(*ast.NTerm))
+			m.Funcs[id] = def
 
 		default:
 			panic(fmt.Errorf("Malformed AST with bad <decl>: %q", dtype))
@@ -49,23 +49,24 @@ func (m *Module) fromImport(i *ast.NTerm, im Importer) (ID, *Module, error) {
 	return id, m, err
 }
 
-func (m *Module) fromFuncDecl(decl *ast.NTerm) *DeclFunc {
+func (m *Module) fromFuncDecl(decl *ast.NTerm) (id ID, f Func) {
 	mods := m.fromFuncMods(decl.Children()[0].(*ast.NTerm))
-	id := ID(decl.Children()[1].(*ast.Term).Tok().Val.(string))
+	id = ID(decl.Children()[1].(*ast.Term).Tok().Val.(string))
 	args := m.fromArgDecls(flatten(decl.Children()[2].(*ast.NTerm), 1, 0))
 	expr := m.fromExpr(decl.Children()[4].(*ast.NTerm), args)
 
-	if mods&funcModMemo != 0 {
-		expr = &Memo{
-			Func: expr,
-		}
-	}
-
-	return &DeclFunc{
+	f = &DeclFunc{
 		ID:   id,
 		Expr: expr,
 		Args: args,
 	}
+	if mods&funcModMemo != 0 {
+		f = &Memo{
+			Func: f,
+		}
+	}
+
+	return id, f
 }
 
 func (m *Module) fromFuncMods(funcMods *ast.NTerm) funcMod {
@@ -240,25 +241,26 @@ func (m *Module) fromCompound(compound *ast.NTerm, scope []ID) Func {
 	return Compound(m.fromExprs(exprs, scope))
 }
 
-func (m *Module) fromLambda(lambda *ast.NTerm, scope []ID) Func {
+func (m *Module) fromLambda(lambda *ast.NTerm, scope []ID) (f Func) {
 	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm))
 	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(string))
 	args := m.fromArgDecls(flatten(lambda.Children()[3].(*ast.NTerm), 1, 0))
 	scope = append(scope, id)
 	scope = append(scope, args...)
-
 	expr := m.fromExpr(lambda.Children()[5].(*ast.NTerm), scope)
-	if mods&funcModMemo != 0 {
-		expr = &Memo{
-			Func: expr,
-		}
-	}
 
-	return &Lambda{
+	f = &Lambda{
 		ID:   id,
 		Expr: expr,
 		Args: args,
 	}
+	if mods&funcModMemo != 0 {
+		f = &Memo{
+			Func: f,
+		}
+	}
+
+	return f
 }
 
 func (m *Module) fromExprs(exprs []ast.Node, scope []ID) []Func {

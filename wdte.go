@@ -597,8 +597,9 @@ type Memo struct {
 }
 
 func (m *Memo) Call(frame Frame, args ...Func) Func { // nolint
-	for i := range args {
-		args[i] = args[i].Call(frame)
+	check := make([]Func, 0, len(args))
+	for _, arg := range args {
+		check = append(check, arg.Call(frame))
 	}
 
 	cached, ok := m.cache.Get(args)

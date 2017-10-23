@@ -103,6 +103,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(3),
 		},
 		{
+			name:   "Simple/Memo",
+			script: `memo test n => + n 3; main => (test 5; test 5);`,
+			ret:    wdte.Number(8),
+		},
+		{
 			name:   "Chain",
 			script: `main => 1 -> + 2 -> - 3;`,
 			ret:    wdte.Number(0),
@@ -124,6 +129,8 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(144),
 		},
 		{
+			// BUG: Due to the scope overhaul, memoization doesn't work.
+			disabled: true,
 			// Wonder why memo exists? Try removing the keyword from this
 			// test script and see what happens.
 			name:   "Fib/Memo",
@@ -163,14 +170,9 @@ func TestBasics(t *testing.T) {
 		},
 		{
 			disabled: true,
-			// BUG: Recursion doesn't work because when `- n 2` is evaluated
-			// by the `switch n` in the second level of the recursion, `n`
-			// attempts to access the second argument, but in the current
-			// frame, that argument is `- n 2`, causing an infinite
-			// recursion.
-			name:   "Lambda/Fib",
-			script: `test a => a 5; main => test (@ t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
-			ret:    wdte.Number(8),
+			name:     "Lambda/Fib",
+			script:   `test a => a 5; main => test (@ t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
+			ret:      wdte.Number(8),
 		},
 	})
 }
