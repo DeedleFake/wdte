@@ -23,8 +23,6 @@ var examples = map[string]string{
 # package to create a string representation of its arguments. This
 # string is printed to the output pane and then returned.
 
-# BUG: This is currently broken due to #40.
-
 memo fib n => switch n {
 	== 0 => 0;
 	== 1 => 1;
