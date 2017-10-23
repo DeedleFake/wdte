@@ -129,8 +129,6 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(144),
 		},
 		{
-			// BUG: Due to the scope overhaul, memoization doesn't work.
-			disabled: true,
 			// Wonder why memo exists? Try removing the keyword from this
 			// test script and see what happens.
 			name:   "Fib/Memo",
