@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"strings"
 
 	"github.com/DeedleFake/wdte"
@@ -161,6 +162,22 @@ func main() {
 				return nil
 			}),
 		)
+
+		hash := js.Global.Get("location").Get("hash").String()
+		if len(hash) != 0 {
+			document.Call("querySelector", "#example").Set("value", "Custom")
+
+			src, err := url.QueryUnescape(strings.TrimPrefix(hash, "#"))
+			if err != nil {
+				stderr.Set("innerHTML", fmt.Sprintf("Failed to unescape code: %v", err))
+				return nil
+			}
+
+			stdin.Set(
+				"value",
+				strings.TrimSpace(src),
+			)
+		}
 
 		return nil
 	})

@@ -10890,7 +10890,7 @@ $packages["os"] = (function() {
 	return $pkg;
 })();
 $packages["unicode/utf8"] = (function() {
-	var $pkg = {}, $init, acceptRange, first, acceptRanges, FullRune, DecodeRune, DecodeRuneInString, RuneLen, EncodeRune, RuneCount, RuneCountInString, ValidRune;
+	var $pkg = {}, $init, acceptRange, first, acceptRanges, FullRune, DecodeRune, DecodeRuneInString, DecodeLastRuneInString, RuneLen, EncodeRune, RuneCount, RuneCountInString, RuneStart, ValidRune;
 	acceptRange = $pkg.acceptRange = $newType(0, $kindStruct, "utf8.acceptRange", true, "unicode/utf8", false, function(lo_, hi_) {
 		this.$val = this;
 		if (arguments.length === 0) {
@@ -11075,6 +11075,59 @@ $packages["unicode/utf8"] = (function() {
 		return [r, size];
 	};
 	$pkg.DecodeRuneInString = DecodeRuneInString;
+	DecodeLastRuneInString = function(s) {
+		var _tmp, _tmp$1, _tmp$2, _tmp$3, _tmp$4, _tmp$5, _tmp$6, _tmp$7, _tuple, end, lim, r, s, size, start;
+		r = 0;
+		size = 0;
+		end = s.length;
+		if (end === 0) {
+			_tmp = 65533;
+			_tmp$1 = 0;
+			r = _tmp;
+			size = _tmp$1;
+			return [r, size];
+		}
+		start = end - 1 >> 0;
+		r = ((s.charCodeAt(start) >> 0));
+		if (r < 128) {
+			_tmp$2 = r;
+			_tmp$3 = 1;
+			r = _tmp$2;
+			size = _tmp$3;
+			return [r, size];
+		}
+		lim = end - 4 >> 0;
+		if (lim < 0) {
+			lim = 0;
+		}
+		start = start - (1) >> 0;
+		while (true) {
+			if (!(start >= lim)) { break; }
+			if (RuneStart(s.charCodeAt(start))) {
+				break;
+			}
+			start = start - (1) >> 0;
+		}
+		if (start < 0) {
+			start = 0;
+		}
+		_tuple = DecodeRuneInString($substring(s, start, end));
+		r = _tuple[0];
+		size = _tuple[1];
+		if (!(((start + size >> 0) === end))) {
+			_tmp$4 = 65533;
+			_tmp$5 = 1;
+			r = _tmp$4;
+			size = _tmp$5;
+			return [r, size];
+		}
+		_tmp$6 = r;
+		_tmp$7 = size;
+		r = _tmp$6;
+		size = _tmp$7;
+		return [r, size];
+	};
+	$pkg.DecodeLastRuneInString = DecodeLastRuneInString;
 	RuneLen = function(r) {
 		var r;
 		if (r < 0) {
@@ -11221,6 +11274,11 @@ $packages["unicode/utf8"] = (function() {
 		return n;
 	};
 	$pkg.RuneCountInString = RuneCountInString;
+	RuneStart = function(b) {
+		var b;
+		return !((((b & 192) >>> 0) === 128));
+	};
+	$pkg.RuneStart = RuneStart;
 	ValidRune = function(r) {
 		var r;
 		if (0 <= r && r < 55296) {
@@ -22034,7 +22092,7 @@ $packages["bufio"] = (function() {
 	return $pkg;
 })();
 $packages["strings"] = (function() {
-	var $pkg = {}, $init, errors, js, io, unicode, utf8, Reader, sliceType, ptrType$6, Index, NewReader, Contains, HasPrefix, HasSuffix, Map, ToUpper, ToLower;
+	var $pkg = {}, $init, errors, js, io, unicode, utf8, Reader, sliceType, ptrType$6, Index, NewReader, Contains, HasPrefix, HasSuffix, Map, ToUpper, ToLower, TrimLeftFunc, TrimRightFunc, TrimFunc, indexFunc, lastIndexFunc, TrimSpace, TrimPrefix;
 	errors = $packages["errors"];
 	js = $packages["github.com/gopherjs/gopherjs/js"];
 	io = $packages["io"];
@@ -22351,6 +22409,100 @@ $packages["strings"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: ToLower }; } $f._r = _r; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.ToLower = ToLower;
+	TrimLeftFunc = function(s, f) {
+		var _r, f, i, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; f = $f.f; i = $f.i; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_r = indexFunc(s, f, false); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		i = _r;
+		if (i === -1) {
+			$s = -1; return "";
+		}
+		$s = -1; return $substring(s, i);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: TrimLeftFunc }; } $f._r = _r; $f.f = f; $f.i = i; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.TrimLeftFunc = TrimLeftFunc;
+	TrimRightFunc = function(s, f) {
+		var _r, _tuple, f, i, s, wid, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; f = $f.f; i = $f.i; s = $f.s; wid = $f.wid; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_r = lastIndexFunc(s, f, false); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		i = _r;
+		if (i >= 0 && s.charCodeAt(i) >= 128) {
+			_tuple = utf8.DecodeRuneInString($substring(s, i));
+			wid = _tuple[1];
+			i = i + (wid) >> 0;
+		} else {
+			i = i + (1) >> 0;
+		}
+		$s = -1; return $substring(s, 0, i);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: TrimRightFunc }; } $f._r = _r; $f._tuple = _tuple; $f.f = f; $f.i = i; $f.s = s; $f.wid = wid; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.TrimRightFunc = TrimRightFunc;
+	TrimFunc = function(s, f) {
+		var _r, _r$1, f, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; f = $f.f; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_r = TrimLeftFunc(s, f); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_r$1 = TrimRightFunc(_r, f); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		$s = -1; return _r$1;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: TrimFunc }; } $f._r = _r; $f._r$1 = _r$1; $f.f = f; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.TrimFunc = TrimFunc;
+	indexFunc = function(s, f, truth) {
+		var _i, _r, _ref, _rune, f, i, r, s, truth, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _ref = $f._ref; _rune = $f._rune; f = $f.f; i = $f.i; r = $f.r; s = $f.s; truth = $f.truth; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_ref = s;
+		_i = 0;
+		/* while (true) { */ case 1:
+			/* if (!(_i < _ref.length)) { break; } */ if(!(_i < _ref.length)) { $s = 2; continue; }
+			_rune = $decodeRune(_ref, _i);
+			i = _i;
+			r = _rune[0];
+			_r = f(r); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			/* */ if (_r === truth) { $s = 3; continue; }
+			/* */ $s = 4; continue;
+			/* if (_r === truth) { */ case 3:
+				$s = -1; return i;
+			/* } */ case 4:
+			_i += _rune[1];
+		/* } */ $s = 1; continue; case 2:
+		$s = -1; return -1;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: indexFunc }; } $f._i = _i; $f._r = _r; $f._ref = _ref; $f._rune = _rune; $f.f = f; $f.i = i; $f.r = r; $f.s = s; $f.truth = truth; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	lastIndexFunc = function(s, f, truth) {
+		var _r, _tuple, f, i, r, s, size, truth, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; f = $f.f; i = $f.i; r = $f.r; s = $f.s; size = $f.size; truth = $f.truth; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		i = s.length;
+		/* while (true) { */ case 1:
+			/* if (!(i > 0)) { break; } */ if(!(i > 0)) { $s = 2; continue; }
+			_tuple = utf8.DecodeLastRuneInString($substring(s, 0, i));
+			r = _tuple[0];
+			size = _tuple[1];
+			i = i - (size) >> 0;
+			_r = f(r); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			/* */ if (_r === truth) { $s = 3; continue; }
+			/* */ $s = 4; continue;
+			/* if (_r === truth) { */ case 3:
+				$s = -1; return i;
+			/* } */ case 4:
+		/* } */ $s = 1; continue; case 2:
+		$s = -1; return -1;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: lastIndexFunc }; } $f._r = _r; $f._tuple = _tuple; $f.f = f; $f.i = i; $f.r = r; $f.s = s; $f.size = size; $f.truth = truth; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	TrimSpace = function(s) {
+		var _r, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		_r = TrimFunc(s, unicode.IsSpace); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return _r;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: TrimSpace }; } $f._r = _r; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.TrimSpace = TrimSpace;
+	TrimPrefix = function(s, prefix) {
+		var prefix, s;
+		if (HasPrefix(s, prefix)) {
+			return $substring(s, prefix.length);
+		}
+		return s;
+	};
+	$pkg.TrimPrefix = TrimPrefix;
 	ptrType$6.methods = [{prop: "Len", name: "Len", pkg: "", typ: $funcType([], [$Int], false)}, {prop: "Size", name: "Size", pkg: "", typ: $funcType([], [$Int64], false)}, {prop: "Read", name: "Read", pkg: "", typ: $funcType([sliceType], [$Int, $error], false)}, {prop: "ReadAt", name: "ReadAt", pkg: "", typ: $funcType([sliceType, $Int64], [$Int, $error], false)}, {prop: "ReadByte", name: "ReadByte", pkg: "", typ: $funcType([], [$Uint8, $error], false)}, {prop: "UnreadByte", name: "UnreadByte", pkg: "", typ: $funcType([], [$error], false)}, {prop: "ReadRune", name: "ReadRune", pkg: "", typ: $funcType([], [$Int32, $Int, $error], false)}, {prop: "UnreadRune", name: "UnreadRune", pkg: "", typ: $funcType([], [$error], false)}, {prop: "Seek", name: "Seek", pkg: "", typ: $funcType([$Int64, $Int], [$Int64, $error], false)}, {prop: "WriteTo", name: "WriteTo", pkg: "", typ: $funcType([io.Writer], [$Int64, $error], false)}, {prop: "Reset", name: "Reset", pkg: "", typ: $funcType([$String], [], false)}];
 	Reader.init("strings", [{prop: "s", name: "s", anonymous: false, exported: false, typ: $String, tag: ""}, {prop: "i", name: "i", anonymous: false, exported: false, typ: $Int64, tag: ""}, {prop: "prevRune", name: "prevRune", anonymous: false, exported: false, typ: $Int, tag: ""}]);
 	$init = function() {
@@ -27328,14 +27480,189 @@ $packages["log"] = (function() {
 	$pkg.$init = $init;
 	return $pkg;
 })();
+$packages["sort"] = (function() {
+	var $pkg = {}, $init, reflect;
+	reflect = $packages["reflect"];
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = reflect.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
+$packages["net/url"] = (function() {
+	var $pkg = {}, $init, bytes, errors, fmt, sort, strconv, strings, EscapeError, InvalidHostError, sliceType, ishex, unhex, shouldEscape, QueryUnescape, unescape;
+	bytes = $packages["bytes"];
+	errors = $packages["errors"];
+	fmt = $packages["fmt"];
+	sort = $packages["sort"];
+	strconv = $packages["strconv"];
+	strings = $packages["strings"];
+	EscapeError = $pkg.EscapeError = $newType(8, $kindString, "url.EscapeError", true, "net/url", true, null);
+	InvalidHostError = $pkg.InvalidHostError = $newType(8, $kindString, "url.InvalidHostError", true, "net/url", true, null);
+	sliceType = $sliceType($Uint8);
+	ishex = function(c) {
+		var c;
+		if (48 <= c && c <= 57) {
+			return true;
+		} else if (97 <= c && c <= 102) {
+			return true;
+		} else if (65 <= c && c <= 70) {
+			return true;
+		}
+		return false;
+	};
+	unhex = function(c) {
+		var c;
+		if (48 <= c && c <= 57) {
+			return c - 48 << 24 >>> 24;
+		} else if (97 <= c && c <= 102) {
+			return (c - 97 << 24 >>> 24) + 10 << 24 >>> 24;
+		} else if (65 <= c && c <= 70) {
+			return (c - 65 << 24 >>> 24) + 10 << 24 >>> 24;
+		}
+		return 0;
+	};
+	EscapeError.prototype.Error = function() {
+		var e;
+		e = this.$val;
+		return "invalid URL escape " + strconv.Quote((e));
+	};
+	$ptrType(EscapeError).prototype.Error = function() { return new EscapeError(this.$get()).Error(); };
+	InvalidHostError.prototype.Error = function() {
+		var e;
+		e = this.$val;
+		return "invalid character " + strconv.Quote((e)) + " in host name";
+	};
+	$ptrType(InvalidHostError).prototype.Error = function() { return new InvalidHostError(this.$get()).Error(); };
+	shouldEscape = function(c, mode) {
+		var _1, _2, _3, c, mode;
+		if (65 <= c && c <= 90 || 97 <= c && c <= 122 || 48 <= c && c <= 57) {
+			return false;
+		}
+		if ((mode === 3) || (mode === 4)) {
+			_1 = c;
+			if ((_1 === (33)) || (_1 === (36)) || (_1 === (38)) || (_1 === (39)) || (_1 === (40)) || (_1 === (41)) || (_1 === (42)) || (_1 === (43)) || (_1 === (44)) || (_1 === (59)) || (_1 === (61)) || (_1 === (58)) || (_1 === (91)) || (_1 === (93)) || (_1 === (60)) || (_1 === (62)) || (_1 === (34))) {
+				return false;
+			}
+		}
+		_2 = c;
+		if ((_2 === (45)) || (_2 === (95)) || (_2 === (46)) || (_2 === (126))) {
+			return false;
+		} else if ((_2 === (36)) || (_2 === (38)) || (_2 === (43)) || (_2 === (44)) || (_2 === (47)) || (_2 === (58)) || (_2 === (59)) || (_2 === (61)) || (_2 === (63)) || (_2 === (64))) {
+			_3 = mode;
+			if (_3 === (1)) {
+				return c === 63;
+			} else if (_3 === (2)) {
+				return (c === 47) || (c === 59) || (c === 44) || (c === 63);
+			} else if (_3 === (5)) {
+				return (c === 64) || (c === 47) || (c === 63) || (c === 58);
+			} else if (_3 === (6)) {
+				return true;
+			} else if (_3 === (7)) {
+				return false;
+			}
+		}
+		return true;
+	};
+	QueryUnescape = function(s) {
+		var s;
+		return unescape(s, 6);
+	};
+	$pkg.QueryUnescape = QueryUnescape;
+	unescape = function(s, mode) {
+		var _1, _2, hasPlus, i, i$1, j, mode, n, s, t, v;
+		n = 0;
+		hasPlus = false;
+		i = 0;
+		while (true) {
+			if (!(i < s.length)) { break; }
+			_1 = s.charCodeAt(i);
+			if (_1 === (37)) {
+				n = n + (1) >> 0;
+				if ((i + 2 >> 0) >= s.length || !ishex(s.charCodeAt((i + 1 >> 0))) || !ishex(s.charCodeAt((i + 2 >> 0)))) {
+					s = $substring(s, i);
+					if (s.length > 3) {
+						s = $substring(s, 0, 3);
+					}
+					return ["", new EscapeError((s))];
+				}
+				if ((mode === 3) && unhex(s.charCodeAt((i + 1 >> 0))) < 8 && !($substring(s, i, (i + 3 >> 0)) === "%25")) {
+					return ["", new EscapeError(($substring(s, i, (i + 3 >> 0))))];
+				}
+				if (mode === 4) {
+					v = ((unhex(s.charCodeAt((i + 1 >> 0))) << 4 << 24 >>> 24) | unhex(s.charCodeAt((i + 2 >> 0)))) >>> 0;
+					if (!($substring(s, i, (i + 3 >> 0)) === "%25") && !((v === 32)) && shouldEscape(v, 3)) {
+						return ["", new EscapeError(($substring(s, i, (i + 3 >> 0))))];
+					}
+				}
+				i = i + (3) >> 0;
+			} else if (_1 === (43)) {
+				hasPlus = mode === 6;
+				i = i + (1) >> 0;
+			} else {
+				if (((mode === 3) || (mode === 4)) && s.charCodeAt(i) < 128 && shouldEscape(s.charCodeAt(i), mode)) {
+					return ["", new InvalidHostError(($substring(s, i, (i + 1 >> 0))))];
+				}
+				i = i + (1) >> 0;
+			}
+		}
+		if ((n === 0) && !hasPlus) {
+			return [s, $ifaceNil];
+		}
+		t = $makeSlice(sliceType, (s.length - ($imul(2, n)) >> 0));
+		j = 0;
+		i$1 = 0;
+		while (true) {
+			if (!(i$1 < s.length)) { break; }
+			_2 = s.charCodeAt(i$1);
+			if (_2 === (37)) {
+				((j < 0 || j >= t.$length) ? ($throwRuntimeError("index out of range"), undefined) : t.$array[t.$offset + j] = (((unhex(s.charCodeAt((i$1 + 1 >> 0))) << 4 << 24 >>> 24) | unhex(s.charCodeAt((i$1 + 2 >> 0)))) >>> 0));
+				j = j + (1) >> 0;
+				i$1 = i$1 + (3) >> 0;
+			} else if (_2 === (43)) {
+				if (mode === 6) {
+					((j < 0 || j >= t.$length) ? ($throwRuntimeError("index out of range"), undefined) : t.$array[t.$offset + j] = 32);
+				} else {
+					((j < 0 || j >= t.$length) ? ($throwRuntimeError("index out of range"), undefined) : t.$array[t.$offset + j] = 43);
+				}
+				j = j + (1) >> 0;
+				i$1 = i$1 + (1) >> 0;
+			} else {
+				((j < 0 || j >= t.$length) ? ($throwRuntimeError("index out of range"), undefined) : t.$array[t.$offset + j] = s.charCodeAt(i$1));
+				j = j + (1) >> 0;
+				i$1 = i$1 + (1) >> 0;
+			}
+		}
+		return [($bytesToString(t)), $ifaceNil];
+	};
+	EscapeError.methods = [{prop: "Error", name: "Error", pkg: "", typ: $funcType([], [$String], false)}];
+	InvalidHostError.methods = [{prop: "Error", name: "Error", pkg: "", typ: $funcType([], [$String], false)}];
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = bytes.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = errors.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = fmt.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = sort.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = strconv.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = strings.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
 $packages["."] = (function() {
-	var $pkg = {}, $init, fmt, wdte, std, js, io, log, strings, Drawer, drawFunc, color, rect, Pather, pathFunc, move, line, pathShape, elementWriter, sliceType, ptrType, sliceType$1, funcType, sliceType$2, ptrType$1, examples, document, stdin, stdout, stderr, canvas, canvasCtx, example, in$1, out, Start, Color, Rect, Draw, Path, Move, Line, Close, CanvasModule, im, main;
+	var $pkg = {}, $init, fmt, wdte, std, js, io, log, url, strings, Drawer, drawFunc, color, rect, Pather, pathFunc, move, line, pathShape, elementWriter, sliceType, ptrType, sliceType$1, funcType, sliceType$2, ptrType$1, examples, document, stdin, stdout, stderr, canvas, canvasCtx, example, in$1, out, Start, Color, Rect, Draw, Path, Move, Line, Close, CanvasModule, im, main;
 	fmt = $packages["fmt"];
 	wdte = $packages["github.com/DeedleFake/wdte"];
 	std = $packages["github.com/DeedleFake/wdte/std"];
 	js = $packages["github.com/gopherjs/gopherjs/js"];
 	io = $packages["io"];
 	log = $packages["log"];
+	url = $packages["net/url"];
 	strings = $packages["strings"];
 	Drawer = $pkg.Drawer = $newType(8, $kindInterface, "main.Drawer", true, ".", true, null);
 	drawFunc = $pkg.drawFunc = $newType(4, $kindFunc, "main.drawFunc", true, ".", false, null);
@@ -27730,8 +28057,9 @@ $packages["."] = (function() {
 			stdin.value = $externalize((_entry = examples[$String.keyFor($internalize(example.value, $String))], _entry !== undefined ? _entry.v : ""), $String);
 			return $ifaceNil;
 		}), funcType);
-		$global.main = $externalize((function(args) {
-			var _entry, args;
+		$global.main = $externalize((function $b(args) {
+			var _entry, _r, _r$1, _tuple, args, err, hash, src, $s, $r;
+			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _r = $f._r; _r$1 = $f._r$1; _tuple = $f._tuple; args = $f.args; err = $f.err; hash = $f.hash; src = $f.src; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 			stdin.value = $externalize((_entry = examples[$String.keyFor("fib")], _entry !== undefined ? _entry.v : ""), $String);
 			document.querySelector($externalize(".tab", $String)).addEventListener($externalize("keydown", $String), js.MakeFunc((function(this$1, args$1) {
 				var args$1, end, start, target, this$1;
@@ -27747,7 +28075,26 @@ $packages["."] = (function() {
 				(0 >= args$1.$length ? ($throwRuntimeError("index out of range"), undefined) : args$1.$array[args$1.$offset + 0]).preventDefault();
 				return $ifaceNil;
 			})));
-			return $ifaceNil;
+			hash = $internalize($global.location.hash, $String);
+			/* */ if (!((hash.length === 0))) { $s = 1; continue; }
+			/* */ $s = 2; continue;
+			/* if (!((hash.length === 0))) { */ case 1:
+				document.querySelector($externalize("#example", $String)).value = $externalize("Custom", $String);
+				_tuple = url.QueryUnescape(strings.TrimPrefix(hash, "#"));
+				src = _tuple[0];
+				err = _tuple[1];
+				/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 3; continue; }
+				/* */ $s = 4; continue;
+				/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 3:
+					_r = fmt.Sprintf("Failed to unescape code: %v", new sliceType$1([err])); /* */ $s = 5; case 5: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+					stderr.innerHTML = $externalize(_r, $String);
+					$s = -1; return $ifaceNil;
+				/* } */ case 4:
+				_r$1 = strings.TrimSpace(src); /* */ $s = 6; case 6: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+				stdin.value = $externalize(_r$1, $String);
+			/* } */ case 2:
+			$s = -1; return $ifaceNil;
+			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._entry = _entry; $f._r = _r; $f._r$1 = _r$1; $f._tuple = _tuple; $f.args = args; $f.err = err; $f.hash = hash; $f.src = src; $f.$s = $s; $f.$r = $r; return $f;
 		}), funcType);
 	};
 	drawFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Draw", name: "Draw", pkg: "", typ: $funcType([], [], false)}];
@@ -27776,7 +28123,8 @@ $packages["."] = (function() {
 		$r = js.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = io.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = log.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = strings.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = url.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = strings.$init(); /* */ $s = 8; case 8: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		document = null;
 		stdin = null;
 		stdout = null;
