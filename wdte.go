@@ -323,7 +323,10 @@ type DeclFunc struct {
 func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 	vars := make(map[ID]Func)
 	for i, arg := range f.Args {
-		vars[arg] = args[i]
+		vars[arg] = &FramedFunc{
+			Func:  args[i],
+			Frame: frame,
+		}
 	}
 	for id, f := range f.Stored {
 		vars[id] = f
@@ -397,7 +400,10 @@ type IgnoredChain struct {
 func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 	prev := f.Prev.Call(frame)
 	frame = frame.Sub(map[ID]Func{
-		f.PrevSlot: prev,
+		f.PrevSlot: &FramedFunc{
+			Func:  prev,
+			Frame: frame,
+		},
 	})
 
 	f.Func.Call(frame, f.Args...).Call(frame, prev)
@@ -640,16 +646,20 @@ type Lambda struct {
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	vars := make(map[ID]Func)
-	vars[lambda.ID] = lambda
 	for i, arg := range lambda.Args {
-		vars[arg] = args[i]
+		vars[arg] = &FramedFunc{
+			Func:  args[i],
+			Frame: frame,
+		}
 	}
 	for id, f := range lambda.Stored {
 		vars[id] = f
 	}
+	vars[lambda.ID] = lambda
 
 	if len(args) < len(lambda.Args) {
-		return &DeclFunc{
+		return &Lambda{
+			ID:     lambda.ID,
 			Expr:   lambda.Expr,
 			Args:   lambda.Args[len(args)-1:],
 			Stored: vars,
