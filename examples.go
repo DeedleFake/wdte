@@ -23,6 +23,8 @@ var examples = map[string]string{
 # package to create a string representation of its arguments. This
 # string is printed to the output pane and then returned.
 
+# BUG: This is currently broken due to #40.
+
 memo fib n => switch n {
 	== 0 => 0;
 	== 1 => 1;
@@ -58,7 +60,7 @@ main => (
 	;
 
 	print 'Reduce:';
-	s.range 5
+	s.range 1 5
 	-> s.reduce 1 *
 	-- print
 	;
@@ -72,7 +74,7 @@ main => (
 'strings' => str;
 
 main => (
-	s.new ['abc'; 'bcd'; 'cde']
+	s.new 'abc' 'bcd' 'cde'
 	-> s.map (str.index 'cd')
 	-> s.collect
 	-- print
