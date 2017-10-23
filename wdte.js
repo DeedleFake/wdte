@@ -24348,28 +24348,28 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _i$1 = $f._i$1; _key = $f._key; _key$1 = $f._key$1; _keys = $f._keys; _r = $f._r; _ref = $f._ref; _ref$1 = $f._ref$1; arg = $f.arg; arg$1 = $f.arg$1; args = $f.args; f = $f.f; frame = $f.frame; i = $f.i; id = $f.id; vars = $f.vars; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		f = this;
 		vars = (x = f.Args.$length + $keys(f.Stored).length >> 0, ((x < 0 || x > 2147483647) ? $throwRuntimeError("makemap: size out of range") : {}));
-		_ref = args;
+		_ref = f.Stored;
 		_i = 0;
+		_keys = $keys(_ref);
 		while (true) {
-			if (!(_i < _ref.$length)) { break; }
-			i = _i;
-			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
-			_key = (x$1 = f.Args, ((i < 0 || i >= x$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + i])); (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: new ScopedFunc.ptr(arg, $clone($clone(frame, Frame).Scope(), Scope)) };
-			_i++;
-		}
-		_ref$1 = f.Stored;
-		_i$1 = 0;
-		_keys = $keys(_ref$1);
-		while (true) {
-			if (!(_i$1 < _keys.length)) { break; }
-			_entry = _ref$1[_keys[_i$1]];
+			if (!(_i < _keys.length)) { break; }
+			_entry = _ref[_keys[_i]];
 			if (_entry === undefined) {
-				_i$1++;
+				_i++;
 				continue;
 			}
 			id = _entry.k;
-			arg$1 = _entry.v;
-			_key$1 = id; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$1)] = { k: _key$1, v: arg$1 };
+			arg = _entry.v;
+			_key = id; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: arg };
+			_i++;
+		}
+		_ref$1 = args;
+		_i$1 = 0;
+		while (true) {
+			if (!(_i$1 < _ref$1.$length)) { break; }
+			i = _i$1;
+			arg$1 = ((_i$1 < 0 || _i$1 >= _ref$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref$1.$array[_ref$1.$offset + _i$1]);
+			_key$1 = (x$1 = f.Args, ((i < 0 || i >= x$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + i])); (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$1)] = { k: _key$1, v: new ScopedFunc.ptr(arg$1, $clone($clone(frame, Frame).Scope(), Scope)) };
 			_i$1++;
 		}
 		if (args.$length < f.Args.$length) {
@@ -24640,29 +24640,29 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _i$1 = $f._i$1; _key = $f._key; _key$1 = $f._key$1; _key$2 = $f._key$2; _keys = $f._keys; _r = $f._r; _ref = $f._ref; _ref$1 = $f._ref$1; arg = $f.arg; arg$1 = $f.arg$1; args = $f.args; frame = $f.frame; i = $f.i; id = $f.id; lambda = $f.lambda; vars = $f.vars; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		lambda = this;
 		vars = (x = lambda.Args.$length + $keys(lambda.Stored).length >> 0, ((x < 0 || x > 2147483647) ? $throwRuntimeError("makemap: size out of range") : {}));
-		_key = lambda.ID; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: new ScopedFunc.ptr(lambda, $clone($clone(frame, Frame).Scope(), Scope)) };
-		_ref = args;
+		_key = lambda.ID; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: lambda };
+		_ref = lambda.Stored;
 		_i = 0;
+		_keys = $keys(_ref);
 		while (true) {
-			if (!(_i < _ref.$length)) { break; }
-			i = _i;
-			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
-			_key$1 = (x$1 = lambda.Args, ((i < 0 || i >= x$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + i])); (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$1)] = { k: _key$1, v: new ScopedFunc.ptr(arg, $clone($clone(frame, Frame).Scope(), Scope)) };
-			_i++;
-		}
-		_ref$1 = lambda.Stored;
-		_i$1 = 0;
-		_keys = $keys(_ref$1);
-		while (true) {
-			if (!(_i$1 < _keys.length)) { break; }
-			_entry = _ref$1[_keys[_i$1]];
+			if (!(_i < _keys.length)) { break; }
+			_entry = _ref[_keys[_i]];
 			if (_entry === undefined) {
-				_i$1++;
+				_i++;
 				continue;
 			}
 			id = _entry.k;
-			arg$1 = _entry.v;
-			_key$2 = id; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$2)] = { k: _key$2, v: arg$1 };
+			arg = _entry.v;
+			_key$1 = id; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$1)] = { k: _key$1, v: arg };
+			_i++;
+		}
+		_ref$1 = args;
+		_i$1 = 0;
+		while (true) {
+			if (!(_i$1 < _ref$1.$length)) { break; }
+			i = _i$1;
+			arg$1 = ((_i$1 < 0 || _i$1 >= _ref$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref$1.$array[_ref$1.$offset + _i$1]);
+			_key$2 = (x$1 = lambda.Args, ((i < 0 || i >= x$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + i])); (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$2)] = { k: _key$2, v: new ScopedFunc.ptr(arg$1, $clone($clone(frame, Frame).Scope(), Scope)) };
 			_i$1++;
 		}
 		if (args.$length < lambda.Args.$length) {
