@@ -84,6 +84,25 @@ main => (
 	;
 );`,
 
+	"lambda": `# This example demonstrates lambdas by implementing an iterative
+# Fibonacci number calculator using streams.
+
+'stream' => s;
+'arrays' => a;
+
+fib n => s.range 1 n
+	-> s.reduce [0; 1] (@ self p n => [
+		a.at p 1;
+		+ (a.at p 0) (a.at p 1);
+	])
+	-> a.at 1
+	;
+
+main =>
+	fib 30
+	-- print
+	;`,
+
 	"canvas": `# This example demonstrates the canvas module. This module is a module
 # implemented just for this playground. Importing it automatically
 # puts the playground in canvas mode, which allows for drawing to the
