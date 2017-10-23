@@ -194,6 +194,12 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(6),
 		},
 		{
+			name:   "Lambda/Closure",
+			script: `test a => a 3; main q => test (@ t n => * n q);`,
+			args:   []wdte.Func{wdte.Number(2)},
+			ret:    wdte.Number(6),
+		},
+		{
 			name:   "Lambda/Fib",
 			script: `test a => a 5; main => test (@ t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
 			ret:    wdte.Number(8),
