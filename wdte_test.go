@@ -167,10 +167,19 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(6),
 		},
 		{
+			name:   "Lambda/Fib",
+			script: `test a => a 10; main => test (@ t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
+			ret:    wdte.Number(55),
+		},
+		{
+			// BUG: This doesn't work because the second level is not
+			// memoized. This may require reversing memoization again so
+			// that the inner expression is wrapped in a Memo, instead of
+			// wrapping the whole thing in it.
 			disabled: true,
-			name:     "Lambda/Fib",
-			script:   `test a => a 5; main => test (@ t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
-			ret:      wdte.Number(8),
+			name:     "Lambda/Fib/Memo",
+			script:   `test a => a 38; main => test (@ memo t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
+			ret:      wdte.Number(39088169),
 		},
 	})
 }

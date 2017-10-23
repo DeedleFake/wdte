@@ -340,14 +340,14 @@ type DeclFunc struct {
 
 func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 	vars := make(map[ID]Func, len(f.Args)+len(f.Stored))
+	for id, arg := range f.Stored {
+		vars[id] = arg
+	}
 	for i, arg := range args {
 		vars[f.Args[i]] = &ScopedFunc{
 			Func:  arg,
 			Scope: frame.Scope(),
 		}
-	}
-	for id, arg := range f.Stored {
-		vars[id] = arg
 	}
 
 	if len(args) < len(f.Args) {
@@ -440,10 +440,12 @@ func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Chain.Call(frame, args[0])
 }
 
+// An EndChain is a no-op that just returns its own first argument.
+// This is used as the last element of a chain.
 type EndChain struct {
 }
 
-func (f EndChain) Call(frame Frame, args ...Func) Func {
+func (f EndChain) Call(frame Frame, args ...Func) Func { // nolint
 	return args[0]
 }
 
@@ -586,9 +588,11 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 	return nil
 }
 
+// A Var represents a local variable. When called, it looks itself up
+// in the frame that it's given and calls whatever it finds.
 type Var ID
 
-func (v Var) Call(frame Frame, args ...Func) Func {
+func (v Var) Call(frame Frame, args ...Func) Func { // nolint
 	return frame.Scope().Get(ID(v)).Call(frame, args...)
 }
 
@@ -683,18 +687,15 @@ type Lambda struct {
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	vars := make(map[ID]Func, len(lambda.Args)+len(lambda.Stored))
-	vars[lambda.ID] = &ScopedFunc{
-		Func:  lambda,
-		Scope: frame.Scope(),
+	vars[lambda.ID] = lambda
+	for id, arg := range lambda.Stored {
+		vars[id] = arg
 	}
 	for i, arg := range args {
 		vars[lambda.Args[i]] = &ScopedFunc{
 			Func:  arg,
 			Scope: frame.Scope(),
 		}
-	}
-	for id, arg := range lambda.Stored {
-		vars[id] = arg
 	}
 
 	if len(args) < len(lambda.Args) {
