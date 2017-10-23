@@ -340,14 +340,14 @@ type DeclFunc struct {
 
 func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 	vars := make(map[ID]Func, len(f.Args)+len(f.Stored))
+	for id, arg := range f.Stored {
+		vars[id] = arg
+	}
 	for i, arg := range args {
 		vars[f.Args[i]] = &ScopedFunc{
 			Func:  arg,
 			Scope: frame.Scope(),
 		}
-	}
-	for id, arg := range f.Stored {
-		vars[id] = arg
 	}
 
 	if len(args) < len(f.Args) {
@@ -683,18 +683,15 @@ type Lambda struct {
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	vars := make(map[ID]Func, len(lambda.Args)+len(lambda.Stored))
-	vars[lambda.ID] = &ScopedFunc{
-		Func:  lambda,
-		Scope: frame.Scope(),
+	vars[lambda.ID] = lambda
+	for id, arg := range lambda.Stored {
+		vars[id] = arg
 	}
 	for i, arg := range args {
 		vars[lambda.Args[i]] = &ScopedFunc{
 			Func:  arg,
 			Scope: frame.Scope(),
 		}
-	}
-	for id, arg := range lambda.Stored {
-		vars[id] = arg
 	}
 
 	if len(args) < len(lambda.Args) {
