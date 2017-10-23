@@ -61,6 +61,19 @@ func im(from string) (*wdte.Module, error) {
 	return std.Import(from)
 }
 
+func saveToClipboard(str string) {
+	document := js.Global.Get("document")
+
+	textarea := document.Call("createElement", "textarea")
+	textarea.Set("value", str)
+
+	document.Get("body").Call("appendChild", textarea)
+	textarea.Call("select")
+	document.Call("execCommand", "copy")
+	textarea.Call("blur")
+	document.Get("body").Call("removeChild", textarea)
+}
+
 func main() {
 	document = js.Global.Get("document")
 
@@ -137,6 +150,12 @@ func main() {
 		return nil
 	})
 
+	js.Global.Set("save", func(args ...interface{}) interface{} {
+		js.Global.Get("location").Set("hash", url.QueryEscape(stdin.Get("value").String()))
+		saveToClipboard(js.Global.Get("location").Get("href").String())
+		return nil
+	})
+
 	js.Global.Set("main", func(args ...interface{}) interface{} {
 		stdin.Set("value", examples["fib"])
 
@@ -173,10 +192,7 @@ func main() {
 				return nil
 			}
 
-			stdin.Set(
-				"value",
-				strings.TrimSpace(src),
-			)
+			stdin.Set("value", src)
 		}
 
 		return nil
