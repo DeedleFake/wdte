@@ -679,13 +679,13 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	framed := make([]*FramedFunc, 1, 1+len(lambda.Stored)+len(args))
-	framed[0] = &FramedFunc{
-		Func: lambda,
-	}
+	framed := make([]*FramedFunc, 0, len(lambda.Stored)+len(args))
 
 	next := make([]Func, 1, 1+len(lambda.Stored)+len(args))
-	next[0] = framed[0]
+	next[0] = &FramedFunc{
+		Func:  lambda,
+		Frame: frame,
+	}
 	for _, arg := range lambda.Stored {
 		framed = append(framed, &FramedFunc{
 			Func: arg,
