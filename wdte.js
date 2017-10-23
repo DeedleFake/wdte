@@ -24586,15 +24586,15 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			check = $append(check, _r);
 			_i++;
 		/* } */ $s = 1; continue; case 2:
-		_tuple = m.cache.Get(args);
+		_tuple = m.cache.Get(check);
 		cached = _tuple[0];
 		ok = _tuple[1];
 		if (ok) {
 			$s = -1; return cached;
 		}
-		_r$1 = m.Func.Call($clone(frame, Frame), args); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		_r$1 = m.Func.Call($clone(frame, Frame), check); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 		r = _r$1;
-		m.cache.Set(args, r);
+		m.cache.Set(check, r);
 		$s = -1; return r;
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Memo.ptr.prototype.Call }; } $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._ref = _ref; $f._tuple = _tuple; $f.arg = arg; $f.args = args; $f.cached = cached; $f.check = check; $f.frame = frame; $f.m = m; $f.ok = ok; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
 	};
@@ -26158,7 +26158,7 @@ $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte/std/strings"] = (function() {
-	var $pkg = {}, $init, bytes, fmt, wdte, io, reflect, strconv, strings, unicode, formatFlags, sliceType, sliceType$1, arrayType, ptrType, sliceType$2, Format, readIndex, Contains, Prefix, Suffix, Index, Len, At, Upper, Lower, Module;
+	var $pkg = {}, $init, bytes, fmt, wdte, io, reflect, strconv, strings, unicode, formatFlags, sliceType, sliceType$1, arrayType, ptrType, ptrType$1, sliceType$2, Format, readIndex, Contains, Prefix, Suffix, Index, Len, At, Upper, Lower, Module;
 	bytes = $packages["bytes"];
 	fmt = $packages["fmt"];
 	wdte = $packages["github.com/DeedleFake/wdte"];
@@ -26171,11 +26171,12 @@ $packages["github.com/DeedleFake/wdte/std/strings"] = (function() {
 	sliceType = $sliceType(wdte.Func);
 	sliceType$1 = $sliceType($Uint8);
 	arrayType = $arrayType($Uint8, 64);
-	ptrType = $ptrType(wdte.Frame);
+	ptrType = $ptrType(wdte.Scope);
+	ptrType$1 = $ptrType(wdte.Frame);
 	sliceType$2 = $sliceType($emptyInterface);
 	Format = function(frame, args) {
-		var _1, _2, _i, _r, _r$1, _r$2, _r$3, _r$4, _r$5, _r$6, _ref, _tuple, _tuple$1, _tuple$2, args, err, err$1, err$2, flags, frame, i, i$1, out, r, r$1, r$2, s, x, x$1, x$2, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _2 = $f._2; _i = $f._i; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _r$5 = $f._r$5; _r$6 = $f._r$6; _ref = $f._ref; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; args = $f.args; err = $f.err; err$1 = $f.err$1; err$2 = $f.err$2; flags = $f.flags; frame = $f.frame; i = $f.i; i$1 = $f.i$1; out = $f.out; r = $f.r; r$1 = $f.r$1; r$2 = $f.r$2; s = $f.s; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _1, _2, _i, _r, _r$1, _r$2, _r$3, _r$4, _r$5, _r$6, _ref, _tuple, _tuple$1, _tuple$2, arg, args, err, err$1, err$2, flags, frame, i, next, out, r, r$1, r$2, s, x, x$1, x$2, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _2 = $f._2; _i = $f._i; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _r$5 = $f._r$5; _r$6 = $f._r$6; _ref = $f._ref; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; arg = $f.arg; args = $f.args; err = $f.err; err$1 = $f.err$1; err$2 = $f.err$2; flags = $f.flags; frame = $f.frame; i = $f.i; next = $f.next; out = $f.out; r = $f.r; r$1 = $f.r$1; r$2 = $f.r$2; s = $f.s; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		args = [args];
 		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("format"));
 			_1 = args[0].$length;
@@ -26191,18 +26192,19 @@ $packages["github.com/DeedleFake/wdte/std/strings"] = (function() {
 				}; })(args)));
 			}
 		case 1:
+		next = $makeSlice(sliceType, 0, args[0].$length);
 		_ref = args[0];
 		_i = 0;
 		/* while (true) { */ case 2:
 			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 3; continue; }
-			i = _i;
-			_r = ((i < 0 || i >= args[0].$length) ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + i]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 4; case 4: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-			((i < 0 || i >= args[0].$length) ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + i] = _r);
+			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			_r = arg.Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 4; case 4: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			next = $append(next, _r);
 			_i++;
 		/* } */ $s = 2; continue; case 3:
-		i$1 = 0;
+		i = 0;
 		out = new bytes.Buffer.ptr(sliceType$1.nil, 0, 0, arrayType.zero());
-		s = strings.NewReader(($assertType((0 >= args[0].$length ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + 0]), wdte.String)));
+		s = strings.NewReader(($assertType((0 >= next.$length ? ($throwRuntimeError("index out of range"), undefined) : next.$array[next.$offset + 0]), wdte.String)));
 		/* while (true) { */ case 5:
 			_tuple = s.ReadRune();
 			r = _tuple[0];
@@ -26250,10 +26252,10 @@ $packages["github.com/DeedleFake/wdte/std/strings"] = (function() {
 					/* */ $s = 20; continue;
 					/* if (_2 === (35)) { */ case 17:
 						_r$2 = readIndex(s); /* */ $s = 22; case 22: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-						i$1 = _r$2;
-						/* */ if (i$1 < 0) { $s = 23; continue; }
+						i = _r$2;
+						/* */ if (i < 0) { $s = 23; continue; }
 						/* */ $s = 24; continue;
-						/* if (i$1 < 0) { */ case 23:
+						/* if (i < 0) { */ case 23:
 							_r$3 = fmt.Errorf("Invalid index in format specifier", new sliceType$2([])); /* */ $s = 25; case 25: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
 							$s = -1; return (x$1 = new wdte.Error.ptr(_r$3, $clone(frame, wdte.Frame)), new x$1.constructor.elem(x$1));
 						/* } */ case 24:
@@ -26270,13 +26272,13 @@ $packages["github.com/DeedleFake/wdte/std/strings"] = (function() {
 					/* } */ case 21:
 				case 16:
 			/* } */ $s = 11; continue; case 12:
-			i$1 = i$1 + (1) >> 0;
-			_r$5 = new formatFlags(flags).Format(((i$1 < 0 || i$1 >= args[0].$length) ? ($throwRuntimeError("index out of range"), undefined) : args[0].$array[args[0].$offset + i$1])); /* */ $s = 27; case 27: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
+			i = i + (1) >> 0;
+			_r$5 = new formatFlags(flags).Format(((i < 0 || i >= next.$length) ? ($throwRuntimeError("index out of range"), undefined) : next.$array[next.$offset + i])); /* */ $s = 27; case 27: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
 			_r$6 = out.WriteString(_r$5); /* */ $s = 28; case 28: if($c) { $c = false; _r$6 = _r$6.$blk(); } if (_r$6 && _r$6.$blk !== undefined) { break s; }
 			_r$6;
 		/* } */ $s = 5; continue; case 6:
 		$s = -1; return $ifaceNil;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Format }; } $f._1 = _1; $f._2 = _2; $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._r$5 = _r$5; $f._r$6 = _r$6; $f._ref = _ref; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f.args = args; $f.err = err; $f.err$1 = err$1; $f.err$2 = err$2; $f.flags = flags; $f.frame = frame; $f.i = i; $f.i$1 = i$1; $f.out = out; $f.r = r; $f.r$1 = r$1; $f.r$2 = r$2; $f.s = s; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Format }; } $f._1 = _1; $f._2 = _2; $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._r$5 = _r$5; $f._r$6 = _r$6; $f._ref = _ref; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f.arg = arg; $f.args = args; $f.err = err; $f.err$1 = err$1; $f.err$2 = err$2; $f.flags = flags; $f.frame = frame; $f.i = i; $f.next = next; $f.out = out; $f.r = r; $f.r$1 = r$1; $f.r$2 = r$2; $f.s = s; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.Format = Format;
 	readIndex = function(rr) {
