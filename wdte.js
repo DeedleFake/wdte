@@ -24824,7 +24824,7 @@ $packages["github.com/DeedleFake/wdte/std/arrays"] = (function() {
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte/std/io"] = (function() {
-	var $pkg = {}, $init, bufio, bytes, fmt, wdte, io, os, strings, reader, Reader, writer, Writer, stringReader, scanner, runeStream, sliceType, ptrType, sliceType$1, sliceType$2, sliceType$3, ptrType$1, sliceType$4, arrayType, ptrType$2, Seek, Close, Combine, Copy, ReadString, String, Lines, Words, Scan, Runes, write, Write, Writeln, Module;
+	var $pkg = {}, $init, bufio, bytes, fmt, wdte, io, os, strings, reader, Reader, writer, Writer, stringReader, scanner, runeStream, sliceType, ptrType, ptrType$1, sliceType$1, sliceType$2, sliceType$3, ptrType$2, sliceType$4, arrayType, ptrType$3, Seek, Close, Combine, Copy, ReadString, String, Lines, Words, Scan, Runes, write, Write, Writeln, Module;
 	bufio = $packages["bufio"];
 	bytes = $packages["bytes"];
 	fmt = $packages["fmt"];
@@ -24853,7 +24853,7 @@ $packages["github.com/DeedleFake/wdte/std/io"] = (function() {
 	stringReader = $pkg.stringReader = $newType(0, $kindStruct, "io.stringReader", true, "github.com/DeedleFake/wdte/std/io", false, function(Reader_) {
 		this.$val = this;
 		if (arguments.length === 0) {
-			this.Reader = ptrType$1.nil;
+			this.Reader = ptrType$2.nil;
 			return;
 		}
 		this.Reader = Reader_;
@@ -24861,7 +24861,7 @@ $packages["github.com/DeedleFake/wdte/std/io"] = (function() {
 	scanner = $pkg.scanner = $newType(0, $kindStruct, "io.scanner", true, "github.com/DeedleFake/wdte/std/io", false, function(s_) {
 		this.$val = this;
 		if (arguments.length === 0) {
-			this.s = ptrType$2.nil;
+			this.s = ptrType$3.nil;
 			return;
 		}
 		this.s = s_;
@@ -24875,14 +24875,15 @@ $packages["github.com/DeedleFake/wdte/std/io"] = (function() {
 		this.r = r_;
 	});
 	sliceType = $sliceType(wdte.Func);
-	ptrType = $ptrType(wdte.Frame);
+	ptrType = $ptrType(wdte.Scope);
+	ptrType$1 = $ptrType(wdte.Frame);
 	sliceType$1 = $sliceType(io.Reader);
 	sliceType$2 = $sliceType(io.Writer);
 	sliceType$3 = $sliceType($emptyInterface);
-	ptrType$1 = $ptrType(strings.Reader);
+	ptrType$2 = $ptrType(strings.Reader);
 	sliceType$4 = $sliceType($Uint8);
 	arrayType = $arrayType($Uint8, 64);
-	ptrType$2 = $ptrType(bufio.Scanner);
+	ptrType$3 = $ptrType(bufio.Scanner);
 	Reader.ptr.prototype.Call = function(frame, args) {
 		var args, frame, r;
 		r = this;
@@ -25364,8 +25365,8 @@ $packages["github.com/DeedleFake/wdte/std/io"] = (function() {
 	Reader.init("", [{prop: "Reader", name: "Reader", anonymous: true, exported: true, typ: io.Reader, tag: ""}]);
 	writer.init([{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Write", name: "Write", pkg: "", typ: $funcType([sliceType$4], [$Int, $error], false)}]);
 	Writer.init("", [{prop: "Writer", name: "Writer", anonymous: true, exported: true, typ: io.Writer, tag: ""}]);
-	stringReader.init("", [{prop: "Reader", name: "Reader", anonymous: true, exported: true, typ: ptrType$1, tag: ""}]);
-	scanner.init("github.com/DeedleFake/wdte/std/io", [{prop: "s", name: "s", anonymous: false, exported: false, typ: ptrType$2, tag: ""}]);
+	stringReader.init("", [{prop: "Reader", name: "Reader", anonymous: true, exported: true, typ: ptrType$2, tag: ""}]);
+	scanner.init("github.com/DeedleFake/wdte/std/io", [{prop: "s", name: "s", anonymous: false, exported: false, typ: ptrType$3, tag: ""}]);
 	runeStream.init("github.com/DeedleFake/wdte/std/io", [{prop: "r", name: "r", anonymous: false, exported: false, typ: io.RuneReader, tag: ""}]);
 	$init = function() {
 		$pkg.$init = function() {};
@@ -25383,20 +25384,21 @@ $packages["github.com/DeedleFake/wdte/std/io"] = (function() {
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte/std/io/file"] = (function() {
-	var $pkg = {}, $init, wdte, os, File, sliceType, ptrType, ptrType$1, Open, Create, Append, Module;
+	var $pkg = {}, $init, wdte, os, File, sliceType, ptrType, ptrType$1, ptrType$2, Open, Create, Append, Module;
 	wdte = $packages["github.com/DeedleFake/wdte"];
 	os = $packages["os"];
 	File = $pkg.File = $newType(0, $kindStruct, "file.File", true, "github.com/DeedleFake/wdte/std/io/file", true, function(File_) {
 		this.$val = this;
 		if (arguments.length === 0) {
-			this.File = ptrType$1.nil;
+			this.File = ptrType$2.nil;
 			return;
 		}
 		this.File = File_;
 	});
 	sliceType = $sliceType(wdte.Func);
-	ptrType = $ptrType(wdte.Frame);
-	ptrType$1 = $ptrType(os.File);
+	ptrType = $ptrType(wdte.Scope);
+	ptrType$1 = $ptrType(wdte.Frame);
+	ptrType$2 = $ptrType(os.File);
 	File.ptr.prototype.Call = function(frame, args) {
 		var args, f, frame;
 		f = this;
@@ -25465,7 +25467,7 @@ $packages["github.com/DeedleFake/wdte/std/io/file"] = (function() {
 	};
 	$pkg.Module = Module;
 	File.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
-	File.init("", [{prop: "File", name: "File", anonymous: true, exported: true, typ: ptrType$1, tag: ""}]);
+	File.init("", [{prop: "File", name: "File", anonymous: true, exported: true, typ: ptrType$2, tag: ""}]);
 	$init = function() {
 		$pkg.$init = function() {};
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
