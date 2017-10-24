@@ -176,6 +176,16 @@ func TestBasics(t *testing.T) {
 			script: `test a => a 38; main => test (@ memo t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
 			ret:    wdte.Number(39088169),
 		},
+		{
+			name:   "True",
+			script: `main => true;`,
+			ret:    wdte.Bool(true),
+		},
+		{
+			name:   "False",
+			script: `main => false;`,
+			ret:    wdte.Bool(false),
+		},
 	})
 }
 

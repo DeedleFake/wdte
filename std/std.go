@@ -324,6 +324,18 @@ func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
+// True returns a boolean true.
+func True(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return wdte.Bool(true)
+}
+
+// False returns a boolean false. This is rarely necessary as most
+// built-in functionality considers any value other than a boolean
+// true to be false, but it's provided for completeness.
+func False(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return wdte.Bool(false)
+}
+
 // Module returns a module contiaining the functions in this package.
 // It maps mathematical functions to the corresponding mathematical
 // symbols. For example, Add() becomes `+`, Sub() becomes `-`, and so
@@ -349,6 +361,9 @@ func Module() *wdte.Module {
 			">":  wdte.GoFunc(Greater),
 			"<=": wdte.GoFunc(LessEqual),
 			">=": wdte.GoFunc(GreaterEqual),
+
+			"true":  wdte.GoFunc(True),
+			"false": wdte.GoFunc(False),
 		},
 	}
 }
