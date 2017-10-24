@@ -151,6 +151,14 @@ func (m *flatMapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return m
 }
 
+// Enumerate takes a stream and returns a new stream that yields
+// values from the original stream wrapped in an array such that each
+// value yielded is in the format
+//
+//     [i; v]
+//
+// where i is the index of the value yielded and v is the original
+// value.
 func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
