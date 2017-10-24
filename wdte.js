@@ -25579,7 +25579,7 @@ $packages["github.com/DeedleFake/wdte/std/math"] = (function() {
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
-	var $pkg = {}, $init, wdte, mapper, filter, flatMapper, array, rng, Stream, NextFunc, sliceType, ptrType, ptrType$1, ptrType$2, ptrType$3, Collect, Drain, Reduce, Any, All, Map, Filter, FlatMap, New, Range, Concat, Module;
+	var $pkg = {}, $init, wdte, mapper, filter, flatMapper, array, rng, Stream, NextFunc, sliceType, ptrType, ptrType$1, ptrType$2, ptrType$3, Collect, Drain, Reduce, Any, All, Map, Filter, FlatMap, Enumerate, New, Range, Concat, Module;
 	wdte = $packages["github.com/DeedleFake/wdte"];
 	mapper = $pkg.mapper = $newType(0, $kindStruct, "stream.mapper", true, "github.com/DeedleFake/wdte/std/stream", false, function(m_) {
 		this.$val = this;
@@ -26000,6 +26000,37 @@ $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: flatMapper.ptr.prototype.Call }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a = a; $f.args = args; $f.cur = cur; $f.frame = frame; $f.i = i; $f.m = m; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	flatMapper.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	Enumerate = function(frame, args) {
+		var _1, _r, args, frame, i, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; args = $f.args; frame = $f.frame; i = $f.i; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		i = [i];
+		s = [s];
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((Enumerate));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		s[0] = $assertType(_r, Stream);
+		i[0] = 0;
+		$s = -1; return new NextFunc(((function(i, s) { return function $b(frame$1) {
+			var _r$1, _tuple, frame$1, n, ok, r, $s, $r;
+			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r$1 = $f._r$1; _tuple = $f._tuple; frame$1 = $f.frame$1; n = $f.n; ok = $f.ok; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+			wdte.Frame.copy(frame$1, $clone(frame$1, wdte.Frame).WithID("enumerate"));
+			_r$1 = s[0].Next($clone(frame$1, wdte.Frame)); /* */ $s = 1; case 1: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			_tuple = _r$1;
+			n = _tuple[0];
+			ok = _tuple[1];
+			if (!ok) {
+				$s = -1; return [$ifaceNil, false];
+			}
+			r = new wdte.Array([new wdte.Number(i[0]), n]);
+			i[0] = i[0] + (1);
+			$s = -1; return [r, true];
+			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r$1 = _r$1; $f._tuple = _tuple; $f.frame$1 = frame$1; $f.n = n; $f.ok = ok; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
+		}; })(i, s)));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Enumerate }; } $f._1 = _1; $f._r = _r; $f.args = args; $f.frame = frame; $f.i = i; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Enumerate = Enumerate;
 	New = function(frame, args) {
 		var _1, args, frame;
 		_1 = args.$length;
@@ -26140,7 +26171,7 @@ $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
 	};
 	$ptrType(NextFunc).prototype.Next = function(frame) { return new NextFunc(this.$get()).Next(frame); };
 	Module = function() {
-		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "new", v: new wdte.GoFunc((New)) }, { k: "range", v: new wdte.GoFunc((Range)) }, { k: "concat", v: new wdte.GoFunc((Concat)) }, { k: "map", v: new wdte.GoFunc((Map)) }, { k: "filter", v: new wdte.GoFunc((Filter)) }, { k: "flatMap", v: new wdte.GoFunc((FlatMap)) }, { k: "collect", v: new wdte.GoFunc((Collect)) }, { k: "drain", v: new wdte.GoFunc((Drain)) }, { k: "reduce", v: new wdte.GoFunc((Reduce)) }, { k: "any", v: new wdte.GoFunc((Any)) }, { k: "all", v: new wdte.GoFunc((All)) }]));
+		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "new", v: new wdte.GoFunc((New)) }, { k: "range", v: new wdte.GoFunc((Range)) }, { k: "concat", v: new wdte.GoFunc((Concat)) }, { k: "map", v: new wdte.GoFunc((Map)) }, { k: "filter", v: new wdte.GoFunc((Filter)) }, { k: "flatMap", v: new wdte.GoFunc((FlatMap)) }, { k: "enumerate", v: new wdte.GoFunc((Enumerate)) }, { k: "collect", v: new wdte.GoFunc((Collect)) }, { k: "drain", v: new wdte.GoFunc((Drain)) }, { k: "reduce", v: new wdte.GoFunc((Reduce)) }, { k: "any", v: new wdte.GoFunc((Any)) }, { k: "all", v: new wdte.GoFunc((All)) }]));
 	};
 	$pkg.Module = Module;
 	ptrType.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
