@@ -307,6 +307,15 @@ func TestStream(t *testing.T) {
 			},
 		},
 		{
+			name:   "Enumerate",
+			script: `'stream' => s; main => s.new 'a' 'b' 'c' -> s.enumerate -> s.collect;`,
+			ret: wdte.Array{
+				wdte.Array{wdte.Number(0), wdte.String("a")},
+				wdte.Array{wdte.Number(1), wdte.String("b")},
+				wdte.Array{wdte.Number(2), wdte.String("c")},
+			},
+		},
+		{
 			name:   "Drain",
 			script: `'stream' => s; 'io' => io; main => s.range 5 -> s.map (io.writeln io.stdout) -> s.drain;`,
 			out:    "0\n1\n2\n3\n4\n",
