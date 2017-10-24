@@ -23348,7 +23348,7 @@ $packages["github.com/DeedleFake/wdte/ast"] = (function() {
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte"] = (function() {
-	var $pkg = {}, $init, bytes, fmt, ast, scanner, io, funcMod, String, Number, Array, Error, Bool, Module, Importer, ImportFunc, ID, Func, Comparer, Frame, Scope, GoFunc, DeclFunc, Expr, Chain, IgnoredChain, EndChain, External, Local, Compound, Switch, Var, ScopedFunc, Memo, memoCache, Lambda, ptrType, sliceType, ptrType$1, sliceType$1, ptrType$2, sliceType$2, ptrType$3, sliceType$3, arrayType, sliceType$4, sliceType$5, sliceType$6, arrayType$1, ptrType$4, ptrType$5, ptrType$6, mapType, ptrType$7, mapType$1, ptrType$8, flatten, inScope, defaultImporter, F;
+	var $pkg = {}, $init, bytes, fmt, ast, scanner, io, funcMod, String, Number, Array, Error, Bool, Module, Importer, ImportFunc, ID, Func, Comparer, Frame, Scope, GoFunc, DeclFunc, Expr, Chain, IgnoredChain, EndChain, External, Local, Compound, Switch, Var, ScopedFunc, Memo, memoCache, Lambda, ptrType, sliceType, ptrType$1, sliceType$1, ptrType$2, sliceType$2, sliceType$3, ptrType$3, arrayType, sliceType$4, sliceType$5, sliceType$6, arrayType$1, ptrType$4, ptrType$5, ptrType$6, mapType, ptrType$7, mapType$1, ptrType$8, flatten, inScope, defaultImporter, F;
 	bytes = $packages["bytes"];
 	fmt = $packages["fmt"];
 	ast = $packages["github.com/DeedleFake/wdte/ast"];
@@ -23411,7 +23411,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			this.ID = "";
 			this.Expr = $ifaceNil;
 			this.Args = sliceType$2.nil;
-			this.Stored = false;
+			this.Stored = sliceType$3.nil;
 			return;
 		}
 		this.ID = ID_;
@@ -23537,7 +23537,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			this.ID = "";
 			this.Expr = $ifaceNil;
 			this.Args = sliceType$2.nil;
-			this.Stored = false;
+			this.Stored = sliceType$3.nil;
 			return;
 		}
 		this.ID = ID_;
@@ -23551,8 +23551,8 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	sliceType$1 = $sliceType($emptyInterface);
 	ptrType$2 = $ptrType(ast.Term);
 	sliceType$2 = $sliceType(ID);
-	ptrType$3 = $ptrType(ast.Epsilon);
 	sliceType$3 = $sliceType(Func);
+	ptrType$3 = $ptrType(ast.Epsilon);
 	arrayType = $arrayType(Func, 2);
 	sliceType$4 = $sliceType(arrayType);
 	sliceType$5 = $sliceType(ast.Node);
@@ -23653,12 +23653,11 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		args = m.fromArgDecls(flatten($assertType((x$2 = $clone(decl, ast.NTerm).Children(), (2 >= x$2.$length ? ($throwRuntimeError("index out of range"), undefined) : x$2.$array[x$2.$offset + 2])), ptrType), 1, new sliceType([0])));
 		_r$1 = m.fromExpr($assertType((x$3 = $clone(decl, ast.NTerm).Children(), (4 >= x$3.$length ? ($throwRuntimeError("index out of range"), undefined) : x$3.$array[x$3.$offset + 4])), ptrType), args); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 		expr = _r$1;
-		f = new DeclFunc.ptr(id, expr, args, false);
 		if (!((((mods & 1) >>> 0) === 0))) {
-			f = new Memo.ptr(f, new memoCache.ptr($ifaceNil, false));
+			expr = new Memo.ptr(expr, new memoCache.ptr($ifaceNil, false));
 		}
 		_tmp = id;
-		_tmp$1 = f;
+		_tmp$1 = new DeclFunc.ptr(id, expr, args, sliceType$3.nil);
 		id = _tmp;
 		f = _tmp$1;
 		$s = -1; return [id, f];
@@ -23914,11 +23913,10 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		scope = $appendSlice(scope, args);
 		_r$1 = m.fromExpr($assertType((x$3 = $clone(lambda, ast.NTerm).Children(), (5 >= x$3.$length ? ($throwRuntimeError("index out of range"), undefined) : x$3.$array[x$3.$offset + 5])), ptrType), scope); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 		expr = _r$1;
-		f = new Lambda.ptr(id, expr, args, false);
 		if (!((((mods & 1) >>> 0) === 0))) {
-			f = new Memo.ptr(f, new memoCache.ptr($ifaceNil, false));
+			expr = new Memo.ptr(expr, new memoCache.ptr($ifaceNil, false));
 		}
-		f = f;
+		f = new Lambda.ptr(id, expr, args, sliceType$3.nil);
 		$s = -1; return f;
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Module.ptr.prototype.fromLambda }; } $f._r = _r; $f._r$1 = _r$1; $f.args = args; $f.expr = expr; $f.f = f; $f.id = id; $f.lambda = lambda; $f.m = m; $f.mods = mods; $f.scope = scope; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.$s = $s; $f.$r = $r; return $f;
 	};
@@ -24344,40 +24342,42 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	$ptrType(GoFunc).prototype.Call = function(frame, args) { return new GoFunc(this.$get()).Call(frame, args); };
 	DeclFunc.ptr.prototype.Call = function(frame, args) {
-		var _entry, _i, _i$1, _key, _key$1, _keys, _r, _ref, _ref$1, arg, arg$1, args, f, frame, i, id, vars, x, x$1, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _i$1 = $f._i$1; _key = $f._key; _key$1 = $f._key$1; _keys = $f._keys; _r = $f._r; _ref = $f._ref; _ref$1 = $f._ref$1; arg = $f.arg; arg$1 = $f.arg$1; args = $f.args; f = $f.f; frame = $f.frame; i = $f.i; id = $f.id; vars = $f.vars; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _i, _i$1, _i$2, _key, _r, _ref, _ref$1, _ref$2, arg, arg$1, arg$2, args, f, frame, i, next, vars, x, x$1, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _i$1 = $f._i$1; _i$2 = $f._i$2; _key = $f._key; _r = $f._r; _ref = $f._ref; _ref$1 = $f._ref$1; _ref$2 = $f._ref$2; arg = $f.arg; arg$1 = $f.arg$1; arg$2 = $f.arg$2; args = $f.args; f = $f.f; frame = $f.frame; i = $f.i; next = $f.next; vars = $f.vars; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		f = this;
-		vars = (x = f.Args.$length + $keys(f.Stored).length >> 0, ((x < 0 || x > 2147483647) ? $throwRuntimeError("makemap: size out of range") : {}));
+		if ((f.Stored.$length + args.$length >> 0) < f.Args.$length) {
+			$s = -1; return new DeclFunc.ptr(f.ID, f.Expr, f.Args, $appendSlice(f.Stored, args));
+		}
+		next = $makeSlice(sliceType$3, 0, (f.Stored.$length + args.$length >> 0));
 		_ref = f.Stored;
 		_i = 0;
-		_keys = $keys(_ref);
 		while (true) {
-			if (!(_i < _keys.length)) { break; }
-			_entry = _ref[_keys[_i]];
-			if (_entry === undefined) {
-				_i++;
-				continue;
-			}
-			id = _entry.k;
-			arg = _entry.v;
-			_key = id; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: arg };
+			if (!(_i < _ref.$length)) { break; }
+			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			next = $append(next, new ScopedFunc.ptr(arg, $clone($clone(frame, Frame).Scope(), Scope)));
 			_i++;
 		}
 		_ref$1 = args;
 		_i$1 = 0;
 		while (true) {
 			if (!(_i$1 < _ref$1.$length)) { break; }
-			i = _i$1;
 			arg$1 = ((_i$1 < 0 || _i$1 >= _ref$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref$1.$array[_ref$1.$offset + _i$1]);
-			_key$1 = (x$1 = f.Args, ((i < 0 || i >= x$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + i])); (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$1)] = { k: _key$1, v: new ScopedFunc.ptr(arg$1, $clone($clone(frame, Frame).Scope(), Scope)) };
+			next = $append(next, new ScopedFunc.ptr(arg$1, $clone($clone(frame, Frame).Scope(), Scope)));
 			_i$1++;
 		}
-		if (args.$length < f.Args.$length) {
-			$s = -1; return new DeclFunc.ptr(f.ID, f.Expr, $subslice(f.Args, args.$length), vars);
+		vars = (x = f.Args.$length, ((x < 0 || x > 2147483647) ? $throwRuntimeError("makemap: size out of range") : {}));
+		_ref$2 = next;
+		_i$2 = 0;
+		while (true) {
+			if (!(_i$2 < _ref$2.$length)) { break; }
+			i = _i$2;
+			arg$2 = ((_i$2 < 0 || _i$2 >= _ref$2.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref$2.$array[_ref$2.$offset + _i$2]);
+			_key = (x$1 = f.Args, ((i < 0 || i >= x$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + i])); (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: arg$2 };
+			_i$2++;
 		}
-		_r = f.Expr.Call($clone($clone(frame, Frame).New(f.ID, vars), Frame), new sliceType$3([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_r = f.Expr.Call($clone($clone(frame, Frame).New(f.ID, vars), Frame), next); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		$s = -1; return _r;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: DeclFunc.ptr.prototype.Call }; } $f._entry = _entry; $f._i = _i; $f._i$1 = _i$1; $f._key = _key; $f._key$1 = _key$1; $f._keys = _keys; $f._r = _r; $f._ref = _ref; $f._ref$1 = _ref$1; $f.arg = arg; $f.arg$1 = arg$1; $f.args = args; $f.f = f; $f.frame = frame; $f.i = i; $f.id = id; $f.vars = vars; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: DeclFunc.ptr.prototype.Call }; } $f._i = _i; $f._i$1 = _i$1; $f._i$2 = _i$2; $f._key = _key; $f._r = _r; $f._ref = _ref; $f._ref$1 = _ref$1; $f._ref$2 = _ref$2; $f.arg = arg; $f.arg$1 = arg$1; $f.arg$2 = arg$2; $f.args = args; $f.f = f; $f.frame = frame; $f.i = i; $f.next = next; $f.vars = vars; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	DeclFunc.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	Expr.ptr.prototype.Call = function(frame, args) {
@@ -24636,41 +24636,43 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	memoCache.prototype.Set = function(args, val) { return this.$val.Set(args, val); };
 	Lambda.ptr.prototype.Call = function(frame, args) {
-		var _entry, _i, _i$1, _key, _key$1, _key$2, _keys, _r, _ref, _ref$1, arg, arg$1, args, frame, i, id, lambda, vars, x, x$1, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _i$1 = $f._i$1; _key = $f._key; _key$1 = $f._key$1; _key$2 = $f._key$2; _keys = $f._keys; _r = $f._r; _ref = $f._ref; _ref$1 = $f._ref$1; arg = $f.arg; arg$1 = $f.arg$1; args = $f.args; frame = $f.frame; i = $f.i; id = $f.id; lambda = $f.lambda; vars = $f.vars; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _i, _i$1, _i$2, _key, _key$1, _r, _ref, _ref$1, _ref$2, arg, arg$1, arg$2, args, frame, i, lambda, next, vars, x, x$1, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _i$1 = $f._i$1; _i$2 = $f._i$2; _key = $f._key; _key$1 = $f._key$1; _r = $f._r; _ref = $f._ref; _ref$1 = $f._ref$1; _ref$2 = $f._ref$2; arg = $f.arg; arg$1 = $f.arg$1; arg$2 = $f.arg$2; args = $f.args; frame = $f.frame; i = $f.i; lambda = $f.lambda; next = $f.next; vars = $f.vars; x = $f.x; x$1 = $f.x$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		lambda = this;
-		vars = (x = lambda.Args.$length + $keys(lambda.Stored).length >> 0, ((x < 0 || x > 2147483647) ? $throwRuntimeError("makemap: size out of range") : {}));
-		_key = lambda.ID; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: lambda };
+		if ((lambda.Stored.$length + args.$length >> 0) < lambda.Args.$length) {
+			$s = -1; return new Lambda.ptr(lambda.ID, lambda.Expr, lambda.Args, $appendSlice(lambda.Stored, args));
+		}
+		next = $makeSlice(sliceType$3, 0, lambda.Args.$length);
 		_ref = lambda.Stored;
 		_i = 0;
-		_keys = $keys(_ref);
 		while (true) {
-			if (!(_i < _keys.length)) { break; }
-			_entry = _ref[_keys[_i]];
-			if (_entry === undefined) {
-				_i++;
-				continue;
-			}
-			id = _entry.k;
-			arg = _entry.v;
-			_key$1 = id; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$1)] = { k: _key$1, v: arg };
+			if (!(_i < _ref.$length)) { break; }
+			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			next = $append(next, new ScopedFunc.ptr(arg, $clone($clone(frame, Frame).Scope(), Scope)));
 			_i++;
 		}
 		_ref$1 = args;
 		_i$1 = 0;
 		while (true) {
 			if (!(_i$1 < _ref$1.$length)) { break; }
-			i = _i$1;
 			arg$1 = ((_i$1 < 0 || _i$1 >= _ref$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref$1.$array[_ref$1.$offset + _i$1]);
-			_key$2 = (x$1 = lambda.Args, ((i < 0 || i >= x$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + i])); (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$2)] = { k: _key$2, v: new ScopedFunc.ptr(arg$1, $clone($clone(frame, Frame).Scope(), Scope)) };
+			next = $append(next, new ScopedFunc.ptr(arg$1, $clone($clone(frame, Frame).Scope(), Scope)));
 			_i$1++;
 		}
-		if (args.$length < lambda.Args.$length) {
-			$s = -1; return new Lambda.ptr(lambda.ID, lambda.Expr, $subslice(lambda.Args, args.$length), vars);
+		vars = (x = 1 + lambda.Args.$length >> 0, ((x < 0 || x > 2147483647) ? $throwRuntimeError("makemap: size out of range") : {}));
+		_key = lambda.ID; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: lambda };
+		_ref$2 = next;
+		_i$2 = 0;
+		while (true) {
+			if (!(_i$2 < _ref$2.$length)) { break; }
+			i = _i$2;
+			arg$2 = ((_i$2 < 0 || _i$2 >= _ref$2.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref$2.$array[_ref$2.$offset + _i$2]);
+			_key$1 = (x$1 = lambda.Args, ((i < 0 || i >= x$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + i])); (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$1)] = { k: _key$1, v: arg$2 };
+			_i$2++;
 		}
-		_r = lambda.Expr.Call($clone($clone(frame, Frame).Sub(vars), Frame), new sliceType$3([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_r = lambda.Expr.Call($clone($clone(frame, Frame).Sub(vars), Frame), next); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		$s = -1; return _r;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Lambda.ptr.prototype.Call }; } $f._entry = _entry; $f._i = _i; $f._i$1 = _i$1; $f._key = _key; $f._key$1 = _key$1; $f._key$2 = _key$2; $f._keys = _keys; $f._r = _r; $f._ref = _ref; $f._ref$1 = _ref$1; $f.arg = arg; $f.arg$1 = arg$1; $f.args = args; $f.frame = frame; $f.i = i; $f.id = id; $f.lambda = lambda; $f.vars = vars; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Lambda.ptr.prototype.Call }; } $f._i = _i; $f._i$1 = _i$1; $f._i$2 = _i$2; $f._key = _key; $f._key$1 = _key$1; $f._r = _r; $f._ref = _ref; $f._ref$1 = _ref$1; $f._ref$2 = _ref$2; $f.arg = arg; $f.arg$1 = arg$1; $f.arg$2 = arg$2; $f.args = args; $f.frame = frame; $f.i = i; $f.lambda = lambda; $f.next = next; $f.vars = vars; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Lambda.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	String.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType$3], [Func], true)}, {prop: "Compare", name: "Compare", pkg: "", typ: $funcType([Func], [$Int, $Bool], false)}];
@@ -24709,7 +24711,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	Frame.init("github.com/DeedleFake/wdte", [{prop: "id", name: "id", anonymous: false, exported: false, typ: ID, tag: ""}, {prop: "scope", name: "scope", anonymous: false, exported: false, typ: Scope, tag: ""}, {prop: "p", name: "p", anonymous: false, exported: false, typ: ptrType$5, tag: ""}]);
 	Scope.init("github.com/DeedleFake/wdte", [{prop: "vars", name: "vars", anonymous: false, exported: false, typ: mapType, tag: ""}, {prop: "p", name: "p", anonymous: false, exported: false, typ: ptrType$4, tag: ""}]);
 	GoFunc.init([Frame, sliceType$3], [Func], true);
-	DeclFunc.init("", [{prop: "ID", name: "ID", anonymous: false, exported: true, typ: ID, tag: ""}, {prop: "Expr", name: "Expr", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$2, tag: ""}, {prop: "Stored", name: "Stored", anonymous: false, exported: true, typ: mapType, tag: ""}]);
+	DeclFunc.init("", [{prop: "ID", name: "ID", anonymous: false, exported: true, typ: ID, tag: ""}, {prop: "Expr", name: "Expr", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$2, tag: ""}, {prop: "Stored", name: "Stored", anonymous: false, exported: true, typ: sliceType$3, tag: ""}]);
 	Expr.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$3, tag: ""}, {prop: "Chain", name: "Chain", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Slot", name: "Slot", anonymous: false, exported: true, typ: ID, tag: ""}]);
 	Chain.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$3, tag: ""}, {prop: "Chain", name: "Chain", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Slot", name: "Slot", anonymous: false, exported: true, typ: ID, tag: ""}]);
 	IgnoredChain.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$3, tag: ""}, {prop: "Chain", name: "Chain", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Slot", name: "Slot", anonymous: false, exported: true, typ: ID, tag: ""}]);
@@ -24721,7 +24723,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	ScopedFunc.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Scope", name: "Scope", anonymous: false, exported: true, typ: Scope, tag: ""}]);
 	Memo.init("github.com/DeedleFake/wdte", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "cache", name: "cache", anonymous: false, exported: false, typ: memoCache, tag: ""}]);
 	memoCache.init("github.com/DeedleFake/wdte", [{prop: "val", name: "val", anonymous: false, exported: false, typ: Func, tag: ""}, {prop: "next", name: "next", anonymous: false, exported: false, typ: mapType$1, tag: ""}]);
-	Lambda.init("", [{prop: "ID", name: "ID", anonymous: false, exported: true, typ: ID, tag: ""}, {prop: "Expr", name: "Expr", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$2, tag: ""}, {prop: "Stored", name: "Stored", anonymous: false, exported: true, typ: mapType, tag: ""}]);
+	Lambda.init("", [{prop: "ID", name: "ID", anonymous: false, exported: true, typ: ID, tag: ""}, {prop: "Expr", name: "Expr", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType$2, tag: ""}, {prop: "Stored", name: "Stored", anonymous: false, exported: true, typ: sliceType$3, tag: ""}]);
 	$init = function() {
 		$pkg.$init = function() {};
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
