@@ -26526,7 +26526,7 @@ $packages["github.com/DeedleFake/wdte/std/strings"] = (function() {
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte/std"] = (function() {
-	var $pkg = {}, $init, fmt, wdte, arrays, io, file, math$1, stream, strings, math, sliceType, ptrType, ptrType$1, sliceType$1, ptrType$2, save, Add, Sub, Mult, Div, Mod, Equals, Less, Greater, LessEqual, GreaterEqual, Module, stdImporter;
+	var $pkg = {}, $init, fmt, wdte, arrays, io, file, math$1, stream, strings, math, sliceType, ptrType, ptrType$1, sliceType$1, ptrType$2, save, Add, Sub, Mult, Div, Mod, Equals, Less, Greater, LessEqual, GreaterEqual, True, False, And, Or, Not, Module, stdImporter;
 	fmt = $packages["fmt"];
 	wdte = $packages["github.com/DeedleFake/wdte"];
 	arrays = $packages["github.com/DeedleFake/wdte/std/arrays"];
@@ -26938,8 +26938,79 @@ $packages["github.com/DeedleFake/wdte/std"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: GreaterEqual }; } $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f._tuple$3 = _tuple$3; $f._tuple$4 = _tuple$4; $f._tuple$5 = _tuple$5; $f.a1 = a1; $f.a2 = a2; $f.args = args; $f.c = c; $f.c$1 = c$1; $f.cmp = cmp; $f.cmp$1 = cmp$1; $f.frame = frame; $f.ok = ok; $f.ok$1 = ok$1; $f.ok$2 = ok$2; $f.ok$3 = ok$3; $f.ord = ord; $f.ord$1 = ord$1; $f.x = x; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.GreaterEqual = GreaterEqual;
+	True = function(frame, args) {
+		var args, frame;
+		return new wdte.Bool(true);
+	};
+	$pkg.True = True;
+	False = function(frame, args) {
+		var args, frame;
+		return new wdte.Bool(false);
+	};
+	$pkg.False = False;
+	And = function(frame, args) {
+		var _1, _i, _r, _ref, arg, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _i = $f._i; _r = $f._r; _ref = $f._ref; arg = $f.arg; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("&&"));
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((And));
+		}
+		_ref = args;
+		_i = 0;
+		/* while (true) { */ case 1:
+			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 2; continue; }
+			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			_r = arg.Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			arg = _r;
+			if (!($interfaceIsEqual(arg, new wdte.Bool(true)))) {
+				$s = -1; return new wdte.Bool(false);
+			}
+			_i++;
+		/* } */ $s = 1; continue; case 2:
+		$s = -1; return new wdte.Bool(true);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: And }; } $f._1 = _1; $f._i = _i; $f._r = _r; $f._ref = _ref; $f.arg = arg; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.And = And;
+	Or = function(frame, args) {
+		var _1, _i, _r, _ref, arg, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _i = $f._i; _r = $f._r; _ref = $f._ref; arg = $f.arg; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("||"));
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((Or));
+		}
+		_ref = args;
+		_i = 0;
+		/* while (true) { */ case 1:
+			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 2; continue; }
+			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			_r = arg.Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			arg = _r;
+			if ($interfaceIsEqual(arg, new wdte.Bool(true))) {
+				$s = -1; return new wdte.Bool(true);
+			}
+			_i++;
+		/* } */ $s = 1; continue; case 2:
+		$s = -1; return new wdte.Bool(false);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Or }; } $f._1 = _1; $f._i = _i; $f._r = _r; $f._ref = _ref; $f.arg = arg; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Or = Or;
+	Not = function(frame, args) {
+		var _1, _r, args, frame, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; args = $f.args; frame = $f.frame; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("!"));
+		_1 = args.$length;
+		if (_1 === (0)) {
+			$s = -1; return new wdte.GoFunc((Not));
+		}
+		_r = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]).Call($clone(frame, wdte.Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		$s = -1; return new wdte.Bool((!($interfaceIsEqual(_r, new wdte.Bool(true)))));
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Not }; } $f._1 = _1; $f._r = _r; $f.args = args; $f.frame = frame; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.Not = Not;
 	Module = function() {
-		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "+", v: new wdte.GoFunc((Add)) }, { k: "-", v: new wdte.GoFunc((Sub)) }, { k: "*", v: new wdte.GoFunc((Mult)) }, { k: "/", v: new wdte.GoFunc((Div)) }, { k: "%", v: new wdte.GoFunc((Mod)) }, { k: "==", v: new wdte.GoFunc((Equals)) }, { k: "<", v: new wdte.GoFunc((Less)) }, { k: ">", v: new wdte.GoFunc((Greater)) }, { k: "<=", v: new wdte.GoFunc((LessEqual)) }, { k: ">=", v: new wdte.GoFunc((GreaterEqual)) }]));
+		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "+", v: new wdte.GoFunc((Add)) }, { k: "-", v: new wdte.GoFunc((Sub)) }, { k: "*", v: new wdte.GoFunc((Mult)) }, { k: "/", v: new wdte.GoFunc((Div)) }, { k: "%", v: new wdte.GoFunc((Mod)) }, { k: "==", v: new wdte.GoFunc((Equals)) }, { k: "<", v: new wdte.GoFunc((Less)) }, { k: ">", v: new wdte.GoFunc((Greater)) }, { k: "<=", v: new wdte.GoFunc((LessEqual)) }, { k: ">=", v: new wdte.GoFunc((GreaterEqual)) }, { k: "true", v: new wdte.GoFunc((True)) }, { k: "false", v: new wdte.GoFunc((False)) }, { k: "&&", v: new wdte.GoFunc((And)) }, { k: "||", v: new wdte.GoFunc((Or)) }, { k: "!", v: new wdte.GoFunc((Not)) }]));
 	};
 	$pkg.Module = Module;
 	stdImporter = function(from) {
