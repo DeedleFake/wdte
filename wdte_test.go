@@ -176,6 +176,46 @@ func TestBasics(t *testing.T) {
 			script: `test a => a 38; main => test (@ memo t n => switch n { <= 1 => n; default => + (t (- n 2)) (t (- n 1)); };);`,
 			ret:    wdte.Number(39088169),
 		},
+		{
+			name:   "True",
+			script: `main => true;`,
+			ret:    wdte.Bool(true),
+		},
+		{
+			name:   "False",
+			script: `main => false;`,
+			ret:    wdte.Bool(false),
+		},
+		{
+			name:   "And/True",
+			script: `main => && true true;`,
+			ret:    wdte.Bool(true),
+		},
+		{
+			name:   "And/False",
+			script: `main => && true false;`,
+			ret:    wdte.Bool(false),
+		},
+		{
+			name:   "Or/True",
+			script: `main => || false true;`,
+			ret:    wdte.Bool(true),
+		},
+		{
+			name:   "Or/False",
+			script: `main => || false false;`,
+			ret:    wdte.Bool(false),
+		},
+		{
+			name:   "Not/True",
+			script: `main => ! false;`,
+			ret:    wdte.Bool(true),
+		},
+		{
+			name:   "Not/False",
+			script: `main => ! true;`,
+			ret:    wdte.Bool(false),
+		},
 	})
 }
 
