@@ -336,6 +336,57 @@ func False(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(false)
 }
 
+// And returns true if all of its arguments are true.
+func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("&&")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(And)
+	}
+
+	for _, arg := range args {
+		arg = arg.Call(frame)
+		if arg != wdte.Bool(true) {
+			return wdte.Bool(false)
+		}
+	}
+
+	return wdte.Bool(true)
+}
+
+// Or returns true if any of its arguments are true.
+func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("||")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Or)
+	}
+
+	for _, arg := range args {
+		arg = arg.Call(frame)
+		if arg == wdte.Bool(true) {
+			return wdte.Bool(true)
+		}
+	}
+
+	return wdte.Bool(false)
+}
+
+// Not returns true if its argument isn't. Otherwise, it returns
+// false.
+func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("!")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Not)
+	}
+
+	return wdte.Bool(args[0].Call(frame) != wdte.Bool(true))
+}
+
 // Module returns a module contiaining the functions in this package.
 // It maps mathematical functions to the corresponding mathematical
 // symbols. For example, Add() becomes `+`, Sub() becomes `-`, and so
@@ -356,14 +407,16 @@ func Module() *wdte.Module {
 			"/": wdte.GoFunc(Div),
 			"%": wdte.GoFunc(Mod),
 
-			"==": wdte.GoFunc(Equals),
-			"<":  wdte.GoFunc(Less),
-			">":  wdte.GoFunc(Greater),
-			"<=": wdte.GoFunc(LessEqual),
-			">=": wdte.GoFunc(GreaterEqual),
-
+			"==":    wdte.GoFunc(Equals),
+			"<":     wdte.GoFunc(Less),
+			">":     wdte.GoFunc(Greater),
+			"<=":    wdte.GoFunc(LessEqual),
+			">=":    wdte.GoFunc(GreaterEqual),
 			"true":  wdte.GoFunc(True),
 			"false": wdte.GoFunc(False),
+			"&&":    wdte.GoFunc(And),
+			"||":    wdte.GoFunc(Or),
+			"!":     wdte.GoFunc(Not),
 		},
 	}
 }
