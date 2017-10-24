@@ -335,31 +335,39 @@ type DeclFunc struct {
 	// Stored is the arguments that have already been passed to a
 	// function if it was given less arguments than it was declared
 	// with.
-	Stored map[ID]Func
+	Stored []Func
 }
 
 func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
-	vars := make(map[ID]Func, len(f.Args)+len(f.Stored))
-	for id, arg := range f.Stored {
-		vars[id] = arg
-	}
-	for i, arg := range args {
-		vars[f.Args[i]] = &ScopedFunc{
-			Func:  arg,
-			Scope: frame.Scope(),
-		}
-	}
-
-	if len(args) < len(f.Args) {
+	if len(f.Stored)+len(args) < len(f.Args) {
 		return &DeclFunc{
 			ID:     f.ID,
 			Expr:   f.Expr,
-			Args:   f.Args[len(args):],
-			Stored: vars,
+			Args:   f.Args,
+			Stored: append(f.Stored, args...),
 		}
 	}
 
-	return f.Expr.Call(frame.New(f.ID, vars))
+	next := make([]Func, 0, len(f.Stored)+len(args))
+	for _, arg := range f.Stored {
+		next = append(next, &ScopedFunc{
+			Func:  arg,
+			Scope: frame.Scope(),
+		})
+	}
+	for _, arg := range args {
+		next = append(next, &ScopedFunc{
+			Func:  arg,
+			Scope: frame.Scope(),
+		})
+	}
+
+	vars := make(map[ID]Func, len(f.Args))
+	for i, arg := range next {
+		vars[f.Args[i]] = arg
+	}
+
+	return f.Expr.Call(frame.New(f.ID, vars), next...)
 }
 
 // An Expr is an unevaluated expression. This is usually the
@@ -682,30 +690,38 @@ type Lambda struct {
 
 	// Stored is the arguments that have already been passed to a
 	// lambda if it was given less arguments than it was declared with.
-	Stored map[ID]Func
+	Stored []Func
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
-	vars := make(map[ID]Func, len(lambda.Args)+len(lambda.Stored))
-	vars[lambda.ID] = lambda
-	for id, arg := range lambda.Stored {
-		vars[id] = arg
-	}
-	for i, arg := range args {
-		vars[lambda.Args[i]] = &ScopedFunc{
-			Func:  arg,
-			Scope: frame.Scope(),
-		}
-	}
-
-	if len(args) < len(lambda.Args) {
+	if len(lambda.Stored)+len(args) < len(lambda.Args) {
 		return &Lambda{
 			ID:     lambda.ID,
 			Expr:   lambda.Expr,
-			Args:   lambda.Args[len(args):],
-			Stored: vars,
+			Args:   lambda.Args,
+			Stored: append(lambda.Stored, args...),
 		}
 	}
 
-	return lambda.Expr.Call(frame.Sub(vars))
+	next := make([]Func, 0, len(lambda.Args))
+	for _, arg := range lambda.Stored {
+		next = append(next, &ScopedFunc{
+			Func:  arg,
+			Scope: frame.Scope(),
+		})
+	}
+	for _, arg := range args {
+		next = append(next, &ScopedFunc{
+			Func:  arg,
+			Scope: frame.Scope(),
+		})
+	}
+
+	vars := make(map[ID]Func, 1+len(lambda.Args))
+	vars[lambda.ID] = lambda
+	for i, arg := range next {
+		vars[lambda.Args[i]] = arg
+	}
+
+	return lambda.Expr.Call(frame.Sub(vars), next...)
 }

@@ -55,18 +55,17 @@ func (m *Module) fromFuncDecl(decl *ast.NTerm) (id ID, f Func) {
 	args := m.fromArgDecls(flatten(decl.Children()[2].(*ast.NTerm), 1, 0))
 	expr := m.fromExpr(decl.Children()[4].(*ast.NTerm), args)
 
-	f = &DeclFunc{
+	if mods&funcModMemo != 0 {
+		expr = &Memo{
+			Func: expr,
+		}
+	}
+
+	return id, &DeclFunc{
 		ID:   id,
 		Expr: expr,
 		Args: args,
 	}
-	if mods&funcModMemo != 0 {
-		f = &Memo{
-			Func: f,
-		}
-	}
-
-	return id, f
 }
 
 func (m *Module) fromFuncMods(funcMods *ast.NTerm) funcMod {
@@ -249,18 +248,17 @@ func (m *Module) fromLambda(lambda *ast.NTerm, scope []ID) (f Func) {
 	scope = append(scope, args...)
 	expr := m.fromExpr(lambda.Children()[5].(*ast.NTerm), scope)
 
-	f = &Lambda{
+	if mods&funcModMemo != 0 {
+		expr = &Memo{
+			Func: expr,
+		}
+	}
+
+	return &Lambda{
 		ID:   id,
 		Expr: expr,
 		Args: args,
 	}
-	if mods&funcModMemo != 0 {
-		f = &Memo{
-			Func: f,
-		}
-	}
-
-	return f
 }
 
 func (m *Module) fromExprs(exprs []ast.Node, scope []ID) []Func {
