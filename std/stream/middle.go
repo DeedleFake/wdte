@@ -150,3 +150,26 @@ func (m *flatMapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	return m
 }
+
+func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Enumerate)
+	}
+
+	s := args[0].Call(frame).(Stream)
+
+	var i wdte.Number
+	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+		frame = frame.WithID("enumerate")
+
+		n, ok := s.Next(frame)
+		if !ok {
+			return nil, false
+		}
+
+		r := wdte.Array{i, n}
+		i++
+		return r, true
+	})
+}
