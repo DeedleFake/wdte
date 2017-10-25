@@ -261,7 +261,7 @@ func (s *Scope) get(id ID) Func {
 		return f
 	}
 
-	return s.p.Get(id)
+	return s.p.get(id)
 }
 
 // Get returns value of the variable with the given id. If the
