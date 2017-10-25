@@ -16,7 +16,16 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	frame = frame.WithID("new")
-	return &array{a: args}
+
+	var a array
+	for _, arg := range args {
+		a.a = append(a.a, &wdte.ScopedFunc{
+			Func:  arg,
+			Scope: frame.Scope(),
+		})
+	}
+
+	return &a
 }
 
 func (a *array) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
