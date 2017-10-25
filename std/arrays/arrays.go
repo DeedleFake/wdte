@@ -33,6 +33,20 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return a[int(i)]
 }
 
+// Len returns the length of an array.
+func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.WithID("len")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Len)
+	}
+
+	a := args[0].Call(frame).(wdte.Array)
+
+	return wdte.Number(len(a))
+}
+
 // A streamer is a stream that iterates over an array.
 type streamer struct {
 	a wdte.Array
@@ -71,7 +85,8 @@ func (a *streamer) Next(frame wdte.Frame) (wdte.Func, bool) {
 func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
-			"at": wdte.GoFunc(At),
+			"at":  wdte.GoFunc(At),
+			"len": wdte.GoFunc(Len),
 
 			"stream": wdte.GoFunc(Stream),
 		},

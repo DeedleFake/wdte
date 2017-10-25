@@ -443,6 +443,11 @@ func TestArrays(t *testing.T) {
 			ret:    wdte.Number(6),
 		},
 		{
+			name:   "Len",
+			script: `'arrays' => a; main => a.len [10; 10; 10];`,
+			ret:    wdte.Number(3),
+		},
+		{
 			name:   "Stream",
 			script: `'arrays' => a; 'stream' => s; main => a.stream ['this'; 'is'; 'a'; 'test'] -> s.collect;`,
 			ret:    wdte.Array{wdte.String("this"), wdte.String("is"), wdte.String("a"), wdte.String("test")},
