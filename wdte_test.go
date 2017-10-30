@@ -268,7 +268,7 @@ func TestMath(t *testing.T) {
 func TestStream(t *testing.T) {
 	runTests(t, []test{
 		{
-			name:   "New/Args",
+			name:   "New",
 			script: `'stream' => s; main a b c => s.new a b c -> s.collect;`,
 			args:   []wdte.Func{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
 			ret:    wdte.Array{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
@@ -296,7 +296,7 @@ func TestStream(t *testing.T) {
 		},
 		{
 			name:   "FlatMap",
-			script: `'stream' => s; test a => [a; + a 1]; main => s.range 3 -> s.flatMap test -> s.collect;`,
+			script: `'stream' => s; test a => s.new a (+ a 1); main => s.range 3 -> s.flatMap test -> s.collect;`,
 			ret: wdte.Array{
 				wdte.Number(0),
 				wdte.Number(1),
