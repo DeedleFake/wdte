@@ -363,7 +363,7 @@ func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	vars := make(map[ID]Func, len(f.Args))
-	for i, arg := range next {
+	for i, arg := range next[:len(f.Args)] {
 		vars[f.Args[i]] = arg
 	}
 
@@ -719,7 +719,7 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 
 	vars := make(map[ID]Func, 1+len(lambda.Args))
 	vars[lambda.ID] = lambda
-	for i, arg := range next {
+	for i, arg := range next[:len(lambda.Args)] {
 		vars[lambda.Args[i]] = arg
 	}
 
