@@ -386,7 +386,7 @@ type Expr struct {
 }
 
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
-	n := f.Func.Call(frame, f.Args...)
+	n := f.Func.Call(frame).Call(frame, f.Args...)
 	frame = frame.Sub(map[ID]Func{
 		f.Slot: &ScopedFunc{
 			Func:  n,
@@ -601,7 +601,15 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 type Var ID
 
 func (v Var) Call(frame Frame, args ...Func) Func { // nolint
-	return frame.Scope().Get(ID(v)).Call(frame, args...)
+	f := frame.Scope().Get(ID(v))
+	if f == nil {
+		return Error{
+			Err:   fmt.Errorf("Non-existent argument: %q", v),
+			Frame: frame,
+		}
+	}
+
+	return f.Call(frame, args...)
 }
 
 // A ScopedFunc is an expression that uses a predefined scope instead

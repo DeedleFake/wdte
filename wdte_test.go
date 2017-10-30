@@ -216,6 +216,11 @@ func TestBasics(t *testing.T) {
 			script: `main => ! true;`,
 			ret:    wdte.Bool(false),
 		},
+		{
+			name:   "ReturnFunc",
+			script: `test => +; main => test 2 3;`,
+			ret:    wdte.Number(5),
+		},
 	})
 }
 
