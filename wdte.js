@@ -24304,7 +24304,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		if (ok) {
 			return f;
 		}
-		return $clone(s.p, Scope).Get(id);
+		return s.p.get(id);
 	};
 	Scope.prototype.get = function(id) { return this.$val.get(id); };
 	Scope.ptr.prototype.Get = function(id) {
@@ -25581,7 +25581,7 @@ $packages["github.com/DeedleFake/wdte/std/math"] = (function() {
 	return $pkg;
 })();
 $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
-	var $pkg = {}, $init, wdte, mapper, filter, flatMapper, array, rng, Stream, NextFunc, sliceType, ptrType, ptrType$1, ptrType$2, ptrType$3, Collect, Drain, Reduce, Any, All, Map, Filter, FlatMap, Enumerate, New, Range, Concat, Module;
+	var $pkg = {}, $init, wdte, mapper, filter, flatMapper, array, rng, Stream, NextFunc, sliceType, ptrType, ptrType$1, ptrType$2, ptrType$3, ptrType$4, Collect, Drain, Reduce, Any, All, Map, Filter, FlatMap, Enumerate, New, Range, Concat, Module;
 	wdte = $packages["github.com/DeedleFake/wdte"];
 	mapper = $pkg.mapper = $newType(0, $kindStruct, "stream.mapper", true, "github.com/DeedleFake/wdte/std/stream", false, function(m_) {
 		this.$val = this;
@@ -25632,10 +25632,11 @@ $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
 	Stream = $pkg.Stream = $newType(8, $kindInterface, "stream.Stream", true, "github.com/DeedleFake/wdte/std/stream", true, null);
 	NextFunc = $pkg.NextFunc = $newType(4, $kindFunc, "stream.NextFunc", true, "github.com/DeedleFake/wdte/std/stream", true, null);
 	sliceType = $sliceType(wdte.Func);
-	ptrType = $ptrType(mapper);
-	ptrType$1 = $ptrType(flatMapper);
-	ptrType$2 = $ptrType(array);
-	ptrType$3 = $ptrType(rng);
+	ptrType = $ptrType(wdte.Scope);
+	ptrType$1 = $ptrType(mapper);
+	ptrType$2 = $ptrType(flatMapper);
+	ptrType$3 = $ptrType(array);
+	ptrType$4 = $ptrType(rng);
 	Collect = function(frame, args) {
 		var _1, _r, _r$1, _r$2, _tuple, _tuple$1, _tuple$2, a, args, frame, n, ok, ok$1, ok$2, r, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; a = $f.a; args = $f.args; frame = $f.frame; n = $f.n; ok = $f.ok; ok$1 = $f.ok$1; ok$2 = $f.ok$2; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -25941,11 +25942,10 @@ $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
 	};
 	$pkg.FlatMap = FlatMap;
 	flatMapper.ptr.prototype.Call = function(frame, args) {
-		var _1, _r, _tuple, a, args, cur, frame, i, m, ok, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _tuple = $f._tuple; a = $f.a; args = $f.args; cur = $f.cur; frame = $f.frame; i = $f.i; m = $f.m; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _1, _r, _tuple, a, args, cur, frame, m, ok, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _tuple = $f._tuple; a = $f.a; args = $f.args; cur = $f.cur; frame = $f.frame; m = $f.m; ok = $f.ok; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		a = [a];
 		cur = [cur];
-		i = [i];
 		m = [m];
 		m[0] = this;
 			_1 = args.$length;
@@ -25957,49 +25957,51 @@ $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
 				a[0] = _tuple[0];
 				ok = _tuple[1];
 				if (ok) {
-					i[0] = 0;
-					cur[0] = wdte.Array.nil;
-					$s = -1; return new NextFunc(((function(a, cur, i, m) { return function $b(frame$1) {
-						var _r$1, _r$2, _r$3, _tuple$1, _tuple$2, frame$1, n, ok$1, ok$2, r, r$1, r$2, $s, $r;
-						/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; frame$1 = $f.frame$1; n = $f.n; ok$1 = $f.ok$1; ok$2 = $f.ok$2; r = $f.r; r$1 = $f.r$1; r$2 = $f.r$2; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+					cur[0] = $ifaceNil;
+					$s = -1; return new NextFunc(((function(a, cur, m) { return function $b(frame$1) {
+						var _r$1, _r$2, _r$3, _r$4, _tuple$1, _tuple$2, _tuple$3, frame$1, n, n$1, ok$1, ok$2, ok$3, r, r$1, $s, $r;
+						/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _r$4 = $f._r$4; _tuple$1 = $f._tuple$1; _tuple$2 = $f._tuple$2; _tuple$3 = $f._tuple$3; frame$1 = $f.frame$1; n = $f.n; n$1 = $f.n$1; ok$1 = $f.ok$1; ok$2 = $f.ok$2; ok$3 = $f.ok$3; r = $f.r; r$1 = $f.r$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+						wdte.Frame.copy(frame$1, $clone(frame$1, wdte.Frame).WithID("flatMap"));
 						/* while (true) { */ case 1:
-							if ((!(cur[0] === wdte.Array.nil)) && (i[0] < cur[0].$length)) {
-								r = ((i[0] < 0 || i[0] >= cur[0].$length) ? ($throwRuntimeError("index out of range"), undefined) : cur[0].$array[cur[0].$offset + i[0]]);
-								i[0] = i[0] + (1) >> 0;
-								$s = -1; return [r, true];
-							}
-							_r$1 = a[0].Next($clone(frame$1, wdte.Frame)); /* */ $s = 3; case 3: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
-							_tuple$1 = _r$1;
-							n = _tuple$1[0];
-							ok$1 = _tuple$1[1];
-							if (!ok$1) {
+							/* */ if (!($interfaceIsEqual(cur[0], $ifaceNil))) { $s = 3; continue; }
+							/* */ $s = 4; continue;
+							/* if (!($interfaceIsEqual(cur[0], $ifaceNil))) { */ case 3:
+								_r$1 = cur[0].Next($clone(frame$1, wdte.Frame)); /* */ $s = 5; case 5: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+								_tuple$1 = _r$1;
+								n = _tuple$1[0];
+								ok$1 = _tuple$1[1];
+								if (ok$1) {
+									$s = -1; return [n, true];
+								}
+								cur[0] = $ifaceNil;
+							/* } */ case 4:
+							_r$2 = a[0].Next($clone(frame$1, wdte.Frame)); /* */ $s = 6; case 6: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+							_tuple$2 = _r$2;
+							n$1 = _tuple$2[0];
+							ok$2 = _tuple$2[1];
+							if (!ok$2) {
 								$s = -1; return [$ifaceNil, false];
 							}
-							wdte.Frame.copy(frame$1, $clone(frame$1, wdte.Frame).WithID("flatMap"));
-							_r$2 = m[0].m.Call($clone(frame$1, wdte.Frame), new sliceType([n])); /* */ $s = 4; case 4: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-							_r$3 = _r$2.Call($clone(frame$1, wdte.Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
-							r$1 = _r$3;
-							_tuple$2 = $assertType(r$1, wdte.Array, true);
-							r$2 = _tuple$2[0];
-							ok$2 = _tuple$2[1];
-							if (ok$2) {
-								if (r$2.$length === 0) {
-									/* continue; */ $s = 1; continue;
-								}
-								cur[0] = r$2;
-								i[0] = 1;
-								$s = -1; return [(0 >= r$2.$length ? ($throwRuntimeError("index out of range"), undefined) : r$2.$array[r$2.$offset + 0]), true];
+							_r$3 = m[0].m.Call($clone(frame$1, wdte.Frame), new sliceType([n$1])); /* */ $s = 7; case 7: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+							_r$4 = _r$3.Call($clone(frame$1, wdte.Frame), new sliceType([])); /* */ $s = 8; case 8: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
+							r = _r$4;
+							_tuple$3 = $assertType(r, Stream, true);
+							r$1 = _tuple$3[0];
+							ok$3 = _tuple$3[1];
+							if (ok$3) {
+								cur[0] = r$1;
+								/* continue; */ $s = 1; continue;
 							}
-							$s = -1; return [r$1, true];
+							$s = -1; return [r, true];
 						/* } */ $s = 1; continue; case 2:
 						$s = -1; return [$ifaceNil, false];
-						/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f.frame$1 = frame$1; $f.n = n; $f.ok$1 = ok$1; $f.ok$2 = ok$2; $f.r = r; $f.r$1 = r$1; $f.r$2 = r$2; $f.$s = $s; $f.$r = $r; return $f;
-					}; })(a, cur, i, m)));
+						/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._r$4 = _r$4; $f._tuple$1 = _tuple$1; $f._tuple$2 = _tuple$2; $f._tuple$3 = _tuple$3; $f.frame$1 = frame$1; $f.n = n; $f.n$1 = n$1; $f.ok$1 = ok$1; $f.ok$2 = ok$2; $f.ok$3 = ok$3; $f.r = r; $f.r$1 = r$1; $f.$s = $s; $f.$r = $r; return $f;
+					}; })(a, cur, m)));
 				}
 			/* } */ case 3:
 		case 1:
 		$s = -1; return m[0];
-		/* */ } return; } if ($f === undefined) { $f = { $blk: flatMapper.ptr.prototype.Call }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a = a; $f.args = args; $f.cur = cur; $f.frame = frame; $f.i = i; $f.m = m; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: flatMapper.ptr.prototype.Call }; } $f._1 = _1; $f._r = _r; $f._tuple = _tuple; $f.a = a; $f.args = args; $f.cur = cur; $f.frame = frame; $f.m = m; $f.ok = ok; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	flatMapper.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	Enumerate = function(frame, args) {
@@ -26034,13 +26036,22 @@ $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
 	};
 	$pkg.Enumerate = Enumerate;
 	New = function(frame, args) {
-		var _1, args, frame;
+		var _1, _i, _ref, a, arg, args, frame;
 		_1 = args.$length;
 		if (_1 === (0)) {
 			return new wdte.GoFunc((New));
 		}
 		wdte.Frame.copy(frame, $clone(frame, wdte.Frame).WithID("new"));
-		return new array.ptr($subslice(new wdte.Array(args.$array), args.$offset, args.$offset + args.$length), 0);
+		a = new array.ptr(wdte.Array.nil, 0);
+		_ref = args;
+		_i = 0;
+		while (true) {
+			if (!(_i < _ref.$length)) { break; }
+			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			a.a = $append(a.a, new wdte.ScopedFunc.ptr(arg, $clone($clone(frame, wdte.Frame).Scope(), wdte.Scope)));
+			_i++;
+		}
+		return a;
 	};
 	$pkg.New = New;
 	array.ptr.prototype.Call = function(frame, args) {
@@ -26176,11 +26187,11 @@ $packages["github.com/DeedleFake/wdte/std/stream"] = (function() {
 		return new wdte.Module.ptr($makeMap(wdte.ID.keyFor, [{ k: "new", v: new wdte.GoFunc((New)) }, { k: "range", v: new wdte.GoFunc((Range)) }, { k: "concat", v: new wdte.GoFunc((Concat)) }, { k: "map", v: new wdte.GoFunc((Map)) }, { k: "filter", v: new wdte.GoFunc((Filter)) }, { k: "flatMap", v: new wdte.GoFunc((FlatMap)) }, { k: "enumerate", v: new wdte.GoFunc((Enumerate)) }, { k: "collect", v: new wdte.GoFunc((Collect)) }, { k: "drain", v: new wdte.GoFunc((Drain)) }, { k: "reduce", v: new wdte.GoFunc((Reduce)) }, { k: "any", v: new wdte.GoFunc((Any)) }, { k: "all", v: new wdte.GoFunc((All)) }]));
 	};
 	$pkg.Module = Module;
-	ptrType.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
-	filter.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
 	ptrType$1.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
-	ptrType$2.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
+	filter.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
+	ptrType$2.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}];
 	ptrType$3.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
+	ptrType$4.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
 	NextFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([wdte.Frame, sliceType], [wdte.Func], true)}, {prop: "Next", name: "Next", pkg: "", typ: $funcType([wdte.Frame], [wdte.Func, $Bool], false)}];
 	mapper.init("github.com/DeedleFake/wdte/std/stream", [{prop: "m", name: "m", anonymous: false, exported: false, typ: wdte.Func, tag: ""}]);
 	filter.init("github.com/DeedleFake/wdte/std/stream", [{prop: "f", name: "f", anonymous: false, exported: false, typ: wdte.Func, tag: ""}]);
@@ -27086,7 +27097,7 @@ $packages["github.com/DeedleFake/wdte/std"] = (function() {
 	return $pkg;
 })();
 $packages["log"] = (function() {
-	var $pkg = {}, $init, fmt, nosync, io, os, runtime, time, Logger, sliceType, arrayType, ptrType, ptrType$1, sliceType$1, ptrType$2, std, New, itoa, SetOutput, SetFlags, Printf, Println;
+	var $pkg = {}, $init, fmt, nosync, io, os, runtime, time, Logger, sliceType, arrayType, ptrType, sliceType$1, ptrType$1, std, New, itoa, SetOutput, SetFlags, Printf, Println;
 	fmt = $packages["fmt"];
 	nosync = $packages["github.com/gopherjs/gopherjs/nosync"];
 	io = $packages["io"];
@@ -27111,10 +27122,9 @@ $packages["log"] = (function() {
 	});
 	sliceType = $sliceType($Uint8);
 	arrayType = $arrayType($Uint8, 20);
-	ptrType = $ptrType(time.Location);
-	ptrType$1 = $ptrType(sliceType);
+	ptrType = $ptrType(sliceType);
 	sliceType$1 = $sliceType($emptyInterface);
-	ptrType$2 = $ptrType(Logger);
+	ptrType$1 = $ptrType(Logger);
 	New = function(out, prefix, flag) {
 		var flag, out, prefix;
 		return new Logger.ptr(new nosync.Mutex.ptr(false), prefix, flag, out, sliceType.nil);
@@ -27218,10 +27228,7 @@ $packages["log"] = (function() {
 		var _r, _tuple, _tuple$1, calldepth, err, file, l, line, now, ok, s, $s, $deferred, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; calldepth = $f.calldepth; err = $f.err; file = $f.file; l = $f.l; line = $f.line; now = $f.now; ok = $f.ok; s = $f.s; $s = $f.$s; $deferred = $f.$deferred; $r = $f.$r; } var $err = null; try { s: while (true) { switch ($s) { case 0: $deferred = []; $deferred.index = $curGoroutine.deferStack.length; $curGoroutine.deferStack.push($deferred);
 		l = this;
-		now = new time.Time.ptr(new $Uint64(0, 0), new $Int64(0, 0), ptrType.nil);
-		if (!(((l.flag & 7) === 0))) {
-			time.Time.copy(now, time.Now());
-		}
+		now = $clone(time.Now(), time.Time);
 		file = "";
 		line = 0;
 		l.mu.Lock();
@@ -27240,7 +27247,7 @@ $packages["log"] = (function() {
 			l.mu.Lock();
 		}
 		l.buf = $subslice(l.buf, 0, 0);
-		$r = l.formatHeader((l.$ptr_buf || (l.$ptr_buf = new ptrType$1(function() { return this.$target.buf; }, function($v) { this.$target.buf = $v; }, l))), $clone(now, time.Time), file, line); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = l.formatHeader((l.$ptr_buf || (l.$ptr_buf = new ptrType(function() { return this.$target.buf; }, function($v) { this.$target.buf = $v; }, l))), $clone(now, time.Time), file, line); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		l.buf = $appendSlice(l.buf, s);
 		if ((s.length === 0) || !((s.charCodeAt((s.length - 1 >> 0)) === 10))) {
 			l.buf = $append(l.buf, 10);
@@ -27442,7 +27449,7 @@ $packages["log"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Println }; } $f._arg = _arg; $f._r = _r; $f._r$1 = _r$1; $f.v = v; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.Println = Println;
-	ptrType$2.methods = [{prop: "SetOutput", name: "SetOutput", pkg: "", typ: $funcType([io.Writer], [], false)}, {prop: "formatHeader", name: "formatHeader", pkg: "log", typ: $funcType([ptrType$1, time.Time, $String, $Int], [], false)}, {prop: "Output", name: "Output", pkg: "", typ: $funcType([$Int, $String], [$error], false)}, {prop: "Printf", name: "Printf", pkg: "", typ: $funcType([$String, sliceType$1], [], true)}, {prop: "Print", name: "Print", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Println", name: "Println", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Fatal", name: "Fatal", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Fatalf", name: "Fatalf", pkg: "", typ: $funcType([$String, sliceType$1], [], true)}, {prop: "Fatalln", name: "Fatalln", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Panic", name: "Panic", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Panicf", name: "Panicf", pkg: "", typ: $funcType([$String, sliceType$1], [], true)}, {prop: "Panicln", name: "Panicln", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Flags", name: "Flags", pkg: "", typ: $funcType([], [$Int], false)}, {prop: "SetFlags", name: "SetFlags", pkg: "", typ: $funcType([$Int], [], false)}, {prop: "Prefix", name: "Prefix", pkg: "", typ: $funcType([], [$String], false)}, {prop: "SetPrefix", name: "SetPrefix", pkg: "", typ: $funcType([$String], [], false)}];
+	ptrType$1.methods = [{prop: "SetOutput", name: "SetOutput", pkg: "", typ: $funcType([io.Writer], [], false)}, {prop: "formatHeader", name: "formatHeader", pkg: "log", typ: $funcType([ptrType, time.Time, $String, $Int], [], false)}, {prop: "Output", name: "Output", pkg: "", typ: $funcType([$Int, $String], [$error], false)}, {prop: "Printf", name: "Printf", pkg: "", typ: $funcType([$String, sliceType$1], [], true)}, {prop: "Print", name: "Print", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Println", name: "Println", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Fatal", name: "Fatal", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Fatalf", name: "Fatalf", pkg: "", typ: $funcType([$String, sliceType$1], [], true)}, {prop: "Fatalln", name: "Fatalln", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Panic", name: "Panic", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Panicf", name: "Panicf", pkg: "", typ: $funcType([$String, sliceType$1], [], true)}, {prop: "Panicln", name: "Panicln", pkg: "", typ: $funcType([sliceType$1], [], true)}, {prop: "Flags", name: "Flags", pkg: "", typ: $funcType([], [$Int], false)}, {prop: "SetFlags", name: "SetFlags", pkg: "", typ: $funcType([$Int], [], false)}, {prop: "Prefix", name: "Prefix", pkg: "", typ: $funcType([], [$String], false)}, {prop: "SetPrefix", name: "SetPrefix", pkg: "", typ: $funcType([$String], [], false)}];
 	Logger.init("log", [{prop: "mu", name: "mu", anonymous: false, exported: false, typ: nosync.Mutex, tag: ""}, {prop: "prefix", name: "prefix", anonymous: false, exported: false, typ: $String, tag: ""}, {prop: "flag", name: "flag", anonymous: false, exported: false, typ: $Int, tag: ""}, {prop: "out", name: "out", anonymous: false, exported: false, typ: io.Writer, tag: ""}, {prop: "buf", name: "buf", anonymous: false, exported: false, typ: sliceType, tag: ""}]);
 	$init = function() {
 		$pkg.$init = function() {};
