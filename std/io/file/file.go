@@ -67,12 +67,10 @@ func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 // Module returns a module containing the functions in this package.
-func Module() *wdte.Module {
-	return &wdte.Module{
-		Funcs: map[wdte.ID]wdte.Func{
-			"open":   wdte.GoFunc(Open),
-			"create": wdte.GoFunc(Create),
-			"append": wdte.GoFunc(Append),
-		},
+func Module() wdte.MapModule {
+	return wdte.MapModule{
+		"open":   wdte.GoFunc(Open),
+		"create": wdte.GoFunc(Create),
+		"append": wdte.GoFunc(Append),
 	}
 }

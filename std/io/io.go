@@ -437,28 +437,26 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // * stdin, stdout, and stderr: Return readers or writers, as
 //   appropriate, that wrap the standard I/O streams.
-func Module() *wdte.Module {
-	return &wdte.Module{
-		Funcs: map[wdte.ID]wdte.Func{
-			"stdin":  Reader{Reader: os.Stdin},
-			"stdout": Writer{Writer: os.Stdout},
-			"stderr": Writer{Writer: os.Stderr},
+func Module() wdte.MapModule {
+	return wdte.MapModule{
+		"stdin":  Reader{Reader: os.Stdin},
+		"stdout": Writer{Writer: os.Stdout},
+		"stderr": Writer{Writer: os.Stderr},
 
-			"seek":  wdte.GoFunc(Seek),
-			"close": wdte.GoFunc(Close),
+		"seek":  wdte.GoFunc(Seek),
+		"close": wdte.GoFunc(Close),
 
-			"combine": wdte.GoFunc(Combine),
-			"copy":    wdte.GoFunc(Copy),
+		"combine": wdte.GoFunc(Combine),
+		"copy":    wdte.GoFunc(Copy),
 
-			"readString": wdte.GoFunc(ReadString),
-			"string":     wdte.GoFunc(String),
-			"lines":      wdte.GoFunc(Lines),
-			"words":      wdte.GoFunc(Words),
-			"scan":       wdte.GoFunc(Scan),
-			"runes":      wdte.GoFunc(Runes),
+		"readString": wdte.GoFunc(ReadString),
+		"string":     wdte.GoFunc(String),
+		"lines":      wdte.GoFunc(Lines),
+		"words":      wdte.GoFunc(Words),
+		"scan":       wdte.GoFunc(Scan),
+		"runes":      wdte.GoFunc(Runes),
 
-			"write":   wdte.GoFunc(Write),
-			"writeln": wdte.GoFunc(Writeln),
-		},
+		"write":   wdte.GoFunc(Write),
+		"writeln": wdte.GoFunc(Writeln),
 	}
 }

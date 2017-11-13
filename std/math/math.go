@@ -89,18 +89,16 @@ func Abs(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // package. This can be used by an Importer to import them more
 // easily. The functions in the returned module have the same names as
 // those in this package except that they are lowercase.
-func Module() *wdte.Module {
-	return &wdte.Module{
-		Funcs: map[wdte.ID]wdte.Func{
-			"pi": wdte.GoFunc(Pi),
+func Module() wdte.MapModule {
+	return wdte.MapModule{
+		"pi": wdte.GoFunc(Pi),
 
-			"sin": wdte.GoFunc(Sin),
-			"cos": wdte.GoFunc(Cos),
-			"tan": wdte.GoFunc(Tan),
+		"sin": wdte.GoFunc(Sin),
+		"cos": wdte.GoFunc(Cos),
+		"tan": wdte.GoFunc(Tan),
 
-			"floor": wdte.GoFunc(Floor),
-			"ceil":  wdte.GoFunc(Ceil),
-			"abs":   wdte.GoFunc(Abs),
-		},
+		"floor": wdte.GoFunc(Floor),
+		"ceil":  wdte.GoFunc(Ceil),
+		"abs":   wdte.GoFunc(Abs),
 	}
 }

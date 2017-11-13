@@ -42,13 +42,13 @@ func runTests(t *testing.T, tests []test) {
 
 			im := test.im
 			if im == nil {
-				im = wdte.ImportFunc(func(from string) (*wdte.Module, error) {
+				im = wdte.ImportFunc(func(from string) (wdte.Module, error) {
 					switch from {
 					case "io":
 						m := io.Module()
-						m.Funcs["stdin"] = io.Reader{strings.NewReader(test.in)}
-						m.Funcs["stdout"] = io.Writer{&stdout}
-						m.Funcs["stderr"] = io.Writer{&stderr}
+						m["stdin"] = io.Reader{strings.NewReader(test.in)}
+						m["stdout"] = io.Writer{&stdout}
+						m["stderr"] = io.Writer{&stderr}
 						return m, nil
 					}
 
@@ -61,9 +61,9 @@ func runTests(t *testing.T, tests []test) {
 				t.Fatalf("Failed to parse script: %v", err)
 			}
 
-			main, ok := m.Funcs["main"]
-			if !ok {
-				t.Fatal("No main function.")
+			main, err := m.Func("main")
+			if err != nil {
+				t.Fatalf("Failed to get main function: %v", err)
 			}
 
 			ret := main.Call(wdte.F(), test.args...)
@@ -141,13 +141,11 @@ func TestBasics(t *testing.T) {
 		{
 			name:   "PassModule",
 			script: `'somemodule' => m; test im => im.num; main => test m;`,
-			im: wdte.ImportFunc(func(from string) (*wdte.Module, error) {
-				return &wdte.Module{
-					Funcs: map[wdte.ID]wdte.Func{
-						"num": wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-							return wdte.Number(3)
-						}),
-					},
+			im: wdte.ImportFunc(func(from string) (wdte.Module, error) {
+				return wdte.MapModule{
+					"num": wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+						return wdte.Number(3)
+					}),
 				}, nil
 			}),
 			ret: wdte.Number(3),

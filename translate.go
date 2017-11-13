@@ -7,7 +7,7 @@ import (
 	"github.com/DeedleFake/wdte/scanner"
 )
 
-func (m *Module) fromScript(script *ast.NTerm, im Importer) (*Module, error) {
+func (m MapModule) fromScript(script *ast.NTerm, im Importer) (MapModule, error) {
 	if im == nil {
 		im = ImportFunc(defaultImporter)
 	}
@@ -15,11 +15,7 @@ func (m *Module) fromScript(script *ast.NTerm, im Importer) (*Module, error) {
 	return m.fromDecls(flatten(script.Children()[0].(*ast.NTerm), 1, 0), im)
 }
 
-func (m *Module) fromDecls(decls []ast.Node, im Importer) (*Module, error) {
-	if m.Funcs == nil {
-		m.Funcs = make(map[ID]Func)
-	}
-
+func (m MapModule) fromDecls(decls []ast.Node, im Importer) (MapModule, error) {
 	for _, d := range decls {
 		switch dtype := d.Children()[0].(*ast.NTerm).Name(); dtype {
 		case "import":
@@ -27,11 +23,11 @@ func (m *Module) fromDecls(decls []ast.Node, im Importer) (*Module, error) {
 			if err != nil {
 				return nil, err
 			}
-			m.Funcs[id] = sub
+			m[id] = sub
 
 		case "funcdecl":
 			id, def := m.fromFuncDecl(d.Children()[0].(*ast.NTerm))
-			m.Funcs[id] = def
+			m[id] = def
 
 		default:
 			panic(fmt.Errorf("Malformed AST with bad <decl>: %q", dtype))
@@ -41,15 +37,15 @@ func (m *Module) fromDecls(decls []ast.Node, im Importer) (*Module, error) {
 	return m, nil
 }
 
-func (m *Module) fromImport(i *ast.NTerm, im Importer) (ID, *Module, error) {
+func (m MapModule) fromImport(i *ast.NTerm, im Importer) (ID, Module, error) {
 	name := i.Children()[0].(*ast.Term).Tok().Val.(string)
 	id := ID(i.Children()[2].(*ast.Term).Tok().Val.(string))
 
-	m, err := im.Import(name)
-	return id, m, err
+	mod, err := im.Import(name)
+	return id, mod, err
 }
 
-func (m *Module) fromFuncDecl(decl *ast.NTerm) (id ID, f Func) {
+func (m MapModule) fromFuncDecl(decl *ast.NTerm) (id ID, f Func) {
 	mods := m.fromFuncMods(decl.Children()[0].(*ast.NTerm))
 	id = ID(decl.Children()[1].(*ast.Term).Tok().Val.(string))
 	args := m.fromArgDecls(flatten(decl.Children()[2].(*ast.NTerm), 1, 0))
@@ -68,7 +64,7 @@ func (m *Module) fromFuncDecl(decl *ast.NTerm) (id ID, f Func) {
 	}
 }
 
-func (m *Module) fromFuncMods(funcMods *ast.NTerm) funcMod {
+func (m MapModule) fromFuncMods(funcMods *ast.NTerm) funcMod {
 	switch mod := funcMods.Children()[0].(type) {
 	case *ast.NTerm:
 		return m.fromFuncMod(mod) | m.fromFuncMods(funcMods.Children()[1].(*ast.NTerm))
@@ -81,7 +77,7 @@ func (m *Module) fromFuncMods(funcMods *ast.NTerm) funcMod {
 	}
 }
 
-func (m *Module) fromFuncMod(funcMod *ast.NTerm) funcMod {
+func (m MapModule) fromFuncMod(funcMod *ast.NTerm) funcMod {
 	switch mod := funcMod.Children()[0].(*ast.Term).Tok().Val; mod {
 	case "memo":
 		return funcModMemo
@@ -91,7 +87,7 @@ func (m *Module) fromFuncMod(funcMod *ast.NTerm) funcMod {
 	}
 }
 
-func (m *Module) fromArgDecls(argdecls []ast.Node) []ID {
+func (m MapModule) fromArgDecls(argdecls []ast.Node) []ID {
 	ids := make([]ID, 0, len(argdecls))
 	for _, arg := range argdecls {
 		ids = append(ids, ID(arg.(*ast.Term).Tok().Val.(string)))
@@ -100,7 +96,7 @@ func (m *Module) fromArgDecls(argdecls []ast.Node) []ID {
 	return ids
 }
 
-func (m *Module) fromExpr(expr *ast.NTerm, scope []ID) Func {
+func (m MapModule) fromExpr(expr *ast.NTerm, scope []ID) Func {
 	first := m.fromSingle(expr.Children()[0].(*ast.NTerm), scope)
 	in := m.fromArgs(flatten(expr.Children()[1].(*ast.NTerm), 1, 0), scope)
 
@@ -115,7 +111,7 @@ func (m *Module) fromExpr(expr *ast.NTerm, scope []ID) Func {
 	}
 }
 
-func (m *Module) fromSlot(expr *ast.NTerm) ID {
+func (m MapModule) fromSlot(expr *ast.NTerm) ID {
 	if _, ok := expr.Children()[0].(*ast.Epsilon); ok {
 		return ""
 	}
@@ -123,7 +119,7 @@ func (m *Module) fromSlot(expr *ast.NTerm) ID {
 	return ID(expr.Children()[1].(*ast.Term).Tok().Val.(string))
 }
 
-func (m *Module) fromSingle(single *ast.NTerm, scope []ID) Func {
+func (m MapModule) fromSingle(single *ast.NTerm, scope []ID) Func {
 	switch s := single.Children()[0].(type) {
 	case *ast.Term:
 		switch s.Tok().Type {
@@ -151,7 +147,7 @@ func (m *Module) fromSingle(single *ast.NTerm, scope []ID) Func {
 	panic(fmt.Errorf("Malformed AST with bad <single>: %#v", single))
 }
 
-func (m *Module) fromFunc(f *ast.NTerm, scope []ID) Func {
+func (m MapModule) fromFunc(f *ast.NTerm, scope []ID) Func {
 	tok := f.Children()[0].(*ast.Term).Tok()
 	id := ID(tok.Val.(string))
 
@@ -171,7 +167,6 @@ func (m *Module) fromFunc(f *ast.NTerm, scope []ID) Func {
 		}
 
 		return &External{
-			Module: m,
 			Import: im,
 			Func:   sub,
 		}
@@ -187,7 +182,7 @@ func (m *Module) fromFunc(f *ast.NTerm, scope []ID) Func {
 	}
 }
 
-func (m *Module) fromSubfunc(subfunc *ast.NTerm) ID {
+func (m MapModule) fromSubfunc(subfunc *ast.NTerm) ID {
 	if _, ok := subfunc.Children()[0].(*ast.Epsilon); ok {
 		return ""
 	}
@@ -195,11 +190,11 @@ func (m *Module) fromSubfunc(subfunc *ast.NTerm) ID {
 	return ID(subfunc.Children()[1].(*ast.Term).Tok().Val.(string))
 }
 
-func (m *Module) fromArray(array *ast.NTerm, scope []ID) Func {
+func (m MapModule) fromArray(array *ast.NTerm, scope []ID) Func {
 	return Array(m.fromExprs(flatten(array.Children()[1].(*ast.NTerm), 2, 0), scope))
 }
 
-func (m *Module) fromSwitch(s *ast.NTerm, scope []ID) Func {
+func (m MapModule) fromSwitch(s *ast.NTerm, scope []ID) Func {
 	check := m.fromExpr(s.Children()[1].(*ast.NTerm), scope)
 	switches := m.fromSwitches(flatten(s.Children()[3].(*ast.NTerm), 4, 0, 2), scope)
 
@@ -209,7 +204,7 @@ func (m *Module) fromSwitch(s *ast.NTerm, scope []ID) Func {
 	}
 }
 
-func (m *Module) fromSwitches(switches []ast.Node, scope []ID) [][2]Func {
+func (m MapModule) fromSwitches(switches []ast.Node, scope []ID) [][2]Func {
 	cases := make([][2]Func, 0, len(switches)/2)
 loop:
 	for i := 0; i < len(switches); i += 2 {
@@ -231,7 +226,7 @@ loop:
 	return cases
 }
 
-func (m *Module) fromCompound(compound *ast.NTerm, scope []ID) Func {
+func (m MapModule) fromCompound(compound *ast.NTerm, scope []ID) Func {
 	exprs := flatten(compound.Children()[1].(*ast.NTerm), 2, 0)
 	if len(exprs) == 1 {
 		return m.fromExpr(exprs[0].(*ast.NTerm), scope)
@@ -240,7 +235,7 @@ func (m *Module) fromCompound(compound *ast.NTerm, scope []ID) Func {
 	return Compound(m.fromExprs(exprs, scope))
 }
 
-func (m *Module) fromLambda(lambda *ast.NTerm, scope []ID) (f Func) {
+func (m MapModule) fromLambda(lambda *ast.NTerm, scope []ID) (f Func) {
 	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm))
 	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(string))
 	args := m.fromArgDecls(flatten(lambda.Children()[3].(*ast.NTerm), 1, 0))
@@ -261,7 +256,7 @@ func (m *Module) fromLambda(lambda *ast.NTerm, scope []ID) (f Func) {
 	}
 }
 
-func (m *Module) fromExprs(exprs []ast.Node, scope []ID) []Func {
+func (m MapModule) fromExprs(exprs []ast.Node, scope []ID) []Func {
 	funcs := make([]Func, 0, len(exprs))
 	for _, expr := range exprs {
 		funcs = append(funcs, m.fromExpr(expr.(*ast.NTerm), scope))
@@ -270,7 +265,7 @@ func (m *Module) fromExprs(exprs []ast.Node, scope []ID) []Func {
 	return funcs
 }
 
-func (m *Module) fromArgs(args []ast.Node, scope []ID) []Func {
+func (m MapModule) fromArgs(args []ast.Node, scope []ID) []Func {
 	singles := make([]Func, 0, len(args))
 	for _, arg := range args {
 		single := m.fromSingle(arg.(*ast.NTerm), scope)
@@ -280,7 +275,7 @@ func (m *Module) fromArgs(args []ast.Node, scope []ID) []Func {
 	return singles
 }
 
-func (m *Module) fromChain(chain *ast.NTerm, scope []ID) Func {
+func (m MapModule) fromChain(chain *ast.NTerm, scope []ID) Func {
 	if _, ok := chain.Children()[0].(*ast.Epsilon); ok {
 		return &EndChain{}
 	}
@@ -339,7 +334,7 @@ func inScope(scope []ID, id ID) bool {
 	return false
 }
 
-func defaultImporter(from string) (*Module, error) {
+func defaultImporter(from string) (Module, error) {
 	// TODO: This should probably do something else.
 	return nil, nil
 }

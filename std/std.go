@@ -398,26 +398,24 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // these functions, you can use
 //
 //     m, err := std.Module().Parse(r, im)
-func Module() *wdte.Module {
-	return &wdte.Module{
-		Funcs: map[wdte.ID]wdte.Func{
-			"+": wdte.GoFunc(Add),
-			"-": wdte.GoFunc(Sub),
-			"*": wdte.GoFunc(Mult),
-			"/": wdte.GoFunc(Div),
-			"%": wdte.GoFunc(Mod),
+func Module() wdte.MapModule {
+	return wdte.MapModule{
+		"+": wdte.GoFunc(Add),
+		"-": wdte.GoFunc(Sub),
+		"*": wdte.GoFunc(Mult),
+		"/": wdte.GoFunc(Div),
+		"%": wdte.GoFunc(Mod),
 
-			"==":    wdte.GoFunc(Equals),
-			"<":     wdte.GoFunc(Less),
-			">":     wdte.GoFunc(Greater),
-			"<=":    wdte.GoFunc(LessEqual),
-			">=":    wdte.GoFunc(GreaterEqual),
-			"true":  wdte.GoFunc(True),
-			"false": wdte.GoFunc(False),
-			"&&":    wdte.GoFunc(And),
-			"||":    wdte.GoFunc(Or),
-			"!":     wdte.GoFunc(Not),
-		},
+		"==":    wdte.GoFunc(Equals),
+		"<":     wdte.GoFunc(Less),
+		">":     wdte.GoFunc(Greater),
+		"<=":    wdte.GoFunc(LessEqual),
+		">=":    wdte.GoFunc(GreaterEqual),
+		"true":  wdte.GoFunc(True),
+		"false": wdte.GoFunc(False),
+		"&&":    wdte.GoFunc(And),
+		"||":    wdte.GoFunc(Or),
+		"!":     wdte.GoFunc(Not),
 	}
 }
 
@@ -425,7 +423,7 @@ func Module() *wdte.Module {
 // modules.
 var Import = wdte.ImportFunc(stdImporter)
 
-func stdImporter(from string) (*wdte.Module, error) {
+func stdImporter(from string) (wdte.Module, error) {
 	switch from {
 	case "stream":
 		return stream.Module(), nil

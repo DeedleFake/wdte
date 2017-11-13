@@ -150,21 +150,19 @@ func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(strings.ToLower(string(args[0].Call(frame).(wdte.String))))
 }
 
-func Module() *wdte.Module {
-	return &wdte.Module{
-		Funcs: map[wdte.ID]wdte.Func{
-			"contains": wdte.GoFunc(Contains),
-			"prefix":   wdte.GoFunc(Prefix),
-			"suffix":   wdte.GoFunc(Suffix),
-			"index":    wdte.GoFunc(Index),
+func Module() wdte.MapModule {
+	return wdte.MapModule{
+		"contains": wdte.GoFunc(Contains),
+		"prefix":   wdte.GoFunc(Prefix),
+		"suffix":   wdte.GoFunc(Suffix),
+		"index":    wdte.GoFunc(Index),
 
-			"len": wdte.GoFunc(Len),
-			"at":  wdte.GoFunc(At),
+		"len": wdte.GoFunc(Len),
+		"at":  wdte.GoFunc(At),
 
-			"upper": wdte.GoFunc(Upper),
-			"lower": wdte.GoFunc(Lower),
+		"upper": wdte.GoFunc(Upper),
+		"lower": wdte.GoFunc(Lower),
 
-			"format": wdte.GoFunc(Format),
-		},
+		"format": wdte.GoFunc(Format),
 	}
 }

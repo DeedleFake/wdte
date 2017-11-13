@@ -9,29 +9,34 @@ import (
 
 // A Module is the result of parsing a WDTE script. It is the main
 // type of this entire library.
-type Module struct {
-	// Funcs maps IDs to functions. WDTE import statements and function
-	// declarations create these when parsed.
-	Funcs map[ID]Func
+type Module interface {
+	Func
+
+	// Func returns the function with the given ID.
+	Func(id ID) (Func, error)
 }
 
 // Parse parses an AST from r and then translates it into a module. im
 // is used to handle import statements. If im is nil, a no-op importer
 // is used.
-func Parse(r io.Reader, im Importer) (*Module, error) {
-	return new(Module).Parse(r, im)
+func Parse(r io.Reader, im Importer) (MapModule, error) {
+	return make(MapModule).Parse(r, im)
 }
 
 // FromAST translates an AST into a module. im is used to handle
 // import statements. If im is nil, a no-op importer is used.
-func FromAST(root ast.Node, im Importer) (*Module, error) {
-	return new(Module).FromAST(root, im)
+func FromAST(root ast.Node, im Importer) (MapModule, error) {
+	return make(MapModule).FromAST(root, im)
 }
+
+// MapModule is a module which simply maps IDs to functions. This is
+// the underlying type created by parsing a WDTE script.
+type MapModule map[ID]Func
 
 // Parse parses an AST from r and then translates it into a module. im
 // is used to handle import statements. If im is nil, a no-op importer
 // is used.
-func (m *Module) Parse(r io.Reader, im Importer) (*Module, error) {
+func (m MapModule) Parse(r io.Reader, im Importer) (MapModule, error) {
 	root, err := ast.ParseScript(r)
 	if err != nil {
 		return nil, err
@@ -42,32 +47,8 @@ func (m *Module) Parse(r io.Reader, im Importer) (*Module, error) {
 
 // FromAST translates an AST into a module. im is used to handle
 // import statements. If im is nil, a no-op importer is used.
-func (m *Module) FromAST(root ast.Node, im Importer) (*Module, error) {
+func (m MapModule) FromAST(root ast.Node, im Importer) (MapModule, error) {
 	return m.fromScript(root.(*ast.NTerm), im)
-}
-
-// Insert inserts the functions from n into m. This is different from
-// an import as the functions are inserted into m's namespace. This is
-// the preferred way of using the standard library.
-//
-// Insert returns m to allow for chaining.
-func (m *Module) Insert(n *Module) *Module {
-	if n == nil {
-		return m
-	}
-
-	if m.Funcs == nil {
-		m.Funcs = make(map[ID]Func)
-	}
-
-	for id := range n.Funcs {
-		m.Funcs[id] = Local{
-			Module: n,
-			Func:   id,
-		}
-	}
-
-	return m
 }
 
 // Eval parses an expression in the context of the module. It returns
@@ -75,17 +56,25 @@ func (m *Module) Insert(n *Module) *Module {
 //
 // BUG: Due to #30, this doesn't usually work as expected, and should
 // probably be avoided for now.
-func (m *Module) Eval(r io.Reader) (Func, error) {
-	expr, err := ast.ParseExpr(r)
-	if err != nil {
-		return nil, err
-	}
+//func (m *Module) Eval(r io.Reader) (Func, error) {
+//	expr, err := ast.ParseExpr(r)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return m.fromExpr(expr.(*ast.NTerm), nil), nil
+//}
 
-	return m.fromExpr(expr.(*ast.NTerm), nil), nil
+func (m MapModule) Call(frame Frame, args ...Func) Func { // nolint
+	return m
 }
 
-func (m *Module) Call(frame Frame, args ...Func) Func { // nolint
-	return m
+func (m MapModule) Func(id ID) (Func, error) { // nolint
+	f, ok := m[id]
+	if !ok {
+		return nil, fmt.Errorf("No such function: %q", id)
+	}
+	return f, nil
 }
 
 // An Importer creates modules from strings. When parsing a WDTE
@@ -101,14 +90,14 @@ func (m *Module) Call(frame Frame, args ...Func) Func { // nolint
 //
 // The return value will then be added to the module's Funcs map.
 type Importer interface {
-	Import(from string) (*Module, error)
+	Import(from string) (Module, error)
 }
 
 // ImportFunc is a wrapper around simple functions to allow them to be
 // used as Importers.
-type ImportFunc func(from string) (*Module, error)
+type ImportFunc func(from string) (Module, error)
 
-func (f ImportFunc) Import(from string) (*Module, error) { // nolint
+func (f ImportFunc) Import(from string) (Module, error) { // nolint
 	return f(from)
 }
 
@@ -462,11 +451,6 @@ func (f EndChain) Call(frame Frame, args ...Func) Func { // nolint
 // before importing, so long as they are not evaluated until after
 // importing.
 type External struct {
-	// Module is the module that the function was called from. This is
-	// *not* the module that the function was declared in. Unless, for
-	// some reason, the module has itself as an import.
-	Module *Module
-
 	// Import is the expression on the left-hand side of an external
 	// function call. If this does not return a module, the call will
 	// fail.
@@ -478,17 +462,17 @@ type External struct {
 
 func (e External) Call(frame Frame, args ...Func) Func { // nolint
 	im := e.Import.Call(frame)
-	i, ok := im.(*Module)
+	i, ok := im.(Module)
 	if !ok {
 		return Error{
 			Err:   fmt.Errorf("Function called on non-module %#v", im),
 			Frame: frame,
 		}
 	}
-	f, ok := i.Funcs[e.Func]
-	if !ok {
+	f, err := i.Func(e.Func)
+	if err != nil {
 		return Error{
-			Err:   fmt.Errorf("Function %q does not exist in import %q", e.Func, e.Import),
+			Err:   err,
 			Frame: frame,
 		}
 	}
@@ -511,17 +495,17 @@ func (e External) Compare(other Func) (int, bool) { // nolint
 // after importing.
 type Local struct {
 	// Module is the module that the function was declared in.
-	Module *Module
+	Module Module
 
 	// Func is the ID of the function in the module.
 	Func ID
 }
 
 func (local Local) Call(frame Frame, args ...Func) Func { // nolint
-	f, ok := local.Module.Funcs[local.Func]
-	if !ok {
+	f, err := local.Module.Func(local.Func)
+	if err != nil {
 		return Error{
-			Err:   fmt.Errorf("Function %q does not exist", local.Func),
+			Err:   err,
 			Frame: frame,
 		}
 	}
