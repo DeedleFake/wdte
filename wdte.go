@@ -143,7 +143,7 @@ type Comparer interface {
 // A Frame tracks information about the current function call.
 type Frame struct {
 	id    ID
-	scope Scope
+	scope *Scope
 
 	p *Frame
 }
@@ -160,10 +160,10 @@ func F() Frame {
 // of the function that generated the frame, and args should be the
 // arguments given to that function. The previous frame is set as the
 // new frame's parent.
-func (f Frame) New(id ID, scope map[ID]Func) Frame {
+func (f Frame) New(id ID, args map[ID]Func) Frame {
 	return Frame{
 		id:    id,
-		scope: Scope{vars: scope},
+		scope: S().Map(args),
 		p:     &f,
 	}
 }
@@ -171,7 +171,7 @@ func (f Frame) New(id ID, scope map[ID]Func) Frame {
 // Sub returns a sub-scoped frame that has the variables in scope
 // added to its scope as new tier.
 func (f Frame) Sub(scope map[ID]Func) Frame {
-	f.scope = f.scope.Sub(scope)
+	f.scope = f.scope.Map(scope)
 	return f
 }
 
@@ -188,7 +188,7 @@ func (f Frame) WithID(id ID) Frame {
 
 // WithScope returns a frame with the same ID and parent frame as the
 // current one, but with the given scope.
-func (f Frame) WithScope(scope Scope) Frame {
+func (f Frame) WithScope(scope *Scope) Frame {
 	return Frame{
 		id:    f.id,
 		scope: scope,
@@ -203,7 +203,7 @@ func (f Frame) ID() ID {
 }
 
 // Scope returns the scope associated with the frame.
-func (f Frame) Scope() Scope {
+func (f Frame) Scope() *Scope {
 	return f.scope
 }
 
@@ -246,36 +246,84 @@ func (f *Frame) backtrace(w io.Writer) error {
 }
 
 // Scope is a tiered storage space for local variables. This includes
-// function parameters and chain slots.
+// function parameters and chain slots. A nil *Scope is equivalent to
+// a blank, top-level scope.
 type Scope struct {
-	vars map[ID]Func
-	p    *Scope
+	p       *Scope
+	getFunc func(id ID) Func
 }
 
-func (s *Scope) get(id ID) Func {
-	if (s == nil) || (s.vars == nil) {
-		return nil
-	}
-
-	if f, ok := s.vars[id]; ok {
-		return f
-	}
-
-	return s.p.get(id)
+// S is a convienence function that returns a blank, top-level scope.
+func S() *Scope {
+	return nil
 }
 
 // Get returns value of the variable with the given id. If the
 // variable doesn't exist in either the current scope or any of its
 // parent scopes, nil is returned.
-func (s Scope) Get(id ID) Func {
-	return s.get(id)
+func (s *Scope) Get(id ID) Func {
+	if s == nil {
+		return nil
+	}
+
+	return s.getFunc(id)
 }
 
-// Sub returns a new subscope with the given variables stored in it.
-func (s Scope) Sub(vars map[ID]Func) Scope {
-	return Scope{
-		vars: vars,
-		p:    &s,
+// Sub returns a new subscope with the given variable stored in it.
+func (s *Scope) Sub(id ID, val Func) *Scope {
+	return &Scope{
+		p: s,
+		getFunc: func(g ID) Func {
+			if g == id {
+				return val
+			}
+
+			return s.Get(g)
+		},
+	}
+}
+
+// Map returns a subscope that includes the given mapping of variable
+// names to functions. Note that no copy is made of vars, so changing
+// the map after passing it to this method may result in undefined
+// behavior.
+func (s *Scope) Map(vars map[ID]Func) *Scope {
+	return &Scope{
+		p: s,
+		getFunc: func(g ID) Func {
+			if v, ok := vars[g]; ok {
+				return v
+			}
+
+			return s.Get(g)
+		},
+	}
+}
+
+// Custom returns a new subscope that uses the given lookup function
+// to retrieve values.
+func (s *Scope) Custom(getFunc func(ID) Func) *Scope {
+	return &Scope{
+		p:       s,
+		getFunc: getFunc,
+	}
+}
+
+// Parent returns the parent of the current scope.
+func (s *Scope) Parent() *Scope {
+	if s == nil {
+		return nil
+	}
+
+	return s.p
+}
+
+// Freeze returns a new function executes in the scope s regardless of
+// whatever Frame it is called with.
+func (s *Scope) Freeze(f Func) Func {
+	return &ScopedFunc{
+		Func:  f,
+		Scope: s,
 	}
 }
 
@@ -350,16 +398,10 @@ func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 
 	next := make([]Func, 0, len(f.Stored)+len(args))
 	for _, arg := range f.Stored {
-		next = append(next, &ScopedFunc{
-			Func:  arg,
-			Scope: frame.Scope(),
-		})
+		next = append(next, frame.Scope().Freeze(arg))
 	}
 	for _, arg := range args {
-		next = append(next, &ScopedFunc{
-			Func:  arg,
-			Scope: frame.Scope(),
-		})
+		next = append(next, frame.Scope().Freeze(arg))
 	}
 
 	vars := make(map[ID]Func, len(f.Args))
@@ -388,10 +430,7 @@ type Expr struct {
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 	n := f.Func.Call(frame, f.Args...)
 	frame = frame.Sub(map[ID]Func{
-		f.Slot: &ScopedFunc{
-			Func:  n,
-			Scope: frame.Scope(),
-		},
+		f.Slot: frame.Scope().Freeze(n),
 	})
 
 	return f.Chain.Call(frame, n)
@@ -413,10 +452,7 @@ type Chain struct {
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
 	frame = frame.Sub(map[ID]Func{
-		f.Slot: &ScopedFunc{
-			Func:  n,
-			Scope: frame.Scope(),
-		},
+		f.Slot: frame.Scope().Freeze(n),
 	})
 
 	return f.Chain.Call(frame, n)
@@ -439,10 +475,7 @@ type IgnoredChain struct {
 func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
 	frame = frame.Sub(map[ID]Func{
-		f.Slot: &ScopedFunc{
-			Func:  n,
-			Scope: frame.Scope(),
-		},
+		f.Slot: frame.Scope().Freeze(n),
 	})
 
 	return f.Chain.Call(frame, args[0])
@@ -611,7 +644,7 @@ type ScopedFunc struct {
 	// Func is the actual function.
 	Func Func
 
-	Scope Scope
+	Scope *Scope
 }
 
 func (f ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
@@ -705,16 +738,10 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 
 	next := make([]Func, 0, len(lambda.Args))
 	for _, arg := range lambda.Stored {
-		next = append(next, &ScopedFunc{
-			Func:  arg,
-			Scope: frame.Scope(),
-		})
+		next = append(next, frame.Scope().Freeze(arg))
 	}
 	for _, arg := range args {
-		next = append(next, &ScopedFunc{
-			Func:  arg,
-			Scope: frame.Scope(),
-		})
+		next = append(next, frame.Scope().Freeze(arg))
 	}
 
 	vars := make(map[ID]Func, 1+len(lambda.Args))
