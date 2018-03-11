@@ -32,7 +32,7 @@ func FromAST(root ast.Node, im Importer) (*Module, error) {
 // is used to handle import statements. If im is nil, a no-op importer
 // is used.
 func (m *Module) Parse(r io.Reader, im Importer) (*Module, error) {
-	root, err := ast.ParseScript(r)
+	root, err := ast.Parse(r)
 	if err != nil {
 		return nil, err
 	}
@@ -68,20 +68,6 @@ func (m *Module) Insert(n *Module) *Module {
 	}
 
 	return m
-}
-
-// Eval parses an expression in the context of the module. It returns
-// the expression unevaluated, despite the name.
-//
-// BUG: Due to #30, this doesn't usually work as expected, and should
-// probably be avoided for now.
-func (m *Module) Eval(r io.Reader) (Func, error) {
-	expr, err := ast.ParseExpr(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return m.fromExpr(expr.(*ast.NTerm), nil), nil
 }
 
 func (m *Module) Call(frame Frame, args ...Func) Func { // nolint

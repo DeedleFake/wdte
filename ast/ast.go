@@ -5,20 +5,12 @@ import (
 	"io"
 
 	"github.com/DeedleFake/wdte/ast/internal/pgen"
-	expr "github.com/DeedleFake/wdte/ast/internal/pgen/expr"
-	script "github.com/DeedleFake/wdte/ast/internal/pgen/script"
 	"github.com/DeedleFake/wdte/scanner"
 )
 
-// ParseScript parses a full script, returning the root node of the
-// AST.
-func ParseScript(r io.Reader) (Node, error) {
-	return parse(r, tokenStack{pgen.NTerm("script")}, script.Table)
-}
-
-// ParseExpr parses a single expression.
-func ParseExpr(r io.Reader) (Node, error) {
-	return parse(r, tokenStack{pgen.NTerm("expr")}, expr.Table)
+// Parse parses a full script, returning the root node of the AST.
+func Parse(r io.Reader) (Node, error) {
+	return parse(r, tokenStack{pgen.NTerm("script")}, pgen.Table)
 }
 
 func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule) (ast Node, err error) {
