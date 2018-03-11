@@ -1,10 +1,4 @@
-  <script> -> <decls> Ω
-   <decls> -> <decl> <decls>
-            | ε
-    <decl> -> <import>
-            | <funcdecl>
-  <import> -> string => id ;
-<funcdecl> -> <funcmods> id <argdecls> => <expr> ;
+  <script> -> <cexprs> Ω
 <funcmods> -> <funcmod> <funcmods>
             | ε
  <funcmod> -> memo
@@ -25,6 +19,7 @@
             | <switch>
             | <compound>
             | <lambda>
+            | import string
     <func> -> id <subfunc>
  <subfunc> -> . id
             | ε
