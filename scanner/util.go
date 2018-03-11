@@ -24,6 +24,7 @@ var (
 		"default": {},
 		"memo":    {},
 		"let":     {},
+		"import":  {},
 	}
 )
 
