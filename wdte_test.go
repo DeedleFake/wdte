@@ -9,7 +9,11 @@ import (
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/std"
+	_ "github.com/DeedleFake/wdte/std/arrays"
 	"github.com/DeedleFake/wdte/std/io"
+	_ "github.com/DeedleFake/wdte/std/math"
+	_ "github.com/DeedleFake/wdte/std/stream"
+	_ "github.com/DeedleFake/wdte/std/strings"
 )
 
 type test struct {

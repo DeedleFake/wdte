@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std"
 )
 
 // Contains returns true if the second argument is a substring of the
@@ -167,4 +168,8 @@ func Module() *wdte.Module {
 			"format": wdte.GoFunc(Format),
 		},
 	}
+}
+
+func init() {
+	std.Register("strings", Module())
 }

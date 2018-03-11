@@ -11,7 +11,29 @@ import (
 	"strings"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std"
 )
+
+// These variables are what are returned by the cooresponding
+// functions in this package. If a client wants to globally redirect
+// input or output, them may simply change these variables.
+var (
+	Stdin  io.Reader = os.Stdin
+	Stdout io.Writer = os.Stdout
+	Stderr io.Writer = os.Stderr
+)
+
+func stdin(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return Reader{Stdin}
+}
+
+func stdout(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return Writer{Stderr}
+}
+
+func stderr(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return Writer{Stderr}
+}
 
 type reader interface {
 	wdte.Func
@@ -440,9 +462,9 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Module() *wdte.Module {
 	return &wdte.Module{
 		Funcs: map[wdte.ID]wdte.Func{
-			"stdin":  Reader{Reader: os.Stdin},
-			"stdout": Writer{Writer: os.Stdout},
-			"stderr": Writer{Writer: os.Stderr},
+			"stdin":  wdte.GoFunc(stdin),
+			"stdout": wdte.GoFunc(stdout),
+			"stderr": wdte.GoFunc(stderr),
 
 			"seek":  wdte.GoFunc(Seek),
 			"close": wdte.GoFunc(Close),
@@ -461,4 +483,8 @@ func Module() *wdte.Module {
 			"writeln": wdte.GoFunc(Writeln),
 		},
 	}
+}
+
+func init() {
+	std.Register("io", Module())
 }

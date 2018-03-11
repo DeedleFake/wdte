@@ -1,6 +1,9 @@
 package arrays
 
-import "github.com/DeedleFake/wdte"
+import (
+	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std"
+)
 
 // At returns the element at the index of the first argument specified
 // by the second argument. In other words,
@@ -76,4 +79,8 @@ func Module() *wdte.Module {
 			"stream": wdte.GoFunc(Stream),
 		},
 	}
+}
+
+func init() {
+	std.Register("arrays", Module())
 }

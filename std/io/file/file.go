@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std"
 )
 
 // File wraps an os.File, allowing it to be used as a WDTE function.
@@ -75,4 +76,8 @@ func Module() *wdte.Module {
 			"append": wdte.GoFunc(Append),
 		},
 	}
+}
+
+func init() {
+	std.Register("io/file", Module())
 }

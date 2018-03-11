@@ -5,12 +5,6 @@ import (
 	"math"
 
 	"github.com/DeedleFake/wdte"
-	"github.com/DeedleFake/wdte/std/arrays"
-	stdio "github.com/DeedleFake/wdte/std/io"
-	"github.com/DeedleFake/wdte/std/io/file"
-	stdmath "github.com/DeedleFake/wdte/std/math"
-	"github.com/DeedleFake/wdte/std/stream"
-	"github.com/DeedleFake/wdte/std/strings"
 )
 
 func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
@@ -419,30 +413,4 @@ func Module() *wdte.Module {
 			"!":     wdte.GoFunc(Not),
 		},
 	}
-}
-
-// Import provides a simple importer that imports standard library
-// modules.
-var Import = wdte.ImportFunc(stdImporter)
-
-func stdImporter(from string) (*wdte.Module, error) {
-	switch from {
-	case "stream":
-		return stream.Module(), nil
-
-	case "math":
-		return stdmath.Module(), nil
-
-	case "io":
-		return stdio.Module(), nil
-	case "io/file":
-		return file.Module(), nil
-
-	case "strings":
-		return strings.Module(), nil
-	case "arrays":
-		return arrays.Module(), nil
-	}
-
-	return nil, fmt.Errorf("Unknown import: %q", from)
 }
