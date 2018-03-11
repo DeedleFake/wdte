@@ -741,6 +741,12 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	return lambda.Expr.Call(frame.WithScope(frame.Scope().Map(vars)), next...)
 }
 
+// A Let is an expression that maps an expression to an ID. It's used
+// inside compounds to create subscopes, essentially allowing for
+// read-only, shadowable variable declaration.
+//
+// When evaluated, a Let simply passes everything through to its inner
+// expression.
 type Let struct {
 	ID   ID
 	Expr Func
