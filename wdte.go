@@ -555,12 +555,17 @@ func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 		switch f := f.(type) {
 		case *Let:
 			frame = frame.WithScope(frame.Scope().Sub(f.ID, f.Expr))
+			last = f
 		default:
 			last = f.Call(frame)
 			if _, ok := last.(error); ok {
 				return frame.Scope(), last
 			}
 		}
+	}
+
+	if let, ok := last.(*Let); ok {
+		last = let.Expr.Call(frame)
 	}
 
 	return frame.Scope(), last
