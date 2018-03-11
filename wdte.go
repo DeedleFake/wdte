@@ -156,29 +156,19 @@ func F() Frame {
 	}
 }
 
-// New creates a new frame from a previous frame. id should be the ID
-// of the function that generated the frame, and args should be the
-// arguments given to that function. The previous frame is set as the
-// new frame's parent.
-func (f Frame) New(id ID, args map[ID]Func) Frame {
+// New returns a frame with f as its parent and the given ID and
+// scope.
+func (f Frame) New(id ID, scope *Scope) Frame {
 	return Frame{
 		id:    id,
-		scope: S().Map(args),
+		scope: scope,
 		p:     &f,
 	}
 }
 
-// Sub returns a sub-scoped frame that has the variables in scope
-// added to its scope as new tier.
-func (f Frame) Sub(scope map[ID]Func) Frame {
-	f.scope = f.scope.Map(scope)
-	return f
-}
-
-// WithID is a convienence function for creating a frame from another
-// frame with a new ID, the same scope, and the other frame as its
-// parent.
-func (f Frame) WithID(id ID) Frame {
+// Sub returns a frame with f as its parent and the same scope as f,
+// but with the given ID.
+func (f Frame) Sub(id ID) Frame {
 	return Frame{
 		id:    id,
 		scope: f.scope,
@@ -186,8 +176,8 @@ func (f Frame) WithID(id ID) Frame {
 	}
 }
 
-// WithScope returns a frame with the same ID and parent frame as the
-// current one, but with the given scope.
+// WithScope returns a frame with the same ID and parent frame as f,
+// but with the given scope.
 func (f Frame) WithScope(scope *Scope) Frame {
 	return Frame{
 		id:    f.id,
@@ -359,7 +349,7 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 				Err: err,
 
 				// Hmmm...
-				Frame: frame.WithID("panic in GoFunc"),
+				Frame: frame.Sub("panic in GoFunc"),
 			}
 		}
 	}()
@@ -409,7 +399,7 @@ func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
 		vars[f.Args[i]] = arg
 	}
 
-	return f.Expr.Call(frame.New(f.ID, vars), next...)
+	return f.Expr.Call(frame.New(f.ID, S().Map(vars)), next...)
 }
 
 // An Expr is an unevaluated expression. This is usually the
@@ -429,9 +419,7 @@ type Expr struct {
 
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 	n := f.Func.Call(frame, f.Args...)
-	frame = frame.Sub(map[ID]Func{
-		f.Slot: frame.Scope().Freeze(n),
-	})
+	frame = frame.WithScope(frame.Scope().Sub(f.Slot, frame.Scope().Freeze(n)))
 
 	return f.Chain.Call(frame, n)
 }
@@ -451,9 +439,7 @@ type Chain struct {
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
-	frame = frame.Sub(map[ID]Func{
-		f.Slot: frame.Scope().Freeze(n),
-	})
+	frame = frame.WithScope(frame.Scope().Sub(f.Slot, frame.Scope().Freeze(n)))
 
 	return f.Chain.Call(frame, n)
 }
@@ -474,9 +460,7 @@ type IgnoredChain struct {
 
 func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
-	frame = frame.Sub(map[ID]Func{
-		f.Slot: frame.Scope().Freeze(n),
-	})
+	frame = frame.WithScope(frame.Scope().Sub(f.Slot, frame.Scope().Freeze(n)))
 
 	return f.Chain.Call(frame, args[0])
 }
@@ -750,5 +734,5 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		vars[lambda.Args[i]] = arg
 	}
 
-	return lambda.Expr.Call(frame.Sub(vars), next...)
+	return lambda.Expr.Call(frame.WithScope(frame.Scope().Map(vars)), next...)
 }
