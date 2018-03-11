@@ -372,10 +372,9 @@ func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 		next[i] = frame.Scope().Freeze(f.Args[i])
 	}
 
-	n := f.Func.Call(frame, f.Args...)
+	n := f.Func.Call(frame, next...)
 	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
 
-	fmt.Println(frame.Scope().Known())
 	return f.Chain.Call(frame, n)
 }
 
@@ -398,7 +397,7 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 		next[i] = frame.Scope().Freeze(f.Args[i])
 	}
 
-	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
+	n := f.Func.Call(frame, next...).Call(frame, frame.Scope().Freeze(args[0]))
 	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
 
 	return f.Chain.Call(frame, n)
@@ -424,7 +423,7 @@ func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 		next[i] = frame.Scope().Freeze(f.Args[i])
 	}
 
-	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
+	n := f.Func.Call(frame, next...).Call(frame, frame.Scope().Freeze(args[0]))
 	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
 
 	return f.Chain.Call(frame, args[0])
