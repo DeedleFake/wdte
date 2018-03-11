@@ -16,7 +16,7 @@ import "github.com/DeedleFake/wdte"
 // If only given one argument, it returns a function which returns the
 // element at that index of its own argument.
 func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("at")
+	frame = frame.Sub("at")
 
 	switch len(args) {
 	case 0:
@@ -41,7 +41,7 @@ type streamer struct {
 
 // Stream returns a stream that iterates over a given array.
 func Stream(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("stream")
+	frame = frame.Sub("stream")
 
 	switch len(args) {
 	case 0:

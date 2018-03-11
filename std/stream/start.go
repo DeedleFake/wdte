@@ -15,7 +15,7 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(New)
 	}
 
-	frame = frame.WithID("new")
+	frame = frame.Sub("new")
 
 	var a array
 	for _, arg := range args {
@@ -65,7 +65,7 @@ func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Range)
 	}
 
-	frame = frame.WithID("range")
+	frame = frame.Sub("range")
 
 	switch len(args) {
 	case 1:
@@ -118,7 +118,7 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		})
 	}
 
-	frame = frame.WithID("concat")
+	frame = frame.Sub("concat")
 
 	var i int
 	cur := args[0].Call(frame).(Stream)

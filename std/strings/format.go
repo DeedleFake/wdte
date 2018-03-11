@@ -33,7 +33,7 @@ import (
 //
 // TODO: Add more flags.
 func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("format")
+	frame = frame.Sub("format")
 
 	switch len(args) {
 	case 0:

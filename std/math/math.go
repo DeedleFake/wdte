@@ -19,7 +19,7 @@ func Sin(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Sin)
 	}
 
-	frame = frame.WithID("sin")
+	frame = frame.Sub("sin")
 
 	a := args[0].Call(frame).(wdte.Number)
 	return wdte.Number(math.Sin(float64(a)))
@@ -31,7 +31,7 @@ func Cos(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Cos)
 	}
 
-	frame = frame.WithID("cos")
+	frame = frame.Sub("cos")
 
 	a := args[0].Call(frame).(wdte.Number)
 	return wdte.Number(math.Cos(float64(a)))
@@ -43,7 +43,7 @@ func Tan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Tan)
 	}
 
-	frame = frame.WithID("tan")
+	frame = frame.Sub("tan")
 
 	a := args[0].Call(frame).(wdte.Number)
 	return wdte.Number(math.Tan(float64(a)))
@@ -55,7 +55,7 @@ func Floor(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Floor)
 	}
 
-	frame = frame.WithID("floor")
+	frame = frame.Sub("floor")
 
 	a := args[0].Call(frame).(wdte.Number)
 	return wdte.Number(math.Floor(float64(a)))
@@ -67,7 +67,7 @@ func Ceil(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Ceil)
 	}
 
-	frame = frame.WithID("ceil")
+	frame = frame.Sub("ceil")
 
 	a := args[0].Call(frame).(wdte.Number)
 	return wdte.Number(math.Ceil(float64(a)))
@@ -79,7 +79,7 @@ func Abs(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Abs)
 	}
 
-	frame = frame.WithID("abs")
+	frame = frame.Sub("abs")
 
 	a := args[0].Call(frame).(wdte.Number)
 	return wdte.Number(math.Abs(float64(a)))

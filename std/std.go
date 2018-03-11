@@ -27,7 +27,7 @@ func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Add), args...)
 	}
 
-	frame = frame.WithID("+")
+	frame = frame.Sub("+")
 
 	var sum wdte.Number
 	for _, arg := range args {
@@ -48,7 +48,7 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Sub), args...)
 	}
 
-	frame = frame.WithID("-")
+	frame = frame.Sub("-")
 
 	a1 := args[0].Call(frame)
 	if _, ok := a1.(error); ok {
@@ -71,7 +71,7 @@ func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Mult), args...)
 	}
 
-	frame = frame.WithID("*")
+	frame = frame.Sub("*")
 
 	p := wdte.Number(1)
 	for _, arg := range args {
@@ -92,7 +92,7 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Div), args...)
 	}
 
-	frame = frame.WithID("/")
+	frame = frame.Sub("/")
 
 	a1 := args[0].Call(frame)
 	if _, ok := a1.(error); ok {
@@ -115,7 +115,7 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Mod), args...)
 	}
 
-	frame = frame.WithID("%")
+	frame = frame.Sub("%")
 
 	a1 := args[0].Call(frame)
 	if _, ok := a1.(error); ok {
@@ -338,7 +338,7 @@ func False(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // And returns true if all of its arguments are true.
 func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("&&")
+	frame = frame.Sub("&&")
 
 	switch len(args) {
 	case 0:
@@ -357,7 +357,7 @@ func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Or returns true if any of its arguments are true.
 func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("||")
+	frame = frame.Sub("||")
 
 	switch len(args) {
 	case 0:
@@ -377,7 +377,7 @@ func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Not returns true if its argument isn't. Otherwise, it returns
 // false.
 func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("!")
+	frame = frame.Sub("!")
 
 	switch len(args) {
 	case 0:
