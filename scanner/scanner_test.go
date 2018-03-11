@@ -115,6 +115,22 @@ o => print "double\n" 'single\\';`,
 				{Type: scanner.EOF},
 			},
 		},
+		{
+			name: "LetExpr",
+			in:   `let add x y => + x y ;`,
+			out: []scanner.Token{
+				{Type: scanner.Keyword, Val: "let"},
+				{Type: scanner.ID, Val: "add"},
+				{Type: scanner.ID, Val: "x"},
+				{Type: scanner.ID, Val: "y"},
+				{Type: scanner.Keyword, Val: "=>"},
+				{Type: scanner.ID, Val: "+"},
+				{Type: scanner.ID, Val: "x"},
+				{Type: scanner.ID, Val: "y"},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.EOF},
+			},
+		},
 	}
 
 	for _, test := range tests {
