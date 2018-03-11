@@ -392,25 +392,29 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // these functions, you can use
 //
 //     m, err := std.Module().Parse(r, im)
-func Module() *wdte.Module {
-	return &wdte.Module{
-		Funcs: map[wdte.ID]wdte.Func{
-			"+": wdte.GoFunc(Add),
-			"-": wdte.GoFunc(Sub),
-			"*": wdte.GoFunc(Mult),
-			"/": wdte.GoFunc(Div),
-			"%": wdte.GoFunc(Mod),
+func Module() *wdte.Scope {
+	return wdte.S().Map(map[wdte.ID]wdte.Func{
+		"+": wdte.GoFunc(Add),
+		"-": wdte.GoFunc(Sub),
+		"*": wdte.GoFunc(Mult),
+		"/": wdte.GoFunc(Div),
+		"%": wdte.GoFunc(Mod),
 
-			"==":    wdte.GoFunc(Equals),
-			"<":     wdte.GoFunc(Less),
-			">":     wdte.GoFunc(Greater),
-			"<=":    wdte.GoFunc(LessEqual),
-			">=":    wdte.GoFunc(GreaterEqual),
-			"true":  wdte.GoFunc(True),
-			"false": wdte.GoFunc(False),
-			"&&":    wdte.GoFunc(And),
-			"||":    wdte.GoFunc(Or),
-			"!":     wdte.GoFunc(Not),
-		},
-	}
+		"==":    wdte.GoFunc(Equals),
+		"<":     wdte.GoFunc(Less),
+		">":     wdte.GoFunc(Greater),
+		"<=":    wdte.GoFunc(LessEqual),
+		">=":    wdte.GoFunc(GreaterEqual),
+		"true":  wdte.GoFunc(True),
+		"false": wdte.GoFunc(False),
+		"&&":    wdte.GoFunc(And),
+		"||":    wdte.GoFunc(Or),
+		"!":     wdte.GoFunc(Not),
+	})
+}
+
+// F returns a top-level frame that has the various functions in this
+// package already in scope.
+func F() wdte.Frame {
+	return wdte.F().WithScope(Module())
 }

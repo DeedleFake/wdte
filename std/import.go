@@ -11,10 +11,10 @@ var (
 	// modules.
 	Import = wdte.ImportFunc(stdImporter)
 
-	modules = make(map[string]*wdte.Module)
+	modules = make(map[string]*wdte.Scope)
 )
 
-func stdImporter(from string) (*wdte.Module, error) {
+func stdImporter(from string) (*wdte.Scope, error) {
 	if m, ok := modules[from]; ok {
 		return m, nil
 	}
@@ -23,6 +23,6 @@ func stdImporter(from string) (*wdte.Module, error) {
 }
 
 // Register registers a module for importing by Import.
-func Register(name string, module *wdte.Module) {
+func Register(name string, module *wdte.Scope) {
 	modules[name] = module
 }
