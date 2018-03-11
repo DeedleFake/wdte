@@ -10,7 +10,7 @@ import (
 // Parse parses an AST from r and then translates it into a module. im
 // is used to handle import statements. If im is nil, a no-op importer
 // is used.
-func Parse(r io.Reader, im Importer) (*Compound, error) {
+func Parse(r io.Reader, im Importer) (Compound, error) {
 	root, err := ast.Parse(r)
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func Parse(r io.Reader, im Importer) (*Compound, error) {
 
 // FromAST translates an AST into a module. im is used to handle
 // import statements. If im is nil, a no-op importer is used.
-func FromAST(root ast.Node, im Importer) (*Compound, error) {
+func FromAST(root ast.Node, im Importer) (Compound, error) {
 	if im == nil {
 		im = ImportFunc(defaultImporter)
 	}
@@ -217,7 +217,7 @@ func (s *Scope) Sub(id ID, val Func) *Scope {
 		},
 		getFunc: func(g ID) Func {
 			if g == id {
-				return val
+				return s.Freeze(val)
 			}
 
 			return s.Get(g)
@@ -240,7 +240,7 @@ func (s *Scope) Map(vars map[ID]Func) *Scope {
 		known: known,
 		getFunc: func(g ID) Func {
 			if v, ok := vars[g]; ok {
-				return v
+				return s.Freeze(v)
 			}
 
 			return s.Get(g)
@@ -307,6 +307,10 @@ func (s *Scope) Known() []ID {
 	return list
 }
 
+func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
+	return s
+}
+
 // A GoFunc is an implementation of Func that calls a Go function.
 // This is the easiest way to implement lower-level systems for WDTE
 // scripts to make use of.
@@ -347,51 +351,6 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 	return f(frame, args...)
 }
 
-// A DeclFunc is a function that was declared in a WDTE function
-// declaration. This is the primary source of the frame argument that
-// is passed around everywhere.
-type DeclFunc struct {
-	// ID is the name that the function was declared with. This is
-	// primarily for debugging.
-	ID ID
-
-	// Expr is the expression that the function maps to.
-	Expr Func
-
-	Args []ID
-
-	// Stored is the arguments that have already been passed to a
-	// function if it was given less arguments than it was declared
-	// with.
-	Stored []Func
-}
-
-func (f DeclFunc) Call(frame Frame, args ...Func) Func { // nolint
-	if len(f.Stored)+len(args) < len(f.Args) {
-		return &DeclFunc{
-			ID:     f.ID,
-			Expr:   f.Expr,
-			Args:   f.Args,
-			Stored: append(f.Stored, args...),
-		}
-	}
-
-	next := make([]Func, 0, len(f.Stored)+len(args))
-	for _, arg := range f.Stored {
-		next = append(next, frame.Scope().Freeze(arg))
-	}
-	for _, arg := range args {
-		next = append(next, frame.Scope().Freeze(arg))
-	}
-
-	vars := make(map[ID]Func, len(f.Args))
-	for i, arg := range next {
-		vars[f.Args[i]] = arg
-	}
-
-	return f.Expr.Call(frame.New(f.ID, S().Map(vars)), next...)
-}
-
 // An Expr is an unevaluated expression. This is usually the
 // right-hand side of a function declaration, but could also be any of
 // various pieces of switches, compounds, or arrays.
@@ -408,9 +367,15 @@ type Expr struct {
 }
 
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
-	n := f.Func.Call(frame, f.Args...)
-	frame = frame.WithScope(frame.Scope().Sub(f.Slot, frame.Scope().Freeze(n)))
+	next := make([]Func, len(f.Args))
+	for i := range f.Args {
+		next[i] = frame.Scope().Freeze(f.Args[i])
+	}
 
+	n := f.Func.Call(frame, f.Args...)
+	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
+
+	fmt.Println(frame.Scope().Known())
 	return f.Chain.Call(frame, n)
 }
 
@@ -428,8 +393,13 @@ type Chain struct {
 }
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
+	next := make([]Func, len(f.Args))
+	for i := range f.Args {
+		next[i] = frame.Scope().Freeze(f.Args[i])
+	}
+
 	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
-	frame = frame.WithScope(frame.Scope().Sub(f.Slot, frame.Scope().Freeze(n)))
+	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
 
 	return f.Chain.Call(frame, n)
 }
@@ -449,8 +419,13 @@ type IgnoredChain struct {
 }
 
 func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
+	next := make([]Func, len(f.Args))
+	for i := range f.Args {
+		next[i] = frame.Scope().Freeze(f.Args[i])
+	}
+
 	n := f.Func.Call(frame, f.Args...).Call(frame, args[0])
-	frame = frame.WithScope(frame.Scope().Sub(f.Slot, frame.Scope().Freeze(n)))
+	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
 
 	return f.Chain.Call(frame, args[0])
 }
@@ -529,7 +504,7 @@ func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 	}
 
 	if let, ok := last.(*Let); ok {
-		last = let.Expr.Call(frame)
+		last = let.Call(frame)
 	}
 
 	return frame.Scope(), last
@@ -675,34 +650,39 @@ type Lambda struct {
 
 	// Stored is the arguments that have already been passed to a
 	// lambda if it was given less arguments than it was declared with.
-	Stored []Func
+	Stored *Scope
+
+	Original *Lambda
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
-	if len(lambda.Stored)+len(args) < len(lambda.Args) {
+	stored := lambda.Stored
+	if stored == nil {
+		stored = frame.Scope()
+	}
+
+	original := lambda.Original
+	if original == nil {
+		original = lambda
+	}
+
+	vars := make(map[ID]Func, len(args))
+	for i := range args {
+		vars[lambda.Args[i]] = args[i]
+	}
+
+	if len(args) < len(lambda.Args) {
 		return &Lambda{
-			ID:     lambda.ID,
-			Expr:   lambda.Expr,
-			Args:   lambda.Args,
-			Stored: append(lambda.Stored, args...),
+			ID:       lambda.ID,
+			Expr:     lambda.Expr,
+			Args:     lambda.Args[:len(args)],
+			Stored:   stored.Map(vars),
+			Original: original,
 		}
 	}
 
-	next := make([]Func, 0, len(lambda.Args))
-	for _, arg := range lambda.Stored {
-		next = append(next, frame.Scope().Freeze(arg))
-	}
-	for _, arg := range args {
-		next = append(next, frame.Scope().Freeze(arg))
-	}
-
-	vars := make(map[ID]Func, 1+len(lambda.Args))
-	vars[lambda.ID] = lambda
-	for i, arg := range next {
-		vars[lambda.Args[i]] = arg
-	}
-
-	return lambda.Expr.Call(frame.WithScope(frame.Scope().Map(vars)), next...)
+	scope := stored.Map(vars).Sub(original.ID, original)
+	return lambda.Expr.Call(frame.WithScope(scope))
 }
 
 // A Let is an expression that maps an expression to an ID. It's used
