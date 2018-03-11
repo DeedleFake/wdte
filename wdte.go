@@ -546,16 +546,29 @@ func (local Local) Compare(other Func) (int, bool) { // nolint
 // one. If the compound is empty, nil is returned.
 type Compound []Func
 
-func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
+// Collect executes the compound the same as Call, but also returns
+// the collected scope that has been modified by let expressions
+// alongside the usual return value.
+func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 	var last Func
 	for _, f := range c {
-		last = f.Call(frame)
-		if _, ok := last.(error); ok {
-			return last
+		switch f := f.(type) {
+		case *Let:
+			frame = frame.WithScope(frame.Scope().Sub(f.ID, f.Expr))
+		default:
+			last = f.Call(frame)
+			if _, ok := last.(error); ok {
+				return frame.Scope(), last
+			}
 		}
 	}
 
-	return last
+	return frame.Scope(), last
+}
+
+func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
+	_, f := c.Collect(frame, args...)
+	return f
 }
 
 // Switch represents a switch expression.
@@ -721,4 +734,13 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	return lambda.Expr.Call(frame.WithScope(frame.Scope().Map(vars)), next...)
+}
+
+type Let struct {
+	ID   ID
+	Expr Func
+}
+
+func (let *Let) Call(frame Frame, args ...Func) Func { // nolint
+	return let.Expr.Call(frame, args...)
 }

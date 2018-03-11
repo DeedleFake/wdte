@@ -222,7 +222,7 @@ func TestBasics(t *testing.T) {
 		},
 		{
 			name:   "Let",
-			script: `main => (let x => 3; x)`,
+			script: `main => (let x => 3; x);`,
 			ret:    wdte.Number(3),
 		},
 	})

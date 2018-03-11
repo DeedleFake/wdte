@@ -115,6 +115,32 @@ func (m *Module) fromExpr(expr *ast.NTerm, scope []ID) Func {
 	}
 }
 
+func (m *Module) fromLetExpr(expr *ast.NTerm, scope []ID) Func {
+	mods := m.fromFuncMods(expr.Children()[1].(*ast.NTerm))
+	id := ID(expr.Children()[2].(*ast.Term).Tok().Val.(string))
+	args := m.fromArgDecls(flatten(expr.Children()[3].(*ast.NTerm), 1, 0))
+	scope = append(scope, id)
+	scope = append(scope, args...)
+	inner := m.fromExpr(expr.Children()[5].(*ast.NTerm), scope)
+
+	if mods&funcModMemo != 0 {
+		inner = &Memo{
+			Func: inner,
+		}
+	}
+
+	lambda := &Lambda{
+		ID:   id,
+		Expr: inner,
+		Args: args,
+	}
+
+	return &Let{
+		ID:   id,
+		Expr: lambda,
+	}
+}
+
 func (m *Module) fromSlot(expr *ast.NTerm) ID {
 	if _, ok := expr.Children()[0].(*ast.Epsilon); ok {
 		return ""
@@ -233,10 +259,6 @@ loop:
 
 func (m *Module) fromCompound(compound *ast.NTerm, scope []ID) Func {
 	exprs := flatten(compound.Children()[1].(*ast.NTerm), 2, 0)
-	if len(exprs) == 1 {
-		return m.fromExpr(exprs[0].(*ast.NTerm), scope)
-	}
-
 	return Compound(m.fromExprs(exprs, scope))
 }
 
@@ -264,7 +286,14 @@ func (m *Module) fromLambda(lambda *ast.NTerm, scope []ID) (f Func) {
 func (m *Module) fromExprs(exprs []ast.Node, scope []ID) []Func {
 	funcs := make([]Func, 0, len(exprs))
 	for _, expr := range exprs {
-		funcs = append(funcs, m.fromExpr(expr.(*ast.NTerm), scope))
+		switch expr := expr.(*ast.NTerm); expr.Name() {
+		case "expr":
+			funcs = append(funcs, m.fromExpr(expr, scope))
+		case "letexpr":
+			let := m.fromLetExpr(expr, scope)
+			funcs = append(funcs, let)
+			scope = append(scope, let.(*Let).ID)
+		}
 	}
 
 	return funcs
