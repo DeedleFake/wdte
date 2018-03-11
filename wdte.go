@@ -665,19 +665,24 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		original = lambda
 	}
 
-	vars := make(map[ID]Func, len(args))
-	for i := range args {
-		vars[lambda.Args[i]] = args[i]
-	}
-
 	if len(args) < len(lambda.Args) {
+		vars := make(map[ID]Func, len(args))
+		for i := range args {
+			vars[lambda.Args[i]] = args[i]
+		}
+
 		return &Lambda{
 			ID:       lambda.ID,
 			Expr:     lambda.Expr,
-			Args:     lambda.Args[:len(args)],
+			Args:     lambda.Args[len(args):],
 			Stored:   stored.Map(vars),
 			Original: original,
 		}
+	}
+
+	vars := make(map[ID]Func, len(args))
+	for i := range lambda.Args {
+		vars[lambda.Args[i]] = args[i]
 	}
 
 	scope := stored.Map(vars).Sub(original.ID, original)
