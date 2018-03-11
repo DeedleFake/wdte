@@ -100,6 +100,37 @@ func runTests(t *testing.T, tests []test) {
 }
 
 func TestBasics(t *testing.T) {
+	t.Run("ScopeKnown", func(t *testing.T) {
+		scope := wdte.S()
+		scope = scope.Sub("x", wdte.Number(3))
+		scope = scope.Sub("test", wdte.String("This is a test."))
+		scope = scope.Map(map[wdte.ID]wdte.Func{
+			"q":    wdte.String("Other"),
+			"test": wdte.String("Or is it?"),
+		})
+
+		known := scope.Known()
+		if len(known) != 3 {
+			t.Errorf("Expected to find 3 variables in scope. Found %v", len(known))
+		}
+
+		var found int
+		for _, id := range known {
+			switch id {
+			case "x", "test", "q":
+				found++
+			}
+		}
+		if found != 3 {
+			t.Errorf("Expected to find %q, %q, and %q in scope.\nFound %v",
+				"x",
+				"test",
+				"q",
+				known,
+			)
+		}
+	})
+
 	runTests(t, []test{
 		{
 			name:   "Simple",
