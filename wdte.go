@@ -226,6 +226,7 @@ func (f *Frame) backtrace(w io.Writer) error {
 // a blank, top-level scope.
 type Scope struct {
 	p       *Scope
+	known   map[ID]struct{}
 	getFunc func(id ID) Func
 }
 
@@ -249,6 +250,9 @@ func (s *Scope) Get(id ID) Func {
 func (s *Scope) Sub(id ID, val Func) *Scope {
 	return &Scope{
 		p: s,
+		known: map[ID]struct{}{
+			id: struct{}{},
+		},
 		getFunc: func(g ID) Func {
 			if g == id {
 				return val
@@ -264,8 +268,14 @@ func (s *Scope) Sub(id ID, val Func) *Scope {
 // the map after passing it to this method may result in undefined
 // behavior.
 func (s *Scope) Map(vars map[ID]Func) *Scope {
+	known := make(map[ID]struct{}, len(vars))
+	for v := range vars {
+		known[v] = struct{}{}
+	}
+
 	return &Scope{
-		p: s,
+		p:     s,
+		known: known,
 		getFunc: func(g ID) Func {
 			if v, ok := vars[g]; ok {
 				return v
@@ -277,10 +287,17 @@ func (s *Scope) Map(vars map[ID]Func) *Scope {
 }
 
 // Custom returns a new subscope that uses the given lookup function
-// to retrieve values.
-func (s *Scope) Custom(getFunc func(ID) Func) *Scope {
+// to retrieve values. vars is an optional list of known variables for
+// listing purposes.
+func (s *Scope) Custom(getFunc func(ID) Func, vars ...ID) *Scope {
+	known := make(map[ID]struct{}, len(vars))
+	for _, v := range vars {
+		known[v] = struct{}{}
+	}
+
 	return &Scope{
 		p:       s,
+		known:   known,
 		getFunc: getFunc,
 	}
 }
@@ -301,6 +318,31 @@ func (s *Scope) Freeze(f Func) Func {
 		Func:  f,
 		Scope: s,
 	}
+}
+
+func (s *Scope) knownSet(vars map[ID]struct{}) {
+	if s == nil {
+		return
+	}
+
+	for v := range s.known {
+		vars[v] = struct{}{}
+	}
+
+	s.p.knownSet(vars)
+}
+
+// Known returns a list of variables that are in scope in an undefined
+// order.
+func (s *Scope) Known() []ID {
+	vars := make(map[ID]struct{})
+	s.knownSet(vars)
+
+	var list []ID
+	for v := range vars {
+		list = append(list, v)
+	}
+	return list
 }
 
 // A GoFunc is an implementation of Func that calls a Go function.
