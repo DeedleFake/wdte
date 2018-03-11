@@ -19,7 +19,7 @@
             | <switch>
             | <compound>
             | <lambda>
-            | import string
+            | <import>
     <func> -> id <subfunc>
  <subfunc> -> . id
             | ε
@@ -36,5 +36,6 @@
             | ε
   <lambda> -> (@ <funcmods> id <argdecls> => <expr> ; )
  <letexpr> -> let <funcmods> id <argdecls> => <expr>
+   <import> -> import string
 
 # vim: ts=2 sw=2 et
