@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std"
 )
 
 type reader interface {
@@ -461,4 +462,8 @@ func Module() *wdte.Module {
 			"writeln": wdte.GoFunc(Writeln),
 		},
 	}
+}
+
+func init() {
+	std.Register("io", Module())
 }

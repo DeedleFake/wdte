@@ -2,7 +2,10 @@
 // data.
 package stream
 
-import "github.com/DeedleFake/wdte"
+import (
+	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std"
+)
 
 // A Stream is a type of function that can yield successive values.
 type Stream interface {
@@ -49,4 +52,8 @@ func Module() *wdte.Module {
 			"all": wdte.GoFunc(All),
 		},
 	}
+}
+
+func init() {
+	std.Register("stream", Module())
 }

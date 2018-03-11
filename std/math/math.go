@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std"
 )
 
 // Pi ignores its arguments and returns π as a wdte.Number.
@@ -103,4 +104,8 @@ func Module() *wdte.Module {
 			"abs":   wdte.GoFunc(Abs),
 		},
 	}
+}
+
+func init() {
+	std.Register("math", Module())
 }
