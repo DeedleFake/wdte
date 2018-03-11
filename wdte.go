@@ -7,71 +7,28 @@ import (
 	"github.com/DeedleFake/wdte/ast"
 )
 
-// A Module is the result of parsing a WDTE script. It is the main
-// type of this entire library.
-type Module struct {
-	// Funcs maps IDs to functions. WDTE import statements and function
-	// declarations create these when parsed.
-	Funcs map[ID]Func
-}
-
 // Parse parses an AST from r and then translates it into a module. im
 // is used to handle import statements. If im is nil, a no-op importer
 // is used.
-func Parse(r io.Reader, im Importer) (*Module, error) {
-	return new(Module).Parse(r, im)
-}
-
-// FromAST translates an AST into a module. im is used to handle
-// import statements. If im is nil, a no-op importer is used.
-func FromAST(root ast.Node, im Importer) (*Module, error) {
-	return new(Module).FromAST(root, im)
-}
-
-// Parse parses an AST from r and then translates it into a module. im
-// is used to handle import statements. If im is nil, a no-op importer
-// is used.
-func (m *Module) Parse(r io.Reader, im Importer) (*Module, error) {
+func Parse(r io.Reader, im Importer) (*Compound, error) {
 	root, err := ast.Parse(r)
 	if err != nil {
 		return nil, err
 	}
 
-	return m.FromAST(root, im)
+	return FromAST(root, im)
 }
 
 // FromAST translates an AST into a module. im is used to handle
 // import statements. If im is nil, a no-op importer is used.
-func (m *Module) FromAST(root ast.Node, im Importer) (*Module, error) {
-	return m.fromScript(root.(*ast.NTerm), im)
-}
-
-// Insert inserts the functions from n into m. This is different from
-// an import as the functions are inserted into m's namespace. This is
-// the preferred way of using the standard library.
-//
-// Insert returns m to allow for chaining.
-func (m *Module) Insert(n *Module) *Module {
-	if n == nil {
-		return m
+func FromAST(root ast.Node, im Importer) (*Compound, error) {
+	if im == nil {
+		im = ImportFunc(defaultImporter)
 	}
 
-	if m.Funcs == nil {
-		m.Funcs = make(map[ID]Func)
-	}
-
-	for id := range n.Funcs {
-		m.Funcs[id] = Local{
-			Module: n,
-			Func:   id,
-		}
-	}
-
-	return m
-}
-
-func (m *Module) Call(frame Frame, args ...Func) Func { // nolint
-	return m
+	return (&translator{
+		im: im,
+	}).fromScript(root.(*ast.NTerm))
 }
 
 // An Importer creates modules from strings. When parsing a WDTE
@@ -87,14 +44,19 @@ func (m *Module) Call(frame Frame, args ...Func) Func { // nolint
 //
 // The return value will then be added to the module's Funcs map.
 type Importer interface {
-	Import(from string) (*Module, error)
+	Import(from string) (*Scope, error)
+}
+
+func defaultImporter(from string) (*Scope, error) {
+	// TODO: This should probably do something else.
+	return nil, nil
 }
 
 // ImportFunc is a wrapper around simple functions to allow them to be
 // used as Importers.
-type ImportFunc func(from string) (*Module, error)
+type ImportFunc func(from string) (*Scope, error)
 
-func (f ImportFunc) Import(from string) (*Module, error) { // nolint
+func (f ImportFunc) Import(from string) (*Scope, error) { // nolint
 	return f(from)
 }
 
@@ -502,38 +464,31 @@ func (f EndChain) Call(frame Frame, args ...Func) Func { // nolint
 	return args[0]
 }
 
-// External represents a function from an imported module. It looks
-// the function up when called, so it is safe to pass Externals around
-// before importing, so long as they are not evaluated until after
-// importing.
-type External struct {
-	// Module is the module that the function was called from. This is
-	// *not* the module that the function was declared in. Unless, for
-	// some reason, the module has itself as an import.
-	Module *Module
+// A Sub is a function that is in a subscope. This is most commonly an
+// imported function.
+type Sub struct {
+	// Module is a function that returns the subscope. If it does not
+	// return a subscope, calling the Sub will fail.
+	Module Func
 
-	// Import is the expression on the left-hand side of an external
-	// function call. If this does not return a module, the call will
-	// fail.
-	Import Func
-
-	// Func is the ID of the function in the module it was declared in.
+	// Func is the ID of the function being called.
 	Func ID
 }
 
-func (e External) Call(frame Frame, args ...Func) Func { // nolint
-	im := e.Import.Call(frame)
-	i, ok := im.(*Module)
+func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
+	ns := sub.Module.Call(frame)
+	scope, ok := ns.(*Scope)
 	if !ok {
 		return Error{
-			Err:   fmt.Errorf("Function called on non-module %#v", im),
+			Err:   fmt.Errorf("Function called on non-scope %#v", ns),
 			Frame: frame,
 		}
 	}
-	f, ok := i.Funcs[e.Func]
-	if !ok {
+
+	f := scope.Get(sub.Func)
+	if f == nil {
 		return Error{
-			Err:   fmt.Errorf("Function %q does not exist in import %q", e.Func, e.Import),
+			Err:   fmt.Errorf("Function %q does not exist in subscope", sub.Func),
 			Frame: frame,
 		}
 	}
@@ -541,42 +496,9 @@ func (e External) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Call(frame, args...)
 }
 
-func (e External) Compare(other Func) (int, bool) { // nolint
-	o, ok := other.(External)
-	if ok && (e.Import == o.Import) && (e.Func == o.Func) {
-		return 0, false
-	}
-
-	return -1, false
-}
-
-// Local represents a function from a module, usually the current one.
-// It looks the function up when called, so it is safe to pass Locals
-// around before importing, so long as they are not evaluated until
-// after importing.
-type Local struct {
-	// Module is the module that the function was declared in.
-	Module *Module
-
-	// Func is the ID of the function in the module.
-	Func ID
-}
-
-func (local Local) Call(frame Frame, args ...Func) Func { // nolint
-	f, ok := local.Module.Funcs[local.Func]
-	if !ok {
-		return Error{
-			Err:   fmt.Errorf("Function %q does not exist", local.Func),
-			Frame: frame,
-		}
-	}
-
-	return f.Call(frame, args...)
-}
-
-func (local Local) Compare(other Func) (int, bool) { // nolint
-	o, ok := other.(Local)
-	if ok && (local.Func == o.Func) {
+func (sub Sub) Compare(other Func) (int, bool) { // nolint
+	o, ok := other.(Sub)
+	if ok && (sub.Module == o.Module) && (sub.Func == o.Func) {
 		return 0, false
 	}
 
