@@ -32,7 +32,7 @@ func FromAST(root ast.Node, im Importer) (*Module, error) {
 // is used to handle import statements. If im is nil, a no-op importer
 // is used.
 func (m *Module) Parse(r io.Reader, im Importer) (*Module, error) {
-	root, err := ast.ParseScript(r)
+	root, err := ast.Parse(r)
 	if err != nil {
 		return nil, err
 	}
@@ -68,20 +68,6 @@ func (m *Module) Insert(n *Module) *Module {
 	}
 
 	return m
-}
-
-// Eval parses an expression in the context of the module. It returns
-// the expression unevaluated, despite the name.
-//
-// BUG: Due to #30, this doesn't usually work as expected, and should
-// probably be avoided for now.
-func (m *Module) Eval(r io.Reader) (Func, error) {
-	expr, err := ast.ParseExpr(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return m.fromExpr(expr.(*ast.NTerm), nil), nil
 }
 
 func (m *Module) Call(frame Frame, args ...Func) Func { // nolint
@@ -560,16 +546,34 @@ func (local Local) Compare(other Func) (int, bool) { // nolint
 // one. If the compound is empty, nil is returned.
 type Compound []Func
 
-func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
+// Collect executes the compound the same as Call, but also returns
+// the collected scope that has been modified by let expressions
+// alongside the usual return value.
+func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 	var last Func
 	for _, f := range c {
-		last = f.Call(frame)
-		if _, ok := last.(error); ok {
-			return last
+		switch f := f.(type) {
+		case *Let:
+			frame = frame.WithScope(frame.Scope().Sub(f.ID, f.Expr))
+			last = f
+		default:
+			last = f.Call(frame)
+			if _, ok := last.(error); ok {
+				return frame.Scope(), last
+			}
 		}
 	}
 
-	return last
+	if let, ok := last.(*Let); ok {
+		last = let.Expr.Call(frame)
+	}
+
+	return frame.Scope(), last
+}
+
+func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
+	_, f := c.Collect(frame, args...)
+	return f
 }
 
 // Switch represents a switch expression.
@@ -735,4 +739,13 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	return lambda.Expr.Call(frame.WithScope(frame.Scope().Map(vars)), next...)
+}
+
+type Let struct {
+	ID   ID
+	Expr Func
+}
+
+func (let *Let) Call(frame Frame, args ...Func) Func { // nolint
+	return let.Expr.Call(frame, args...)
 }

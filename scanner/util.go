@@ -23,6 +23,7 @@ var (
 		"switch":  {},
 		"default": {},
 		"memo":    {},
+		"let":     {},
 	}
 )
 

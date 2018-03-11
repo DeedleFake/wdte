@@ -220,6 +220,26 @@ func TestBasics(t *testing.T) {
 			script: `main => ! true;`,
 			ret:    wdte.Bool(false),
 		},
+		{
+			name:   "Let",
+			script: `main => (let x => 3; x);`,
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "Let/Args",
+			script: `main => (let add x y => + x y; add 3 5);`,
+			ret:    wdte.Number(8),
+		},
+		{
+			name:   "Let/Inner",
+			script: `main => (let x => 3; (let x => 5); x);`,
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "Let/Return",
+			script: `main => (let x => 3);`,
+			ret:    wdte.Number(3),
+		},
 	})
 }
 

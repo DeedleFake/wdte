@@ -30,12 +30,16 @@
             | ε
    <array> -> [ <exprs> ]
   <switch> -> switch <expr> { <switches> }
-<compound> -> ( <exprs> )
+<compound> -> ( <cexprs> )
    <exprs> -> <expr> ; <exprs>
             | ε
 <switches> -> <expr> => <expr> ; <switches>
             | default => <expr> ; <switches>
             | ε
+  <cexprs> -> <expr> ; <cexprs>
+            | <letexpr> ; <cexprs>
+            | ε
   <lambda> -> (@ <funcmods> id <argdecls> => <expr> ; )
+ <letexpr> -> let <funcmods> id <argdecls> => <expr>
 
 # vim: ts=2 sw=2 et
