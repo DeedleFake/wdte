@@ -44,14 +44,9 @@ func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		})
 	}
 
-	next := make([]wdte.Func, 0, len(args))
-	for _, arg := range args {
-		next = append(next, arg.Call(frame))
-	}
-
 	var i int
 	var out bytes.Buffer
-	s := strings.NewReader(string(next[0].(wdte.String)))
+	s := strings.NewReader(string(args[0].Call(frame).(wdte.String)))
 	for {
 		r, _, err := s.ReadRune()
 		if err != nil {
@@ -99,7 +94,7 @@ func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		}
 
 		i++
-		out.WriteString(flags.Format(next[i]))
+		out.WriteString(flags.Format(args[i].Call(frame)))
 	}
 }
 
