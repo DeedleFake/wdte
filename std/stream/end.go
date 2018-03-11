@@ -14,7 +14,7 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Collect)
 	}
 
-	frame = frame.WithID("collect")
+	frame = frame.Sub("collect")
 
 	a, ok := args[0].Call(frame).(Stream)
 	if !ok {
@@ -53,7 +53,7 @@ func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Drain)
 	}
 
-	frame = frame.WithID("drain")
+	frame = frame.Sub("drain")
 
 	s := args[0].Call(frame).(Stream)
 	for {
@@ -82,7 +82,7 @@ func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // until the stream is empty, at which point it returns the most
 // recent output from the reduction function.
 func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("reduce")
+	frame = frame.Sub("reduce")
 
 	switch len(args) {
 	case 0:
@@ -119,7 +119,7 @@ func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //		return wdte.GoFunc(Chain)
 //	}
 //
-//	frame = frame.WithID("call")
+//	frame = frame.Sub("call")
 //
 //	a, ok := args[0].Call(frame).(Stream)
 //	if !ok {
@@ -165,7 +165,7 @@ func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		})
 	}
 
-	frame = frame.WithID("any")
+	frame = frame.Sub("any")
 
 	s := args[0].Call(frame).(Stream)
 	f := args[1].Call(frame)
@@ -201,7 +201,7 @@ func All(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		})
 	}
 
-	frame = frame.WithID("all")
+	frame = frame.Sub("all")
 
 	s := args[0].Call(frame).(Stream)
 	f := args[1].Call(frame)

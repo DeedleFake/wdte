@@ -45,7 +45,7 @@ func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 
 // Seek seeks an io.Seeker and then returns it.
 func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("seek")
+	frame = frame.Sub("seek")
 
 	if len(args) < 3 {
 		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
@@ -77,7 +77,7 @@ func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Close closes a closer. This includes files opened with other
 // functions in this module.
 func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("close")
+	frame = frame.Sub("close")
 
 	if len(args) == 0 {
 		return wdte.GoFunc(Close)
@@ -98,7 +98,7 @@ func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // returns a function which combines its arguments with the argument
 // originally given.
 func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("combine")
+	frame = frame.Sub("combine")
 
 	switch len(args) {
 	case 0:
@@ -148,7 +148,7 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // chaining. For example, in the first example above it returns
 // io.stdout, while in the second it returns io.stdin.
 func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("copy")
+	frame = frame.Sub("copy")
 
 	switch len(args) {
 	case 0:
@@ -191,7 +191,7 @@ func (r stringReader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // n
 
 // ReadString returns a reader that reads from a string.
 func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("readString")
+	frame = frame.Sub("readString")
 
 	if len(args) == 0 {
 		return wdte.GoFunc(ReadString)
@@ -203,7 +203,7 @@ func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // String reads the entirety of a reader into a string and returns it.
 func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("string")
+	frame = frame.Sub("string")
 
 	if len(args) == 0 {
 		return wdte.GoFunc(String)
@@ -245,7 +245,7 @@ func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) {
 // Lines returns a stream that yields, as strings, successive lines
 // read from a reader.
 func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("lines")
+	frame = frame.Sub("lines")
 
 	if len(args) == 0 {
 		return wdte.GoFunc(Lines)
@@ -258,7 +258,7 @@ func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Words returns a stream that yields, as strings, successive words
 // read from a reader.
 func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("words")
+	frame = frame.Sub("words")
 
 	if len(args) == 0 {
 		return wdte.GoFunc(Words)
@@ -277,7 +277,7 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // splits str around instances of '--'.
 func Scan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("scan")
+	frame = frame.Sub("scan")
 
 	switch len(args) {
 	case 0:
@@ -343,7 +343,7 @@ func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) {
 // Runes returns a stream that yields individual runes from a reader
 // as wdte.Numbers.
 func Runes(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("runes")
+	frame = frame.Sub("runes")
 
 	if len(args) == 0 {
 		return wdte.GoFunc(Runes)
@@ -412,7 +412,7 @@ func write(f func(io.Writer, interface{}) error) wdte.Func {
 //
 // It returns the writer that it was passed.
 func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("write")
+	frame = frame.Sub("write")
 	return write(func(w io.Writer, v interface{}) error {
 		_, err := fmt.Fprint(w, v)
 		return err
@@ -422,7 +422,7 @@ func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Writeln is exactly like Write, but also writes a newline
 // afterwards. It is essentially equivalent to fmt.Fprintln.
 func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("writeln")
+	frame = frame.Sub("writeln")
 	return write(func(w io.Writer, v interface{}) error {
 		_, err := fmt.Fprintln(w, v)
 		return err

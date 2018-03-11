@@ -18,7 +18,7 @@ func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 
 // Open opens a file and returns it as a reader.
 func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("open")
+	frame = frame.Sub("open")
 
 	if len(args) == 0 {
 		return wdte.GoFunc(Open)
@@ -35,7 +35,7 @@ func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Create creates a file, truncating it if it exists, and returns it
 // as a writer.
 func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("create")
+	frame = frame.Sub("create")
 
 	if len(args) == 0 {
 		return wdte.GoFunc(Create)
@@ -52,7 +52,7 @@ func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Append opens a file for appending as a writer. If it doesn't exist
 // already, it is created.
 func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("append")
+	frame = frame.Sub("append")
 
 	if len(args) == 0 {
 		return wdte.GoFunc(Append)

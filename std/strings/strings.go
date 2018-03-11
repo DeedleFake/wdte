@@ -11,7 +11,7 @@ import (
 // first. If only given one argument, it returns a function that
 // checks if that argument is a substring of its own argument.
 func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("contains")
+	frame = frame.Sub("contains")
 
 	switch len(args) {
 	case 0:
@@ -32,7 +32,7 @@ func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // If given only one argument, it returns a function that checks if
 // that argument is a prefix of its own argument.
 func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("prefix")
+	frame = frame.Sub("prefix")
 
 	switch len(args) {
 	case 0:
@@ -53,7 +53,7 @@ func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // given only one argument, it returns a function that checks if that
 // argument is a suffix of its own argument.
 func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("suffix")
+	frame = frame.Sub("suffix")
 
 	switch len(args) {
 	case 0:
@@ -75,7 +75,7 @@ func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // if its not present. If only given one argument, Index returns a
 // function which searches other strings for that argument.
 func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("index")
+	frame = frame.Sub("index")
 
 	switch len(args) {
 	case 0:
@@ -94,7 +94,7 @@ func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Len returns the length of its argument.
 func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("len")
+	frame = frame.Sub("len")
 
 	switch len(args) {
 	case 0:
@@ -109,7 +109,7 @@ func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // uses that argument as the index to get characters from in strings
 // that it is passed.
 func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("at")
+	frame = frame.Sub("at")
 
 	switch len(args) {
 	case 0:
@@ -128,7 +128,7 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Upper returns its argument converted to uppercase.
 func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("upper")
+	frame = frame.Sub("upper")
 
 	switch len(args) {
 	case 0:
@@ -140,7 +140,7 @@ func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Lower returns its argument converted to lowercase.
 func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.WithID("lower")
+	frame = frame.Sub("lower")
 
 	switch len(args) {
 	case 0:

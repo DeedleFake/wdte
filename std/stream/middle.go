@@ -36,7 +36,7 @@ func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 					return nil, false
 				}
 
-				frame = frame.WithID("map")
+				frame = frame.Sub("map")
 				return m.m.Call(frame, n), true
 			})
 		}
@@ -75,7 +75,7 @@ func (f filter) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 						return nil, false
 					}
 
-					frame = frame.WithID("filter")
+					frame = frame.Sub("filter")
 					if f.f.Call(frame, n) == wdte.Bool(true) {
 						return n, true
 					}
@@ -116,7 +116,7 @@ func (m *flatMapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if a, ok := args[0].Call(frame).(Stream); ok {
 			var cur Stream
 			return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
-				frame = frame.WithID("flatMap")
+				frame = frame.Sub("flatMap")
 
 				for {
 					if cur != nil {
@@ -166,7 +166,7 @@ func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	var i wdte.Number
 	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
-		frame = frame.WithID("enumerate")
+		frame = frame.Sub("enumerate")
 
 		n, ok := s.Next(frame)
 		if !ok {
