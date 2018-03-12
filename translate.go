@@ -84,22 +84,19 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 	args := m.fromArgDecls(expr.Children()[3].(*ast.NTerm), nil)
 	inner := m.fromExpr(expr.Children()[5].(*ast.NTerm))
 
-	var ret Func
-	ret = &Lambda{
-		ID:   id,
-		Expr: inner,
-		Args: args,
-	}
-
 	if mods&funcModMemo != 0 {
-		ret = &Memo{
-			Func: ret,
+		inner = &Memo{
+			Func: inner,
 		}
 	}
 
 	return &Let{
-		ID:   id,
-		Expr: ret,
+		ID: id,
+		Expr: &Lambda{
+			ID:   id,
+			Expr: inner,
+			Args: args,
+		},
 	}
 }
 
@@ -211,20 +208,17 @@ func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 	args := m.fromArgDecls(lambda.Children()[3].(*ast.NTerm), nil)
 	expr := m.fromExpr(lambda.Children()[5].(*ast.NTerm))
 
-	var ret Func
-	ret = &Lambda{
+	if mods&funcModMemo != 0 {
+		expr = &Memo{
+			Func: expr,
+		}
+	}
+
+	return &Lambda{
 		ID:   id,
 		Expr: expr,
 		Args: args,
 	}
-
-	if mods&funcModMemo != 0 {
-		ret = &Memo{
-			Func: ret,
-		}
-	}
-
-	return ret
 }
 
 func (m *translator) fromImport(im *ast.NTerm) Func {

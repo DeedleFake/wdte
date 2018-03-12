@@ -640,24 +640,21 @@ func (cache *memoCache) Set(args []Func, val Func) {
 // A Lambda is a closure. When called, it calls its inner expression
 // with itself and its own arguments appended to its frame.
 type Lambda struct {
-	ID ID
-
-	// Expr is the expression that the lambda maps to.
+	ID   ID
 	Expr Func
-
 	Args []ID
 
-	// Stored is the arguments that have already been passed to a
-	// lambda if it was given less arguments than it was declared with.
-	Stored *Scope
-
+	Stored   []Func
+	Scope    *Scope
 	Original *Lambda
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	stored := lambda.Stored
-	if stored == nil {
-		stored = frame.Scope()
+
+	scope := lambda.Scope
+	if scope == nil {
+		scope = frame.Scope()
 	}
 
 	original := lambda.Original
@@ -672,10 +669,12 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		}
 
 		return &Lambda{
-			ID:       lambda.ID,
-			Expr:     lambda.Expr,
-			Args:     lambda.Args[len(args):],
-			Stored:   stored.Map(vars),
+			ID:   lambda.ID,
+			Expr: lambda.Expr,
+			Args: lambda.Args[len(args):],
+
+			Stored:   append(stored, args...),
+			Scope:    scope.Map(vars),
 			Original: original,
 		}
 	}
@@ -685,8 +684,8 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		vars[lambda.Args[i]] = args[i]
 	}
 
-	scope := stored.Map(vars).Sub(original.ID, original)
-	return lambda.Expr.Call(frame.WithScope(scope))
+	scope = scope.Map(vars).Sub(original.ID, original)
+	return lambda.Expr.Call(frame.WithScope(scope), append(stored, args...)...)
 }
 
 // A Let is an expression that maps an expression to an ID. It's used
