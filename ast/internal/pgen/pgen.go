@@ -2,7 +2,7 @@ package pgen
 
 import "github.com/DeedleFake/wdte/scanner"
 
-//go:generate pgen -out table.go ../../../res/wdte.ebnf
+//go:generate pgen -out table.go ../../../res/grammar.ebnf
 
 func newTerm(t string) Term {
 	switch t {

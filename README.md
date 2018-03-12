@@ -36,17 +36,15 @@ import (
 )
 
 const src = `
-'import' => i;
+let i => import 'some/import/path/or/another';
 
-main => (
-	i.print 3;
-	+ 5 2 -> i.print;
-);
+i.print 3;
++ 5 2 -> i.print;
 `
 
-func im(from string) (*wdte.Module, error) {
+func im(from string) (*wdte.Scope, error) {
 	var print wdte.GoFunc
-	print = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+	print = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if len(args) < 1 {
 			return print
 		}
@@ -56,11 +54,9 @@ func im(from string) (*wdte.Module, error) {
 		return a
 	})
 
-	return &wdte.Module{
-		Funcs: map[wdte.ID]wdte.Func{
-			"print": print,
-		},
-	}, nil
+	return wdte.S().Map(map[wdte.ID]wdte.Func{
+		"print": print,
+	}), nil
 }
 
 func main() {
@@ -69,22 +65,23 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error parsing module: %v\n", err)
 		os.Exit(1)
 	}
-	m.Funcs["+"] = wdte.GoFunc(func(frame []wdte.Func, args ...wdte.Func) wdte.Func {
+
+	scope := wdte.S().Sub("+", wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		var sum wdte.Number
 		for _, arg := range args {
 			sum += arg.Call(frame).(wdte.Number)
 		}
 		return sum
-	})
+	}))
 
-	m.Funcs["main"].Call(nil)
+	m.Call(wdte.F().WithScope(scope))
 }
 ```
 
 ##### Output
 
 ```
-5
+3
 7
 ```
 

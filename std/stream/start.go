@@ -1,6 +1,8 @@
 package stream
 
-import "github.com/DeedleFake/wdte"
+import (
+	"github.com/DeedleFake/wdte"
+)
 
 // An array is a stream that iterates over an array.
 type array struct {
@@ -17,15 +19,9 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.Sub("new")
 
-	var a array
-	for _, arg := range args {
-		a.a = append(a.a, &wdte.ScopedFunc{
-			Func:  arg,
-			Scope: frame.Scope(),
-		})
+	return &array{
+		a: wdte.Array(args),
 	}
-
-	return &a
 }
 
 func (a *array) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {

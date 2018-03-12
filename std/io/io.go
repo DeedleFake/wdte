@@ -451,40 +451,32 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}).Call(frame, args...)
 }
 
-// Module returns a module for easy importing into an actual script.
-// The imported functions have the same names as the functions in this
-// package, except that the first letter is lowercase.
-//
-// In addition, it contains the following functions:
-//
-// * stdin, stdout, and stderr: Return readers or writers, as
-//   appropriate, that wrap the standard I/O streams.
-func Module() *wdte.Module {
-	return &wdte.Module{
-		Funcs: map[wdte.ID]wdte.Func{
-			"stdin":  wdte.GoFunc(stdin),
-			"stdout": wdte.GoFunc(stdout),
-			"stderr": wdte.GoFunc(stderr),
+// S returns a scope that contains the various functions in this
+// package.
+func S() *wdte.Scope {
+	return wdte.S().Map(map[wdte.ID]wdte.Func{
+		"stdin":  wdte.GoFunc(stdin),
+		"stdout": wdte.GoFunc(stdout),
+		"stderr": wdte.GoFunc(stderr),
 
-			"seek":  wdte.GoFunc(Seek),
-			"close": wdte.GoFunc(Close),
+		"seek":  wdte.GoFunc(Seek),
+		"close": wdte.GoFunc(Close),
 
-			"combine": wdte.GoFunc(Combine),
-			"copy":    wdte.GoFunc(Copy),
+		"combine": wdte.GoFunc(Combine),
+		"copy":    wdte.GoFunc(Copy),
 
-			"readString": wdte.GoFunc(ReadString),
-			"string":     wdte.GoFunc(String),
-			"lines":      wdte.GoFunc(Lines),
-			"words":      wdte.GoFunc(Words),
-			"scan":       wdte.GoFunc(Scan),
-			"runes":      wdte.GoFunc(Runes),
+		"readString": wdte.GoFunc(ReadString),
+		"string":     wdte.GoFunc(String),
+		"lines":      wdte.GoFunc(Lines),
+		"words":      wdte.GoFunc(Words),
+		"scan":       wdte.GoFunc(Scan),
+		"runes":      wdte.GoFunc(Runes),
 
-			"write":   wdte.GoFunc(Write),
-			"writeln": wdte.GoFunc(Writeln),
-		},
-	}
+		"write":   wdte.GoFunc(Write),
+		"writeln": wdte.GoFunc(Writeln),
+	})
 }
 
 func init() {
-	std.Register("io", Module())
+	std.Register("io", S())
 }

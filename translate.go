@@ -7,68 +7,27 @@ import (
 	"github.com/DeedleFake/wdte/scanner"
 )
 
-func (m *Module) fromScript(script *ast.NTerm, im Importer) (*Module, error) {
-	if im == nil {
-		im = ImportFunc(defaultImporter)
-	}
-
-	return m.fromDecls(flatten(script.Children()[0].(*ast.NTerm), 1, 0), im)
+type translator struct {
+	im Importer
 }
 
-func (m *Module) fromDecls(decls []ast.Node, im Importer) (*Module, error) {
-	if m.Funcs == nil {
-		m.Funcs = make(map[ID]Func)
-	}
+func (m *translator) fromScript(script *ast.NTerm) (c Compound, err error) {
+	defer func() {
+		switch e := recover().(type) {
+		case error:
+			err = e
 
-	for _, d := range decls {
-		switch dtype := d.Children()[0].(*ast.NTerm).Name(); dtype {
-		case "import":
-			id, sub, err := m.fromImport(d.Children()[0].(*ast.NTerm), im)
-			if err != nil {
-				return nil, err
-			}
-			m.Funcs[id] = sub
-
-		case "funcdecl":
-			id, def := m.fromFuncDecl(d.Children()[0].(*ast.NTerm))
-			m.Funcs[id] = def
+		case nil:
 
 		default:
-			panic(fmt.Errorf("Malformed AST with bad <decl>: %q", dtype))
+			panic(e)
 		}
-	}
+	}()
 
-	return m, nil
+	return Compound(m.fromExprs(script.Children()[0].(*ast.NTerm), nil)), nil
 }
 
-func (m *Module) fromImport(i *ast.NTerm, im Importer) (ID, *Module, error) {
-	name := i.Children()[0].(*ast.Term).Tok().Val.(string)
-	id := ID(i.Children()[2].(*ast.Term).Tok().Val.(string))
-
-	m, err := im.Import(name)
-	return id, m, err
-}
-
-func (m *Module) fromFuncDecl(decl *ast.NTerm) (id ID, f Func) {
-	mods := m.fromFuncMods(decl.Children()[0].(*ast.NTerm))
-	id = ID(decl.Children()[1].(*ast.Term).Tok().Val.(string))
-	args := m.fromArgDecls(flatten(decl.Children()[2].(*ast.NTerm), 1, 0))
-	expr := m.fromExpr(decl.Children()[4].(*ast.NTerm), args)
-
-	if mods&funcModMemo != 0 {
-		expr = &Memo{
-			Func: expr,
-		}
-	}
-
-	return id, &DeclFunc{
-		ID:   id,
-		Expr: expr,
-		Args: args,
-	}
-}
-
-func (m *Module) fromFuncMods(funcMods *ast.NTerm) funcMod {
+func (m *translator) fromFuncMods(funcMods *ast.NTerm) funcMod {
 	switch mod := funcMods.Children()[0].(type) {
 	case *ast.NTerm:
 		return m.fromFuncMod(mod) | m.fromFuncMods(funcMods.Children()[1].(*ast.NTerm))
@@ -81,7 +40,7 @@ func (m *Module) fromFuncMods(funcMods *ast.NTerm) funcMod {
 	}
 }
 
-func (m *Module) fromFuncMod(funcMod *ast.NTerm) funcMod {
+func (m *translator) fromFuncMod(funcMod *ast.NTerm) funcMod {
 	switch mod := funcMod.Children()[0].(*ast.Term).Tok().Val; mod {
 	case "memo":
 		return funcModMemo
@@ -91,37 +50,39 @@ func (m *Module) fromFuncMod(funcMod *ast.NTerm) funcMod {
 	}
 }
 
-func (m *Module) fromArgDecls(argdecls []ast.Node) []ID {
-	ids := make([]ID, 0, len(argdecls))
-	for _, arg := range argdecls {
-		ids = append(ids, ID(arg.(*ast.Term).Tok().Val.(string)))
-	}
+func (m *translator) fromArgDecls(argdecls *ast.NTerm, ids []ID) []ID {
+	switch arg := argdecls.Children()[0].(type) {
+	case *ast.Term:
+		ids = append(ids, ID(arg.Tok().Val.(string)))
+		return m.fromArgDecls(argdecls.Children()[1].(*ast.NTerm), ids)
 
-	return ids
+	case *ast.Epsilon:
+		return ids
+
+	default:
+		panic(fmt.Errorf("Malformed AST with bad <argdecls>: %T", arg))
+	}
 }
 
-func (m *Module) fromExpr(expr *ast.NTerm, scope []ID) Func {
-	first := m.fromSingle(expr.Children()[0].(*ast.NTerm), scope)
-	in := m.fromArgs(flatten(expr.Children()[1].(*ast.NTerm), 1, 0), scope)
+func (m *translator) fromExpr(expr *ast.NTerm) Func {
+	first := m.fromSingle(expr.Children()[0].(*ast.NTerm))
+	in := m.fromArgs(expr.Children()[1].(*ast.NTerm), nil)
 
 	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
-	scope = append(scope, slot)
 
 	return &Expr{
 		Func:  first,
 		Args:  in,
 		Slot:  slot,
-		Chain: m.fromChain(expr.Children()[3].(*ast.NTerm), scope),
+		Chain: m.fromChain(expr.Children()[3].(*ast.NTerm)),
 	}
 }
 
-func (m *Module) fromLetExpr(expr *ast.NTerm, scope []ID) Func {
+func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 	mods := m.fromFuncMods(expr.Children()[1].(*ast.NTerm))
 	id := ID(expr.Children()[2].(*ast.Term).Tok().Val.(string))
-	args := m.fromArgDecls(flatten(expr.Children()[3].(*ast.NTerm), 1, 0))
-	scope = append(scope, id)
-	scope = append(scope, args...)
-	inner := m.fromExpr(expr.Children()[5].(*ast.NTerm), scope)
+	args := m.fromArgDecls(expr.Children()[3].(*ast.NTerm), nil)
+	inner := m.fromExpr(expr.Children()[5].(*ast.NTerm))
 
 	if mods&funcModMemo != 0 {
 		inner = &Memo{
@@ -129,19 +90,17 @@ func (m *Module) fromLetExpr(expr *ast.NTerm, scope []ID) Func {
 		}
 	}
 
-	lambda := &Lambda{
-		ID:   id,
-		Expr: inner,
-		Args: args,
-	}
-
 	return &Let{
-		ID:   id,
-		Expr: lambda,
+		ID: id,
+		Expr: &Lambda{
+			ID:   id,
+			Expr: inner,
+			Args: args,
+		},
 	}
 }
 
-func (m *Module) fromSlot(expr *ast.NTerm) ID {
+func (m *translator) fromSlot(expr *ast.NTerm) ID {
 	if _, ok := expr.Children()[0].(*ast.Epsilon); ok {
 		return ""
 	}
@@ -149,7 +108,7 @@ func (m *Module) fromSlot(expr *ast.NTerm) ID {
 	return ID(expr.Children()[1].(*ast.Term).Tok().Val.(string))
 }
 
-func (m *Module) fromSingle(single *ast.NTerm, scope []ID) Func {
+func (m *translator) fromSingle(single *ast.NTerm) Func {
 	switch s := single.Children()[0].(type) {
 	case *ast.Term:
 		switch s.Tok().Type {
@@ -162,58 +121,38 @@ func (m *Module) fromSingle(single *ast.NTerm, scope []ID) Func {
 	case *ast.NTerm:
 		switch s.Name() {
 		case "func":
-			return m.fromFunc(s, scope)
+			return m.fromFunc(s)
 		case "array":
-			return m.fromArray(s, scope)
+			return m.fromArray(s)
 		case "switch":
-			return m.fromSwitch(s, scope)
+			return m.fromSwitch(s)
 		case "compound":
-			return m.fromCompound(s, scope)
+			return m.fromCompound(s)
 		case "lambda":
-			return m.fromLambda(s, scope)
+			return m.fromLambda(s)
+		case "import":
+			return m.fromImport(s)
 		}
 	}
 
 	panic(fmt.Errorf("Malformed AST with bad <single>: %#v", single))
 }
 
-func (m *Module) fromFunc(f *ast.NTerm, scope []ID) Func {
-	tok := f.Children()[0].(*ast.Term).Tok()
-	id := ID(tok.Val.(string))
+func (m *translator) fromFunc(f *ast.NTerm) Func {
+	id := ID(f.Children()[0].(*ast.Term).Tok().Val.(string))
 
-	sub := m.fromSubfunc(f.Children()[1].(*ast.NTerm))
-	if sub != "" {
-		var im Func
-
-		ok := inScope(scope, id)
-		switch ok {
-		case true:
-			im = Var(id)
-		case false:
-			im = &Local{
-				Module: m,
-				Func:   id,
-			}
-		}
-
-		return &External{
-			Module: m,
-			Import: im,
-			Func:   sub,
-		}
-	}
-
-	if ok := inScope(scope, id); ok {
+	sub := m.fromSubFunc(f.Children()[1].(*ast.NTerm))
+	if sub == "" {
 		return Var(id)
 	}
 
-	return &Local{
-		Module: m,
-		Func:   id,
+	return Sub{
+		Scope: Var(id),
+		Func:  sub,
 	}
 }
 
-func (m *Module) fromSubfunc(subfunc *ast.NTerm) ID {
+func (m *translator) fromSubFunc(subfunc *ast.NTerm) ID {
 	if _, ok := subfunc.Children()[0].(*ast.Epsilon); ok {
 		return ""
 	}
@@ -221,13 +160,13 @@ func (m *Module) fromSubfunc(subfunc *ast.NTerm) ID {
 	return ID(subfunc.Children()[1].(*ast.Term).Tok().Val.(string))
 }
 
-func (m *Module) fromArray(array *ast.NTerm, scope []ID) Func {
-	return Array(m.fromExprs(flatten(array.Children()[1].(*ast.NTerm), 2, 0), scope))
+func (m *translator) fromArray(array *ast.NTerm) Func {
+	return Array(m.fromExprs(array.Children()[1].(*ast.NTerm), nil))
 }
 
-func (m *Module) fromSwitch(s *ast.NTerm, scope []ID) Func {
-	check := m.fromExpr(s.Children()[1].(*ast.NTerm), scope)
-	switches := m.fromSwitches(flatten(s.Children()[3].(*ast.NTerm), 4, 0, 2), scope)
+func (m *translator) fromSwitch(s *ast.NTerm) Func {
+	check := m.fromExpr(s.Children()[1].(*ast.NTerm))
+	switches := m.fromSwitches(s.Children()[3].(*ast.NTerm), nil)
 
 	return &Switch{
 		Check: check,
@@ -235,40 +174,39 @@ func (m *Module) fromSwitch(s *ast.NTerm, scope []ID) Func {
 	}
 }
 
-func (m *Module) fromSwitches(switches []ast.Node, scope []ID) [][2]Func {
-	cases := make([][2]Func, 0, len(switches)/2)
-loop:
-	for i := 0; i < len(switches); i += 2 {
-		switch c := switches[i].(type) {
-		case *ast.Term:
-			cases = append(cases, [...]Func{
-				nil,
-				m.fromExpr(switches[i+1].(*ast.NTerm), scope),
-			})
-			break loop
+func (m *translator) fromSwitches(switches *ast.NTerm, cases [][2]Func) [][2]Func {
+	switch sw := switches.Children()[0].(type) {
+	case *ast.Term:
+		cases = append(cases, [...]Func{
+			nil,
+			m.fromExpr(switches.Children()[2].(*ast.NTerm)),
+		})
+		return cases
 
-		case *ast.NTerm:
-			cases = append(cases, [...]Func{
-				m.fromExpr(c, scope),
-				m.fromExpr(switches[i+1].(*ast.NTerm), scope),
-			})
-		}
+	case *ast.NTerm:
+		cases = append(cases, [...]Func{
+			m.fromExpr(sw),
+			m.fromExpr(switches.Children()[2].(*ast.NTerm)),
+		})
+		return m.fromSwitches(switches.Children()[4].(*ast.NTerm), cases)
+
+	case *ast.Epsilon:
+		return cases
+
+	default:
+		panic(fmt.Errorf("Malformed AST with bad <switches>: %T", sw))
 	}
-	return cases
 }
 
-func (m *Module) fromCompound(compound *ast.NTerm, scope []ID) Func {
-	exprs := flatten(compound.Children()[1].(*ast.NTerm), 2, 0)
-	return Compound(m.fromExprs(exprs, scope))
+func (m *translator) fromCompound(compound *ast.NTerm) Func {
+	return Compound(m.fromExprs(compound.Children()[1].(*ast.NTerm), nil))
 }
 
-func (m *Module) fromLambda(lambda *ast.NTerm, scope []ID) (f Func) {
+func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm))
 	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(string))
-	args := m.fromArgDecls(flatten(lambda.Children()[3].(*ast.NTerm), 1, 0))
-	scope = append(scope, id)
-	scope = append(scope, args...)
-	expr := m.fromExpr(lambda.Children()[5].(*ast.NTerm), scope)
+	args := m.fromArgDecls(lambda.Children()[3].(*ast.NTerm), nil)
+	expr := m.fromExpr(lambda.Children()[5].(*ast.NTerm))
 
 	if mods&funcModMemo != 0 {
 		expr = &Memo{
@@ -283,33 +221,50 @@ func (m *Module) fromLambda(lambda *ast.NTerm, scope []ID) (f Func) {
 	}
 }
 
-func (m *Module) fromExprs(exprs []ast.Node, scope []ID) []Func {
-	funcs := make([]Func, 0, len(exprs))
-	for _, expr := range exprs {
-		switch expr := expr.(*ast.NTerm); expr.Name() {
+func (m *translator) fromImport(im *ast.NTerm) Func {
+	s, err := m.im.Import(im.Children()[1].(*ast.Term).Tok().Val.(string))
+	if err != nil {
+		panic(err)
+	}
+
+	return s
+}
+
+func (m *translator) fromExprs(exprs *ast.NTerm, funcs []Func) []Func {
+	switch expr := exprs.Children()[0].(type) {
+	case *ast.NTerm:
+		switch expr.Name() {
 		case "expr":
-			funcs = append(funcs, m.fromExpr(expr, scope))
+			funcs = append(funcs, m.fromExpr(expr))
 		case "letexpr":
-			let := m.fromLetExpr(expr, scope)
+			let := m.fromLetExpr(expr)
 			funcs = append(funcs, let)
-			scope = append(scope, let.(*Let).ID)
 		}
-	}
+		return m.fromExprs(exprs.Children()[2].(*ast.NTerm), funcs)
 
-	return funcs
+	case *ast.Epsilon:
+		return funcs
+
+	default:
+		panic(fmt.Errorf("Malformed AST with bad <exprs>: %T", expr))
+	}
 }
 
-func (m *Module) fromArgs(args []ast.Node, scope []ID) []Func {
-	singles := make([]Func, 0, len(args))
-	for _, arg := range args {
-		single := m.fromSingle(arg.(*ast.NTerm), scope)
-		singles = append(singles, single)
-	}
+func (m *translator) fromArgs(args *ast.NTerm, funcs []Func) []Func {
+	switch arg := args.Children()[0].(type) {
+	case *ast.NTerm:
+		funcs = append(funcs, m.fromSingle(arg))
+		return m.fromArgs(args.Children()[1].(*ast.NTerm), funcs)
 
-	return singles
+	case *ast.Epsilon:
+		return funcs
+
+	default:
+		panic(fmt.Errorf("Malformed AST with bad <args>: %T", arg))
+	}
 }
 
-func (m *Module) fromChain(chain *ast.NTerm, scope []ID) Func {
+func (m *translator) fromChain(chain *ast.NTerm) Func {
 	if _, ok := chain.Children()[0].(*ast.Epsilon); ok {
 		return &EndChain{}
 	}
@@ -317,11 +272,10 @@ func (m *Module) fromChain(chain *ast.NTerm, scope []ID) Func {
 	// TODO: Make this properly recursive with m.fromExpr().
 	expr := chain.Children()[1].(*ast.NTerm)
 
-	first := m.fromSingle(expr.Children()[0].(*ast.NTerm), scope)
-	in := m.fromArgs(flatten(expr.Children()[1].(*ast.NTerm), 1, 0), scope)
+	first := m.fromSingle(expr.Children()[0].(*ast.NTerm))
+	in := m.fromArgs(expr.Children()[1].(*ast.NTerm), nil)
 
 	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
-	scope = append(scope, slot)
 
 	switch t := chain.Children()[0].(*ast.Term).Tok().Val.(string); t {
 	case "->":
@@ -329,7 +283,7 @@ func (m *Module) fromChain(chain *ast.NTerm, scope []ID) Func {
 			Func:  first,
 			Args:  in,
 			Slot:  slot,
-			Chain: m.fromChain(expr.Children()[3].(*ast.NTerm), scope),
+			Chain: m.fromChain(expr.Children()[3].(*ast.NTerm)),
 		}
 
 	case "--":
@@ -337,40 +291,12 @@ func (m *Module) fromChain(chain *ast.NTerm, scope []ID) Func {
 			Func:  first,
 			Args:  in,
 			Slot:  slot,
-			Chain: m.fromChain(expr.Children()[3].(*ast.NTerm), scope),
+			Chain: m.fromChain(expr.Children()[3].(*ast.NTerm)),
 		}
 
 	default:
 		panic(fmt.Errorf("Malformed AST with unexpected chain type: %q", t))
 	}
-}
-
-func flatten(top *ast.NTerm, rec int, get ...int) []ast.Node {
-	if _, ok := top.Children()[0].(*ast.Epsilon); ok {
-		return []ast.Node{}
-	}
-
-	c := make([]ast.Node, 0, len(get))
-	for _, i := range get {
-		c = append(c, top.Children()[i])
-	}
-
-	return append(c, flatten(top.Children()[rec].(*ast.NTerm), rec, get...)...)
-}
-
-func inScope(scope []ID, id ID) bool {
-	for _, s := range scope {
-		if s == id {
-			return true
-		}
-	}
-
-	return false
-}
-
-func defaultImporter(from string) (*Module, error) {
-	// TODO: This should probably do something else.
-	return nil, nil
 }
 
 type funcMod uint

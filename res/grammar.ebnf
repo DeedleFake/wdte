@@ -1,10 +1,4 @@
-  <script> -> <decls> Ω
-   <decls> -> <decl> <decls>
-            | ε
-    <decl> -> <import>
-            | <funcdecl>
-  <import> -> string => id ;
-<funcdecl> -> <funcmods> id <argdecls> => <expr> ;
+  <script> -> <cexprs> Ω
 <funcmods> -> <funcmod> <funcmods>
             | ε
  <funcmod> -> memo
@@ -25,6 +19,7 @@
             | <switch>
             | <compound>
             | <lambda>
+            | <import>
     <func> -> id <subfunc>
  <subfunc> -> . id
             | ε
@@ -41,5 +36,6 @@
             | ε
   <lambda> -> (@ <funcmods> id <argdecls> => <expr> ; )
  <letexpr> -> let <funcmods> id <argdecls> => <expr>
+   <import> -> import string
 
 # vim: ts=2 sw=2 et
