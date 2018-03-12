@@ -23540,8 +23540,8 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	translator.prototype.fromExpr = function(expr) { return this.$val.fromExpr(expr); };
 	translator.ptr.prototype.fromLetExpr = function(expr) {
-		var _r, _r$1, _r$2, args, expr, id, inner, m, mods, x, x$1, x$2, x$3, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; args = $f.args; expr = $f.expr; id = $f.id; inner = $f.inner; m = $f.m; mods = $f.mods; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; x$3 = $f.x$3; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _1, _r, _r$1, _r$2, args, expr, id, inner, m, mods, right, x, x$1, x$2, x$3, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _1 = $f._1; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; args = $f.args; expr = $f.expr; id = $f.id; inner = $f.inner; m = $f.m; mods = $f.mods; right = $f.right; x = $f.x; x$1 = $f.x$1; x$2 = $f.x$2; x$3 = $f.x$3; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		m = this;
 		_r = m.fromFuncMods($assertType((x = $clone(expr, ast.NTerm).Children(), (1 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 1])), ptrType)); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		mods = _r;
@@ -23553,8 +23553,15 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		if (!((((mods & 1) >>> 0) === 0))) {
 			inner = new Memo.ptr(inner, new memoCache.ptr($ifaceNil, false));
 		}
-		$s = -1; return new Let.ptr(id, new Lambda.ptr(id, inner, args, sliceType.nil, ptrType$3.nil, ptrType$4.nil));
-		/* */ } return; } if ($f === undefined) { $f = { $blk: translator.ptr.prototype.fromLetExpr }; } $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f.args = args; $f.expr = expr; $f.id = id; $f.inner = inner; $f.m = m; $f.mods = mods; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.$s = $s; $f.$r = $r; return $f;
+		right = $ifaceNil;
+		_1 = args.$length;
+		if (_1 === (0)) {
+			right = inner;
+		} else {
+			right = new Lambda.ptr(id, inner, args, sliceType.nil, ptrType$3.nil, ptrType$4.nil);
+		}
+		$s = -1; return new Let.ptr(id, right);
+		/* */ } return; } if ($f === undefined) { $f = { $blk: translator.ptr.prototype.fromLetExpr }; } $f._1 = _1; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f.args = args; $f.expr = expr; $f.id = id; $f.inner = inner; $f.m = m; $f.mods = mods; $f.right = right; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	translator.prototype.fromLetExpr = function(expr) { return this.$val.fromLetExpr(expr); };
 	translator.ptr.prototype.fromSlot = function(expr) {
@@ -24340,8 +24347,8 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	Sub.prototype.Compare = function(other) { return this.$val.Compare(other); };
 	Compound.prototype.Collect = function(frame, args) {
-		var _i, _r, _r$1, _ref, _ref$1, _tuple, _tuple$1, args, c, f, f$1, f$2, frame, last, let$1, ok, ok$1, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _r$1 = $f._r$1; _ref = $f._ref; _ref$1 = $f._ref$1; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; args = $f.args; c = $f.c; f = $f.f; f$1 = $f.f$1; f$2 = $f.f$2; frame = $f.frame; last = $f.last; let$1 = $f.let$1; ok = $f.ok; ok$1 = $f.ok$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _i, _r, _r$1, _r$2, _ref, _ref$1, _tuple, _tuple$1, args, c, f, f$1, f$2, frame, last, let$1, ok, ok$1, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _ref = $f._ref; _ref$1 = $f._ref$1; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; args = $f.args; c = $f.c; f = $f.f; f$1 = $f.f$1; f$2 = $f.f$2; frame = $f.frame; last = $f.last; let$1 = $f.let$1; ok = $f.ok; ok$1 = $f.ok$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		c = this;
 		last = $ifaceNil;
 		_ref = c;
@@ -24378,8 +24385,14 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			_r$1 = let$1.Call($clone(frame, Frame), new sliceType([])); /* */ $s = 9; case 9: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 			last = _r$1;
 		/* } */ case 8:
+		/* */ if (args.$length > 0) { $s = 10; continue; }
+		/* */ $s = 11; continue;
+		/* if (args.$length > 0) { */ case 10:
+			_r$2 = last.Call($clone(frame, Frame), args); /* */ $s = 12; case 12: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+			last = _r$2;
+		/* } */ case 11:
 		$s = -1; return [$clone(frame, Frame).Scope(), last];
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Compound.prototype.Collect }; } $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._ref = _ref; $f._ref$1 = _ref$1; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.args = args; $f.c = c; $f.f = f; $f.f$1 = f$1; $f.f$2 = f$2; $f.frame = frame; $f.last = last; $f.let$1 = let$1; $f.ok = ok; $f.ok$1 = ok$1; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Compound.prototype.Collect }; } $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._ref = _ref; $f._ref$1 = _ref$1; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.args = args; $f.c = c; $f.f = f; $f.f$1 = f$1; $f.f$2 = f$2; $f.frame = frame; $f.last = last; $f.let$1 = let$1; $f.ok = ok; $f.ok$1 = ok$1; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$ptrType(Compound).prototype.Collect = function(frame, args) { return this.$get().Collect(frame, args); };
 	Compound.prototype.Call = function(frame, args) {
