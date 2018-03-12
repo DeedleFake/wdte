@@ -90,7 +90,7 @@ func Abs(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // package. This can be used by an Importer to import them more
 // easily. The functions in the returned module have the same names as
 // those in this package except that they are lowercase.
-func Module() *wdte.Scope {
+func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"pi": wdte.GoFunc(Pi),
 
@@ -105,5 +105,5 @@ func Module() *wdte.Scope {
 }
 
 func init() {
-	std.Register("math", Module())
+	std.Register("math", S())
 }

@@ -154,7 +154,7 @@ func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Module returns a module for easy importing into an actual script.
 // The imported functions have the same names as the functions in this
 // package, except that the first letter is lowercase.
-func Module() *wdte.Scope {
+func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"contains": wdte.GoFunc(Contains),
 		"prefix":   wdte.GoFunc(Prefix),
@@ -172,5 +172,5 @@ func Module() *wdte.Scope {
 }
 
 func init() {
-	std.Register("strings", Module())
+	std.Register("strings", S())
 }

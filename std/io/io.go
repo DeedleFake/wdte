@@ -459,7 +459,7 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // * stdin, stdout, and stderr: Return readers or writers, as
 //   appropriate, that wrap the standard I/O streams.
-func Module() *wdte.Scope {
+func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"stdin":  wdte.GoFunc(stdin),
 		"stdout": wdte.GoFunc(stdout),
@@ -484,5 +484,5 @@ func Module() *wdte.Scope {
 }
 
 func init() {
-	std.Register("io", Module())
+	std.Register("io", S())
 }

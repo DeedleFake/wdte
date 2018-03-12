@@ -68,7 +68,7 @@ func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 // Module returns a module containing the functions in this package.
-func Module() *wdte.Scope {
+func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"open":   wdte.GoFunc(Open),
 		"create": wdte.GoFunc(Create),
@@ -77,5 +77,5 @@ func Module() *wdte.Scope {
 }
 
 func init() {
-	std.Register("io/file", Module())
+	std.Register("io/file", S())
 }

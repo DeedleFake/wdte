@@ -391,8 +391,8 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // if you want to parse a module and you want it to have access to
 // these functions, you can use
 //
-//     m, err := std.Module().Parse(r, im)
-func Module() *wdte.Scope {
+//     m, err := std.S().Parse(r, im)
+func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"+": wdte.GoFunc(Add),
 		"-": wdte.GoFunc(Sub),
@@ -416,5 +416,5 @@ func Module() *wdte.Scope {
 // F returns a top-level frame that has the various functions in this
 // package already in scope.
 func F() wdte.Frame {
-	return wdte.F().WithScope(Module())
+	return wdte.F().WithScope(S())
 }

@@ -71,7 +71,7 @@ func (a *streamer) Next(frame wdte.Frame) (wdte.Func, bool) {
 // Module returns a module for easy importing into an actual script.
 // The imported functions have the same names as the functions in this
 // package, except that the first letter is lowercase.
-func Module() *wdte.Scope {
+func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"at": wdte.GoFunc(At),
 
@@ -80,5 +80,5 @@ func Module() *wdte.Scope {
 }
 
 func init() {
-	std.Register("arrays", Module())
+	std.Register("arrays", S())
 }
