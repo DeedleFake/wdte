@@ -8,20 +8,41 @@ import (
 	"github.com/DeedleFake/wdte"
 )
 
+// A NextFunc returns the next piece of code to be interpreted. When
+// reading from stdin, this is likely the next line entered.
+type NextFunc func() ([]byte, error)
+
+// SimpleNext returns a next func that scans lines from r.
+func SimpleNext(r io.Reader) NextFunc {
+	s := bufio.NewScanner(r)
+	return func() ([]byte, error) {
+		more := s.Scan()
+		if !more {
+			err := s.Err()
+			if err != nil {
+				err = io.EOF
+			}
+			return nil, err
+		}
+
+		return s.Bytes(), nil
+	}
+}
+
 // REPL provides a means to track a global state and interpret
 // separate lines of a WDTE script, allowing for the implementation of
 // a read-eval-print loop.
 type REPL struct {
-	s     *bufio.Scanner
+	next  NextFunc
 	im    wdte.Importer
 	scope *wdte.Scope
 }
 
-// New creates a new REPL which reads from r, imports using im, and
+// New creates a new REPL which reads with next, imports using im, and
 // executes the first line with the scope start.
-func New(r io.Reader, im wdte.Importer, start *wdte.Scope) *REPL {
+func New(next NextFunc, im wdte.Importer, start *wdte.Scope) *REPL {
 	return &REPL{
-		s:     bufio.NewScanner(r),
+		next:  next,
 		im:    im,
 		scope: start,
 	}
@@ -47,13 +68,15 @@ func (r *REPL) Next() (ret wdte.Func, err error) {
 		}
 	}()
 
-	if !r.s.Scan() {
-		err := r.s.Err()
+	src, err := r.next()
+	if err != nil {
+		if err == io.EOF {
+			err = nil
+		}
 		return nil, err
 	}
 
-	src := bytes.NewReader(r.s.Bytes())
-	m, err := wdte.Parse(src, r.im)
+	m, err := wdte.Parse(bytes.NewReader(src), r.im)
 	if err != nil {
 		return nil, err
 	}
