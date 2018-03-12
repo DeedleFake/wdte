@@ -67,7 +67,7 @@ func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return File{File: file}
 }
 
-// Module returns a module containing the functions in this package.
+// S returns a scope containing the functions in this package.
 func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"open":   wdte.GoFunc(Open),

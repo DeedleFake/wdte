@@ -86,10 +86,7 @@ func Abs(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Number(math.Abs(float64(a)))
 }
 
-// Module returns a module that contains the functions in this
-// package. This can be used by an Importer to import them more
-// easily. The functions in the returned module have the same names as
-// those in this package except that they are lowercase.
+// S returns a scope containing the various functions in this package.
 func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"pi": wdte.GoFunc(Pi),

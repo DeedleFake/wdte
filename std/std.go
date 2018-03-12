@@ -381,17 +381,15 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(args[0].Call(frame) != wdte.Bool(true))
 }
 
-// Module returns a module contiaining the functions in this package.
-// It maps mathematical functions to the corresponding mathematical
-// symbols. For example, Add() becomes `+`, Sub() becomes `-`, and so
-// on. Comparisons get mapped to the cooresponding comparison symbols
-// from C-style languages. For example, Equals() becomes `==`.
+// S returns a scope containing all of the functions in this package.
+// It maps some functions to symbols, such as Add ("+"), Sub ("-"),
+// and Equals ("=="), and some to the same name that they have in here
+// but with the first letter lowercase, such as True ("true").
 //
-// This module is useful as a starting point for parsing. For example,
-// if you want to parse a module and you want it to have access to
-// these functions, you can use
-//
-//     m, err := std.S().Parse(r, im)
+// The scope returned from here is useful for skipping some simpler
+// boilerplate in a lot of cases. To use it, simply pass a frame
+// containing it or a subscope of it to a function call. In many
+// cases, it may be simpler to use the F function instead.
 func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"+": wdte.GoFunc(Add),

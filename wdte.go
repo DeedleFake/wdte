@@ -3,13 +3,14 @@ package wdte
 import (
 	"fmt"
 	"io"
+	"sort"
 
 	"github.com/DeedleFake/wdte/ast"
 )
 
-// Parse parses an AST from r and then translates it into a module. im
-// is used to handle import statements. If im is nil, a no-op importer
-// is used.
+// Parse parses an AST from r and then translates it into a top-level
+// compound. im is used to handle import statements. If im is nil, a
+// no-op importer is used. In most cases, std.Import is a good default.
 func Parse(r io.Reader, im Importer) (Compound, error) {
 	root, err := ast.Parse(r)
 	if err != nil {
@@ -19,8 +20,8 @@ func Parse(r io.Reader, im Importer) (Compound, error) {
 	return FromAST(root, im)
 }
 
-// FromAST translates an AST into a module. im is used to handle
-// import statements. If im is nil, a no-op importer is used.
+// FromAST translates an AST into a top-level compound. im is used to
+// handle import statements. If im is nil, a no-op importer is used.
 func FromAST(root ast.Node, im Importer) (Compound, error) {
 	if im == nil {
 		im = ImportFunc(defaultImporter)
@@ -31,18 +32,16 @@ func FromAST(root ast.Node, im Importer) (Compound, error) {
 	}).fromScript(root.(*ast.NTerm))
 }
 
-// An Importer creates modules from strings. When parsing a WDTE
-// script, an importer is used to import modules.
+// An Importer creates scopes from strings. When parsing a WDTE
+// script, an importer is used to import scopes into namespaces.
 //
-// When the WDTE import statement
+// When the WDTE import expression
 //
-//    'example' => e;
+//    import 'example'
 //
 // is parsed, the associated Importer will be invoked as follows:
 //
 //    im.Import("example")
-//
-// The return value will then be added to the module's Funcs map.
 type Importer interface {
 	Import(from string) (*Scope, error)
 }
@@ -60,8 +59,7 @@ func (f ImportFunc) Import(from string) (*Scope, error) { // nolint
 	return f(from)
 }
 
-// ID represents a WDTE ID, such as a function or imported module
-// name.
+// ID represents a WDTE ID, such as a local variable.
 type ID string
 
 // Func is the base type through which all data is handled by WDTE. It
@@ -70,9 +68,8 @@ type ID string
 // Go functions, and anything else the client wants to pass into WDTE.
 type Func interface {
 	// Call calls the function with the given arguments, returning its
-	// return value. frame represents the current call frame. This is
-	// used to keep track of function arguments during the evaluation of
-	// expressions, and can largely be ignored by clients.
+	// return value. frame represents the current call frame, which
+	// tracks scope as well as debugging info.
 	Call(frame Frame, args ...Func) Func
 }
 
@@ -88,7 +85,9 @@ type Comparer interface {
 	Compare(other Func) (int, bool)
 }
 
-// A Frame tracks information about the current function call.
+// A Frame tracks information about the current function call, such as
+// the scope that the function is being executed in and debugging
+// info.
 type Frame struct {
 	id    ID
 	scope *Scope
@@ -98,14 +97,15 @@ type Frame struct {
 
 // F returns a top-level frame. This can be used by Go code calling
 // WDTE functions directly if another frame is not available.
+//
+// In many cases, it may be preferable to use std.F() instead.
 func F() Frame {
 	return Frame{
 		id: "unknown function, maybe Go",
 	}
 }
 
-// New returns a frame with f as its parent and the given ID and
-// scope.
+// New returns a new child frame of f with the given ID and scope.
 func (f Frame) New(id ID, scope *Scope) Frame {
 	return Frame{
 		id:    id,
@@ -114,8 +114,16 @@ func (f Frame) New(id ID, scope *Scope) Frame {
 	}
 }
 
-// Sub returns a frame with f as its parent and the same scope as f,
-// but with the given ID.
+// Sub returns a new child frame of f with the given ID and the same
+// scope as f.
+//
+// Under most circumstances, a GoFunc should call this before calling
+// any WDTE functions, as it is useful for debugging. For example:
+//
+//    func Example(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+//        frame = frame.Sub("example")
+//        ...
+//    }
 func (f Frame) Sub(id ID) Frame {
 	return Frame{
 		id:    id,
@@ -124,14 +132,10 @@ func (f Frame) Sub(id ID) Frame {
 	}
 }
 
-// WithScope returns a frame with the same ID and parent frame as f,
-// but with the given scope.
+// WithScope returns a copy of f with the given scope.
 func (f Frame) WithScope(scope *Scope) Frame {
-	return Frame{
-		id:    f.id,
-		scope: scope,
-		p:     f.p,
-	}
+	f.scope = scope
+	return f
 }
 
 // ID returns the ID of the frame. This is generally the function that
@@ -197,7 +201,7 @@ func S() *Scope {
 	return nil
 }
 
-// Get returns value of the variable with the given id. If the
+// Get returns the value of the variable with the given id. If the
 // variable doesn't exist in either the current scope or any of its
 // parent scopes, nil is returned.
 func (s *Scope) Get(id ID) Func {
@@ -273,8 +277,8 @@ func (s *Scope) Parent() *Scope {
 	return s.p
 }
 
-// Freeze returns a new function executes in the scope s regardless of
-// whatever Frame it is called with.
+// Freeze returns a new function which executes in the scope s
+// regardless of whatever Frame it is called with.
 func (s *Scope) Freeze(f Func) Func {
 	return &ScopedFunc{
 		Func:  f,
@@ -294,8 +298,7 @@ func (s *Scope) knownSet(vars map[ID]struct{}) {
 	s.p.knownSet(vars)
 }
 
-// Known returns a list of variables that are in scope in an undefined
-// order.
+// Known returns a list of variables that are in scope.
 func (s *Scope) Known() []ID {
 	vars := make(map[ID]struct{})
 	s.knownSet(vars)
@@ -304,6 +307,11 @@ func (s *Scope) Known() []ID {
 	for v := range vars {
 		list = append(list, v)
 	}
+
+	sort.Slice(list, func(i1, i2 int) bool {
+		return list[i1] < list[i2]
+	})
+
 	return list
 }
 
@@ -318,7 +326,8 @@ func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
 // For example, to implement a simple, non-type-safe addition
 // function:
 //
-//    module.Funcs["+"] = GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+//    GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+//      frame = frame.Sub("+")
 //      var sum wdte.Number
 //      for _, arg := range(args) {
 //        sum += arg.Call(frame).(wdte.Number)
@@ -326,7 +335,8 @@ func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
 //      return sum
 //    })
 //
-// This can then be called from WDTE as follows:
+// If placed into a scope with the ID "+", this function can then be
+// called from WDTE as follows:
 //
 //    + 3 6 9
 //
@@ -334,6 +344,10 @@ func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
 // frame when evaluating them. Failing to do so without knowing what
 // you're doing can cause unexpected behavior, including sending the
 // evaluation system into infinite loops or causing panics.
+//
+// In the event that a GoFunc panics with an error value, it will be
+// automatically caught and converted into an Error, which will then
+// be returned.
 type GoFunc func(frame Frame, args ...Func) Func
 
 func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
@@ -355,15 +369,10 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 // right-hand side of a function declaration, but could also be any of
 // various pieces of switches, compounds, or arrays.
 type Expr struct {
-	// Func is the underlying function.
-	Func Func
-
-	// Args are the arguments to pass to Func.
-	Args []Func
-
+	Func  Func
+	Args  []Func
 	Chain Func
-
-	Slot ID
+	Slot  ID
 }
 
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
@@ -380,15 +389,10 @@ func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 
 // Chain is an unevaluated chain expression.
 type Chain struct {
-	// Func is the expression at the current part of the chain.
-	Func Func
-
-	// Args is the arguments to Func.
-	Args []Func
-
+	Func  Func
+	Args  []Func
 	Chain Func
-
-	Slot ID
+	Slot  ID
 }
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
@@ -406,15 +410,10 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 // IgnoredChain is an unevaluated chain expression that returns the
 // previous expression's return value, rather than its own.
 type IgnoredChain struct {
-	// Func is the expression at the current part of the chain.
-	Func Func
-
-	// Args is the arguments to Func.
-	Args []Func
-
+	Func  Func
+	Args  []Func
 	Chain Func
-
-	Slot ID
+	Slot  ID
 }
 
 func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
@@ -441,16 +440,16 @@ func (f EndChain) Call(frame Frame, args ...Func) Func { // nolint
 // A Sub is a function that is in a subscope. This is most commonly an
 // imported function.
 type Sub struct {
-	// Module is a function that returns the subscope. If it does not
-	// return a subscope, calling the Sub will fail.
-	Module Func
+	// Scope is a function that returns the subscope. If it does not
+	// return a *Scope, calling the Sub will fail.
+	Scope Func
 
 	// Func is the ID of the function being called.
 	Func ID
 }
 
 func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
-	ns := sub.Module.Call(frame)
+	ns := sub.Scope.Call(frame)
 	scope, ok := ns.(*Scope)
 	if !ok {
 		return Error{
@@ -472,7 +471,7 @@ func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
 
 func (sub Sub) Compare(other Func) (int, bool) { // nolint
 	o, ok := other.(Sub)
-	if ok && (sub.Module == o.Module) && (sub.Func == o.Func) {
+	if ok && (sub.Scope == o.Scope) && (sub.Func == o.Func) {
 		return 0, false
 	}
 
@@ -482,11 +481,20 @@ func (sub Sub) Compare(other Func) (int, bool) { // nolint
 // A Compound represents a compound expression. Calling it calls each
 // of the expressions in the compound, returning the value of the last
 // one. If the compound is empty, nil is returned.
+//
+// If an element of a compound is a *Let, then the unevaluated
+// right-hand side is placed into a new subscope under the ID
+// specified by the right-hand side. The remainder of the elements in
+// the compound are then evaluated under this new subscope. If the
+// last element in the compound is a *Let, the right-hand side is
+// returned as a lambda.
 type Compound []Func
 
 // Collect executes the compound the same as Call, but also returns
 // the collected scope that has been modified by let expressions
-// alongside the usual return value.
+// alongside the usual return value. This is useful when dealing with
+// scopes as modules, as it allows you to evaluate specific functions
+// in a script.
 func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 	var last Func
 	for _, f := range c {
@@ -638,7 +646,14 @@ func (cache *memoCache) Set(args []Func, val Func) {
 }
 
 // A Lambda is a closure. When called, it calls its inner expression
-// with itself and its own arguments appended to its frame.
+// with itself and its own arguments placed into the scope. In other
+// words, given the lambda
+//
+//    (@ ex x y => + x y)
+//
+// it will create a new subscope containing itself under the ID "ex",
+// and its first and second arguments under the IDs "x" and "y",
+// respectively. It will then evaluate `+ x y` in that new scope.
 type Lambda struct {
 	ID   ID
 	Expr Func

@@ -147,8 +147,8 @@ func (m *translator) fromFunc(f *ast.NTerm) Func {
 	}
 
 	return Sub{
-		Module: Var(id),
-		Func:   sub,
+		Scope: Var(id),
+		Func:  sub,
 	}
 }
 

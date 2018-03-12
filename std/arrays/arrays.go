@@ -68,9 +68,8 @@ func (a *streamer) Next(frame wdte.Frame) (wdte.Func, bool) {
 	return r, true
 }
 
-// Module returns a module for easy importing into an actual script.
-// The imported functions have the same names as the functions in this
-// package, except that the first letter is lowercase.
+// S returns a top-level scope containing the various functions in
+// this package.
 func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"at": wdte.GoFunc(At),

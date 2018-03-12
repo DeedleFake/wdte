@@ -151,9 +151,7 @@ func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(strings.ToLower(string(args[0].Call(frame).(wdte.String))))
 }
 
-// Module returns a module for easy importing into an actual script.
-// The imported functions have the same names as the functions in this
-// package, except that the first letter is lowercase.
+// S returns a scope containing the various functions in this package.
 func S() *wdte.Scope {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
 		"contains": wdte.GoFunc(Contains),
