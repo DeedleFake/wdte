@@ -514,6 +514,10 @@ func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 		last = let.Call(frame)
 	}
 
+	if len(args) > 0 {
+		last = last.Call(frame, args...)
+	}
+
 	return frame.Scope(), last
 }
 
