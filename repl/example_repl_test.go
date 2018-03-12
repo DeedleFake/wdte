@@ -2,22 +2,37 @@ package repl_test
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 
 	"github.com/DeedleFake/wdte/repl"
 	"github.com/DeedleFake/wdte/std"
 	_ "github.com/DeedleFake/wdte/std/all"
+	"github.com/peterh/liner"
 )
 
+func next(lr *liner.State) repl.NextFunc {
+	return func() ([]byte, error) {
+		line, err := lr.Prompt("> ")
+		if err == liner.ErrPromptAborted {
+			err = io.EOF
+		}
+		return []byte(line), err
+	}
+}
+
 func Example() {
-	r := repl.New(os.Stdin, std.Import, std.S())
+	lr := liner.NewLiner()
+	lr.SetCtrlCAborts(true)
+	defer lr.Close()
+
+	r := repl.New(next(lr), std.Import, std.S())
 
 	for {
-		fmt.Printf("> ")
 		ret, err := r.Next()
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			continue
 		}
 		if ret == nil {
