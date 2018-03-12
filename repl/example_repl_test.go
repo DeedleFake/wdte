@@ -7,9 +7,10 @@ import (
 
 	"github.com/DeedleFake/wdte/repl"
 	"github.com/DeedleFake/wdte/std"
+	_ "github.com/DeedleFake/wdte/std/all"
 )
 
-func ExampleREPL_Next() {
+func Example() {
 	r := repl.New(os.Stdin, std.Import, std.S())
 
 	for {
