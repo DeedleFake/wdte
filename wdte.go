@@ -217,7 +217,7 @@ func (s *Scope) Sub(id ID, val Func) *Scope {
 	return &Scope{
 		p: s,
 		known: map[ID]struct{}{
-			id: struct{}{},
+			id: {},
 		},
 		getFunc: func(g ID) Func {
 			if g == id {
