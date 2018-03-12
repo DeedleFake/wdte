@@ -9,6 +9,10 @@ import (
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/std"
+	_ "github.com/DeedleFake/wdte/std/arrays"
+	_ "github.com/DeedleFake/wdte/std/math"
+	_ "github.com/DeedleFake/wdte/std/stream"
+	_ "github.com/DeedleFake/wdte/std/strings"
 	"github.com/gopherjs/gopherjs/js"
 )
 
@@ -46,16 +50,13 @@ var (
 	out io.Writer
 )
 
-func im(from string) (*wdte.Module, error) {
+func im(from string) (*wdte.Scope, error) {
 	switch from {
 	case "canvas":
 		stdout.Get("style").Set("display", "none")
 		canvas.Get("style").Set("display", "block")
 		out = &elementWriter{stderr}
 		return CanvasModule(), nil
-
-	case "io", "io/file":
-		return nil, fmt.Errorf("%q is disabled in the playground", from)
 	}
 
 	return std.Import(from)
@@ -99,41 +100,38 @@ func main() {
 		canvasCtx.Set("fillStyle", "white")
 		canvasCtx.Call("fillRect", 0, 0, 640, 480)
 
-		m, err := new(wdte.Module).Insert(std.Module()).Parse(in, wdte.ImportFunc(im))
+		m, err := wdte.Parse(in, wdte.ImportFunc(im))
 		if err != nil {
 			log.Printf("Failed to parse: %v", err)
 			return nil
 		}
 
-		m.Funcs["print"] = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-			if len(args) == 0 {
-				return m.Funcs["print"]
-			}
-
-			frame = frame.WithID("print")
-
-			a := make([]interface{}, 0, len(args))
-			for _, arg := range args {
-				arg = arg.Call(frame)
-				if _, ok := arg.(error); ok {
-					return arg
+		var funcs map[wdte.ID]wdte.Func
+		funcs = map[wdte.ID]wdte.Func{
+			"print": wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+				if len(args) == 0 {
+					return funcs["print"]
 				}
-				a = append(a, arg)
-			}
 
-			str := fmt.Sprint(a...)
-			fmt.Fprintln(out, str)
-			return wdte.String(str)
-		})
+				frame = frame.Sub("print")
 
-		main, ok := m.Funcs["main"]
-		if !ok {
-			log.Println("No main function found.")
-			return nil
+				a := make([]interface{}, 0, len(args))
+				for _, arg := range args {
+					arg = arg.Call(frame)
+					if _, ok := arg.(error); ok {
+						return arg
+					}
+					a = append(a, arg)
+				}
+
+				str := fmt.Sprint(a...)
+				fmt.Fprintln(out, str)
+				return wdte.String(str)
+			}),
 		}
 
 		stdout.Set("innerHTML", "")
-		if err, ok := main.Call(wdte.F()).(error); ok {
+		if err, ok := m.Call(wdte.F().WithScope(std.S().Map(funcs))).(error); ok {
 			log.Println(err)
 		}
 

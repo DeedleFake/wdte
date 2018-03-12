@@ -179,18 +179,16 @@ func (p pathShape) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	})
 }
 
-func CanvasModule() *wdte.Module {
-	return &wdte.Module{
-		Funcs: map[wdte.ID]wdte.Func{
-			"start": wdte.GoFunc(Start),
-			"color": wdte.GoFunc(Color),
-			"rect":  wdte.GoFunc(Rect),
-			"draw":  wdte.GoFunc(Draw),
+func CanvasModule() *wdte.Scope {
+	return wdte.S().Map(map[wdte.ID]wdte.Func{
+		"start": wdte.GoFunc(Start),
+		"color": wdte.GoFunc(Color),
+		"rect":  wdte.GoFunc(Rect),
+		"draw":  wdte.GoFunc(Draw),
 
-			"path":  wdte.GoFunc(Path),
-			"move":  wdte.GoFunc(Move),
-			"line":  wdte.GoFunc(Line),
-			"close": wdte.GoFunc(Close),
-		},
-	}
+		"path":  wdte.GoFunc(Path),
+		"move":  wdte.GoFunc(Move),
+		"line":  wdte.GoFunc(Line),
+		"close": wdte.GoFunc(Close),
+	})
 }
