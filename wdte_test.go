@@ -275,6 +275,11 @@ func TestBasics(t *testing.T) {
 			script: `let x => 3;`,
 			ret:    wdte.Number(3),
 		},
+		{
+			name:   "Let/NoArgs",
+			script: `let x => 3; let x => + x 5; x;`,
+			ret:    wdte.Number(8),
+		},
 	})
 }
 

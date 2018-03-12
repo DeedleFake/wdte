@@ -90,13 +90,22 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 		}
 	}
 
-	return &Let{
-		ID: id,
-		Expr: &Lambda{
+	var right Func
+	switch len(args) {
+	case 0:
+		right = inner
+
+	default:
+		right = &Lambda{
 			ID:   id,
 			Expr: inner,
 			Args: args,
-		},
+		}
+	}
+
+	return &Let{
+		ID:   id,
+		Expr: right,
 	}
 }
 
