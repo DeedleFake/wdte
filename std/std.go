@@ -381,6 +381,23 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(args[0].Call(frame) != wdte.Bool(true))
 }
 
+// Len returns the length of anything that implements wdte.Lenner. If
+// its argument does not implement wdte.Lenner, it returns false.
+func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("len")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Len)
+	}
+
+	if lenner, ok := args[0].Call(frame).(wdte.Lenner); ok {
+		return wdte.Number(lenner.Len())
+	}
+
+	return wdte.Bool(false)
+}
+
 // S returns a scope containing all of the functions in this package.
 // It maps some functions to symbols, such as Add ("+"), Sub ("-"),
 // and Equals ("=="), and some to the same name that they have in here
@@ -408,6 +425,8 @@ func S() *wdte.Scope {
 		"&&":    wdte.GoFunc(And),
 		"||":    wdte.GoFunc(Or),
 		"!":     wdte.GoFunc(Not),
+
+		"len": wdte.GoFunc(Len),
 	})
 }
 

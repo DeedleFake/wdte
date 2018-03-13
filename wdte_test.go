@@ -280,6 +280,21 @@ func TestBasics(t *testing.T) {
 			script: `let x => 3; let x => + x 5; x;`,
 			ret:    wdte.Number(8),
 		},
+		{
+			name:   "Len/String",
+			script: `len 'test';`,
+			ret:    wdte.Number(4),
+		},
+		{
+			name:   "Len/Array",
+			script: `len [3; 5; 1];`,
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "Len/Other",
+			script: `len 5;`,
+			ret:    wdte.Bool(false),
+		},
 	})
 }
 
