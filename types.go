@@ -5,6 +5,18 @@ import (
 	"fmt"
 )
 
+// A Comparer is a Func that is able to be compared to other
+// functions.
+type Comparer interface {
+	// Compare returns two values. The meaning of the first is dependent
+	// upon the second. If the second is true, then the first indicates
+	// ordering via the standard negative, positive, and zero results to
+	// indicate less than, greater than, and equal, respectively. If the
+	// second is false, then the first indicates only equality, with
+	// zero still meaning equal, but other values simply meaning unequal.
+	Compare(other Func) (int, bool)
+}
+
 // A String is a string, as parsed from a string literal. That's about
 // it. Like everything else, it's a function. It simply returns itself
 // when called.
