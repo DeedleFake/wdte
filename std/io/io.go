@@ -14,7 +14,7 @@ import (
 	"github.com/DeedleFake/wdte/std"
 )
 
-// These variables are what are returned by the cooresponding
+// These variables are what are returned by the corresponding
 // functions in this package. If a client wants to globally redirect
 // input or output, them may simply change these variables.
 var (
@@ -292,7 +292,7 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return scanner{s: s}
 }
 
-// Scan returns a stream that splits a read around a given seperator
+// Scan returns a stream that splits a read around a given separator
 // string. For example,
 //
 //     io.readString str -> io.scan '--'

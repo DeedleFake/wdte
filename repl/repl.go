@@ -90,10 +90,6 @@ func (r *REPL) pop() string {
 //
 // If an input ends in a partial expression, such as a single line of
 // a mult-line expression, nil, ErrIncomplete is returned.
-//
-// BUG: Currently, this simply reads the input line-by-line. This
-// means that it can't be used to interpret multi-line, complex
-// expressions. See #62.
 func (r *REPL) Next() (ret wdte.Func, err error) {
 	defer func() {
 		switch e := recover().(type) {

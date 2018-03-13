@@ -196,7 +196,7 @@ type Scope struct {
 	getFunc func(id ID) Func
 }
 
-// S is a convienence function that returns a blank, top-level scope.
+// S is a convenience function that returns a blank, top-level scope.
 func S() *Scope {
 	return nil
 }
