@@ -23,10 +23,6 @@ func Importer(blacklist []string) wdte.Importer {
 	})
 }
 
-func single(im wdte.Importer, expr string) {
-	panic("Not implemented.")
-}
-
 func main() {
 	blacklist := flag.String("blacklist", "", "Comma-separated list of modules that can't be imported.")
 	eval := flag.String("e", "", "An expression to evaluate instead of reading from a file.")
@@ -41,7 +37,7 @@ func main() {
 	im := Importer(strings.Split(*blacklist, ","))
 
 	if *eval != "" {
-		single(im, *eval)
+		file(im, strings.NewReader(*eval))
 		return
 	}
 
