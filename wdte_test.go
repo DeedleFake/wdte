@@ -295,6 +295,16 @@ func TestBasics(t *testing.T) {
 			script: `len 5;`,
 			ret:    wdte.Bool(false),
 		},
+		{
+			name:   "At/String",
+			script: `at 'test' 2;`,
+			ret:    wdte.String("s"),
+		},
+		{
+			name:   "At/Array",
+			script: `at [3; 5; 1] 0;`,
+			ret:    wdte.Number(3),
+		},
 	})
 }
 

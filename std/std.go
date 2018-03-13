@@ -396,6 +396,31 @@ func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(false)
 }
 
+// At expects two arguments, an implementation of wdte.Atter and an
+// index, in that order. If given only one, it assumes that it's the
+// index and returns a function which takes the wdte.Atter. At returns
+// the value at the index in the wdte.Atter.
+func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(At), args...)
+	}
+
+	frame = frame.Sub("at")
+
+	at := args[0].Call(frame).(wdte.Atter)
+	i := args[1].Call(frame)
+
+	ret, ok := at.At(i)
+	if !ok {
+		return &wdte.Error{
+			Frame: frame,
+			Err:   fmt.Errorf("index %v out of range", i),
+		}
+	}
+
+	return ret
+}
+
 // S returns a scope containing all of the functions in this package.
 // It maps some functions to symbols, such as Add ("+"), Sub ("-"),
 // and Equals ("=="), and some to the same name that they have in here
@@ -425,6 +450,7 @@ func S() *wdte.Scope {
 		"!":     wdte.GoFunc(Not),
 
 		"len": wdte.GoFunc(Len),
+		"at":  wdte.GoFunc(At),
 	})
 }
 
