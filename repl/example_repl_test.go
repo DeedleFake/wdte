@@ -2,7 +2,6 @@ package repl_test
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"reflect"
 
@@ -12,13 +11,14 @@ import (
 	"github.com/peterh/liner"
 )
 
+var (
+	mode = ">>> "
+)
+
 func next(lr *liner.State) repl.NextFunc {
 	return func() ([]byte, error) {
-		line, err := lr.Prompt("> ")
-		if err == liner.ErrPromptAborted {
-			err = io.EOF
-		}
-		return []byte(line), err
+		line, err := lr.Prompt(mode)
+		return []byte(line + "\n"), err
 	}
 }
 
@@ -32,6 +32,17 @@ func Example() {
 	for {
 		ret, err := r.Next()
 		if err != nil {
+			if err == repl.ErrIncomplete {
+				mode = "... "
+				continue
+			}
+
+			if err == liner.ErrPromptAborted {
+				r.Cancel()
+				mode = ">>> "
+				continue
+			}
+
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			continue
 		}
@@ -46,5 +57,7 @@ func Example() {
 		default:
 			fmt.Printf(": %v\n", ret)
 		}
+
+		mode = ">>> "
 	}
 }
