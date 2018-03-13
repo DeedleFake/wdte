@@ -17,6 +17,11 @@ type Comparer interface {
 	Compare(other Func) (int, bool)
 }
 
+// A Lenner is a Func that has a length, such as arrays and strings.
+type Lenner interface {
+	Len() int
+}
+
 // A String is a string, as parsed from a string literal. That's about
 // it. Like everything else, it's a function. It simply returns itself
 // when called.
@@ -41,6 +46,10 @@ func (s String) Compare(other Func) (int, bool) { // nolint
 	}
 
 	return 0, true
+}
+
+func (s String) Len() int { // nolint
+	return len(s)
 }
 
 // A Number is a number, as parsed from a number literal. That's about
@@ -74,6 +83,10 @@ func (a Array) Call(frame Frame, args ...Func) Func { // nolint
 		n = append(n, a[i].Call(frame))
 	}
 	return n
+}
+
+func (a Array) Len() int { // nolint
+	return len(a)
 }
 
 //func (a Array)Compare(other Func) (int, bool) {
