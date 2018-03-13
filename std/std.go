@@ -396,10 +396,20 @@ func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(false)
 }
 
-// At expects two arguments, an implementation of wdte.Atter and an
-// index, in that order. If given only one, it assumes that it's the
-// index and returns a function which takes the wdte.Atter. At returns
-// the value at the index in the wdte.Atter.
+// At returns the element at the index of the first argument, which is
+// assumed to be a wdte.Atter, specified by the second argument. In
+// other words,
+//
+//     at a i
+//
+// is the equivalent of
+//
+//     a[i]
+//
+// in a C-style language.
+//
+// If only given one argument, it returns a function which returns the
+// element at that index of its own argument.
 func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(At), args...)
