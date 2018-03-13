@@ -141,6 +141,10 @@ func pop(stack []string) (string, []string) {
 	return p, stack
 }
 
+// Partial checks if an expression, read from r, is incomplete. The
+// initial value of stack should be nil, and subsequent values should
+// be the value of the first return. The second return is true if the
+// expression was incomplete.
 func Partial(r io.Reader, stack []string) ([]string, bool) {
 	s := scanner.New(r)
 	var prev scanner.Token
