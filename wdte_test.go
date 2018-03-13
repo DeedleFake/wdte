@@ -471,11 +471,6 @@ func TestStrings(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(2), wdte.Number(1), wdte.Number(0), wdte.Number(-1), wdte.Number(-1)},
 		},
 		{
-			name:   "Len",
-			script: `let str => import 'strings'; let main => str.len 'abc';`,
-			ret:    wdte.Number(3),
-		},
-		{
 			name:   "At",
 			script: `let str => import 'strings'; let main => str.at 'test' 2;`,
 			ret:    wdte.String('s'),

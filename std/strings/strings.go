@@ -93,18 +93,6 @@ func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Number(strings.Index(string(haystack), string(needle)))
 }
 
-// Len returns the length of its argument.
-func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("len")
-
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Len)
-	}
-
-	return wdte.Number(len(string(args[0].Call(frame).(wdte.String))))
-}
-
 // At returns the ith character of a string. The order of arguments
 // is the string and then the index. If given only one argument, it
 // uses that argument as the index to get characters from in strings
@@ -159,8 +147,7 @@ func S() *wdte.Scope {
 		"suffix":   wdte.GoFunc(Suffix),
 		"index":    wdte.GoFunc(Index),
 
-		"len": wdte.GoFunc(Len),
-		"at":  wdte.GoFunc(At),
+		"at": wdte.GoFunc(At),
 
 		"upper": wdte.GoFunc(Upper),
 		"lower": wdte.GoFunc(Lower),
