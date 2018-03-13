@@ -105,15 +105,6 @@ func F() Frame {
 	}
 }
 
-// New returns a new child frame of f with the given ID and scope.
-func (f Frame) New(id ID, scope *Scope) Frame {
-	return Frame{
-		id:    id,
-		scope: scope,
-		p:     &f,
-	}
-}
-
 // Sub returns a new child frame of f with the given ID and the same
 // scope as f.
 //
