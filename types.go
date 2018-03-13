@@ -22,6 +22,13 @@ type Lenner interface {
 	Len() int
 }
 
+// An Atter is a Func that can be indexed, like an array or a string.
+type Atter interface {
+	// At returns the value at index i. If the index is out of range, it
+	// should return false as its second return value.
+	At(i Func) (Func, bool)
+}
+
 // A String is a string, as parsed from a string literal. That's about
 // it. Like everything else, it's a function. It simply returns itself
 // when called.
@@ -50,6 +57,18 @@ func (s String) Compare(other Func) (int, bool) { // nolint
 
 func (s String) Len() int { // nolint
 	return len(s)
+}
+
+func (s String) At(i Func) (Func, bool) { // nolint
+	if i, ok := i.(Number); ok {
+		if (int(i) < 0) || (int(i) >= len(s)) {
+			return nil, false
+		}
+
+		return String(s[int(i)]), true
+	}
+
+	return nil, false
 }
 
 // A Number is a number, as parsed from a number literal. That's about
@@ -87,6 +106,18 @@ func (a Array) Call(frame Frame, args ...Func) Func { // nolint
 
 func (a Array) Len() int { // nolint
 	return len(a)
+}
+
+func (a Array) At(i Func) (Func, bool) { // nolint
+	if i, ok := i.(Number); ok {
+		if (int(i) < 0) || (int(i) >= len(a)) {
+			return nil, false
+		}
+
+		return a[int(i)], true
+	}
+
+	return nil, false
 }
 
 //func (a Array)Compare(other Func) (int, bool) {
