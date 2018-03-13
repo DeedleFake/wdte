@@ -318,17 +318,15 @@ func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// True returns a boolean true.
-func True(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return wdte.Bool(true)
-}
+const (
+	// True returns a boolean true.
+	True wdte.Bool = true
 
-// False returns a boolean false. This is rarely necessary as most
-// built-in functionality considers any value other than a boolean
-// true to be false, but it's provided for completeness.
-func False(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return wdte.Bool(false)
-}
+	// False returns a boolean false. This is rarely necessary as most
+	// built-in functionality considers any value other than a boolean
+	// true to be false, but it's provided for completeness.
+	False wdte.Bool = false
+)
 
 // And returns true if all of its arguments are true.
 func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -381,6 +379,58 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(args[0].Call(frame) != wdte.Bool(true))
 }
 
+// Len returns the length of anything that implements wdte.Lenner. If
+// its argument does not implement wdte.Lenner, it returns false.
+func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("len")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Len)
+	}
+
+	if lenner, ok := args[0].Call(frame).(wdte.Lenner); ok {
+		return wdte.Number(lenner.Len())
+	}
+
+	return wdte.Bool(false)
+}
+
+// At returns the element at the index of the first argument, which is
+// assumed to be a wdte.Atter, specified by the second argument. In
+// other words,
+//
+//     at a i
+//
+// is the equivalent of
+//
+//     a[i]
+//
+// in a C-style language.
+//
+// If only given one argument, it returns a function which returns the
+// element at that index of its own argument.
+func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) <= 1 {
+		return save(wdte.GoFunc(At), args...)
+	}
+
+	frame = frame.Sub("at")
+
+	at := args[0].Call(frame).(wdte.Atter)
+	i := args[1].Call(frame)
+
+	ret, ok := at.At(i)
+	if !ok {
+		return &wdte.Error{
+			Frame: frame,
+			Err:   fmt.Errorf("index %v out of range", i),
+		}
+	}
+
+	return ret
+}
+
 // S returns a scope containing all of the functions in this package.
 // It maps some functions to symbols, such as Add ("+"), Sub ("-"),
 // and Equals ("=="), and some to the same name that they have in here
@@ -403,11 +453,14 @@ func S() *wdte.Scope {
 		">":     wdte.GoFunc(Greater),
 		"<=":    wdte.GoFunc(LessEqual),
 		">=":    wdte.GoFunc(GreaterEqual),
-		"true":  wdte.GoFunc(True),
-		"false": wdte.GoFunc(False),
+		"true":  True,
+		"false": False,
 		"&&":    wdte.GoFunc(And),
 		"||":    wdte.GoFunc(Or),
 		"!":     wdte.GoFunc(Not),
+
+		"len": wdte.GoFunc(Len),
+		"at":  wdte.GoFunc(At),
 	})
 }
 

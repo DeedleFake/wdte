@@ -73,18 +73,6 @@ type Func interface {
 	Call(frame Frame, args ...Func) Func
 }
 
-// A Comparer is a Func that is able to be compared to other
-// functions.
-type Comparer interface {
-	// Compare returns two values. The meaning of the first is dependent
-	// upon the second. If the second is true, then the first indicates
-	// ordering via the standard negative, positive, and zero results to
-	// indicate less than, greater than, and equal, respectively. If the
-	// second is false, then the first indicates only equality, with
-	// zero still meaning equal, but other values simply meaning unequal.
-	Compare(other Func) (int, bool)
-}
-
 // A Frame tracks information about the current function call, such as
 // the scope that the function is being executed in and debugging
 // info.
@@ -102,15 +90,6 @@ type Frame struct {
 func F() Frame {
 	return Frame{
 		id: "unknown function, maybe Go",
-	}
-}
-
-// New returns a new child frame of f with the given ID and scope.
-func (f Frame) New(id ID, scope *Scope) Frame {
-	return Frame{
-		id:    id,
-		scope: scope,
-		p:     &f,
 	}
 }
 

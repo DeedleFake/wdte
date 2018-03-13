@@ -62,28 +62,6 @@ func New(next NextFunc, im wdte.Importer, start *wdte.Scope) *REPL {
 	}
 }
 
-func (r *REPL) peek() string {
-	if len(r.stack) == 0 {
-		return ""
-	}
-
-	return r.stack[len(r.stack)-1]
-}
-
-func (r *REPL) push(v string) {
-	r.stack = append(r.stack, v)
-}
-
-func (r *REPL) pop() string {
-	if len(r.stack) == 0 {
-		return ""
-	}
-
-	p := r.stack[len(r.stack)-1]
-	r.stack = r.stack[:len(r.stack)-1]
-	return p
-}
-
 // Next reads and evaluates the next line of input. It returns the
 // value returned from that line, or an error if one is encountered.
 // If the end of the input has been reached, it will return nil, nil.
@@ -111,33 +89,11 @@ func (r *REPL) Next() (ret wdte.Func, err error) {
 		return nil, err
 	}
 
-	s := scanner.New(bytes.NewReader(src))
-	var prev scanner.Token
-	for s.Scan() {
-		switch tok := s.Tok(); tok.Type {
-		case scanner.Keyword:
-			switch v := tok.Val.(string); v {
-			case "(", "(@":
-				r.push(")")
-			case "[":
-				r.push("]")
-			case "{":
-				r.push("}")
-
-			case ")", "]", "}":
-				if v == r.peek() {
-					r.pop()
-				}
-			}
-
-		case scanner.EOF:
-			if (len(r.stack) > 0) || (prev.Val != ";") {
-				r.buf = append(r.buf, src...)
-				return nil, ErrIncomplete
-			}
-		}
-
-		prev = s.Tok()
+	stack, partial := Partial(bytes.NewReader(src), r.stack)
+	r.stack = stack
+	if partial {
+		r.buf = append(r.buf, src...)
+		return nil, ErrIncomplete
 	}
 
 	src = append(r.buf, src...)
@@ -165,4 +121,58 @@ func (r *REPL) Next() (ret wdte.Func, err error) {
 func (r *REPL) Cancel() {
 	r.stack = r.stack[:0]
 	r.buf = r.buf[:0]
+}
+
+func peek(stack []string) string {
+	if len(stack) == 0 {
+		return ""
+	}
+
+	return stack[len(stack)-1]
+}
+
+func pop(stack []string) (string, []string) {
+	if len(stack) == 0 {
+		return "", stack
+	}
+
+	p := stack[len(stack)-1]
+	stack = stack[:len(stack)-1]
+	return p, stack
+}
+
+// Partial checks if an expression, read from r, is incomplete. The
+// initial value of stack should be nil, and subsequent values should
+// be the value of the first return. The second return is true if the
+// expression was incomplete.
+func Partial(r io.Reader, stack []string) ([]string, bool) {
+	s := scanner.New(r)
+	var prev scanner.Token
+	for s.Scan() {
+		switch tok := s.Tok(); tok.Type {
+		case scanner.Keyword:
+			switch v := tok.Val.(string); v {
+			case "(", "(@":
+				stack = append(stack, ")")
+			case "[":
+				stack = append(stack, "]")
+			case "{":
+				stack = append(stack, "}")
+
+			case ")", "]", "}":
+				if v == peek(stack) {
+					_, stack = pop(stack)
+				}
+			}
+
+		case scanner.EOF:
+			if (len(stack) > 0) || (prev.Val != ";") {
+				return stack, true
+			}
+		}
+
+		prev = s.Tok()
+	}
+
+	return stack, false
 }

@@ -280,6 +280,31 @@ func TestBasics(t *testing.T) {
 			script: `let x => 3; let x => + x 5; x;`,
 			ret:    wdte.Number(8),
 		},
+		{
+			name:   "Len/String",
+			script: `len 'test';`,
+			ret:    wdte.Number(4),
+		},
+		{
+			name:   "Len/Array",
+			script: `len [3; 5; 1];`,
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "Len/Other",
+			script: `len 5;`,
+			ret:    wdte.Bool(false),
+		},
+		{
+			name:   "At/String",
+			script: `at 'test' 2;`,
+			ret:    wdte.String("s"),
+		},
+		{
+			name:   "At/Array",
+			script: `at [3; 5; 1] 0;`,
+			ret:    wdte.Number(3),
+		},
 	})
 }
 
@@ -456,16 +481,6 @@ func TestStrings(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(2), wdte.Number(1), wdte.Number(0), wdte.Number(-1), wdte.Number(-1)},
 		},
 		{
-			name:   "Len",
-			script: `let str => import 'strings'; let main => str.len 'abc';`,
-			ret:    wdte.Number(3),
-		},
-		{
-			name:   "At",
-			script: `let str => import 'strings'; let main => str.at 'test' 2;`,
-			ret:    wdte.String('s'),
-		},
-		{
 			name:   "Upper",
 			script: `let str => import 'strings'; let main => str.upper 'QwErTy';`,
 			ret:    wdte.String("QWERTY"),
@@ -495,11 +510,6 @@ func TestStrings(t *testing.T) {
 
 func TestArrays(t *testing.T) {
 	runTests(t, []test{
-		{
-			name:   "At",
-			script: `let a => import 'arrays'; let main => [3; 6; 9] -> a.at 1;`,
-			ret:    wdte.Number(6),
-		},
 		{
 			name:   "Stream",
 			script: `let a => import 'arrays'; let s => import 'stream'; let main => a.stream ['this'; 'is'; 'a'; 'test'] -> s.collect;`,
