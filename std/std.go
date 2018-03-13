@@ -318,17 +318,15 @@ func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// True returns a boolean true.
-func True(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return wdte.Bool(true)
-}
+const (
+	// True returns a boolean true.
+	True wdte.Bool = true
 
-// False returns a boolean false. This is rarely necessary as most
-// built-in functionality considers any value other than a boolean
-// true to be false, but it's provided for completeness.
-func False(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return wdte.Bool(false)
-}
+	// False returns a boolean false. This is rarely necessary as most
+	// built-in functionality considers any value other than a boolean
+	// true to be false, but it's provided for completeness.
+	False wdte.Bool = false
+)
 
 // And returns true if all of its arguments are true.
 func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -420,8 +418,8 @@ func S() *wdte.Scope {
 		">":     wdte.GoFunc(Greater),
 		"<=":    wdte.GoFunc(LessEqual),
 		">=":    wdte.GoFunc(GreaterEqual),
-		"true":  wdte.GoFunc(True),
-		"false": wdte.GoFunc(False),
+		"true":  True,
+		"false": False,
 		"&&":    wdte.GoFunc(And),
 		"||":    wdte.GoFunc(Or),
 		"!":     wdte.GoFunc(Not),
