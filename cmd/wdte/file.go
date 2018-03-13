@@ -1,7 +1,11 @@
 package main
 
-import "github.com/DeedleFake/wdte"
+import (
+	"io"
 
-func file(im wdte.Importer, path string) {
+	"github.com/DeedleFake/wdte"
+)
+
+func file(im wdte.Importer, file io.Reader) {
 	panic("Not implemented.")
 }

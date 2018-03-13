@@ -9,9 +9,15 @@ import (
 	"github.com/DeedleFake/wdte/repl"
 	"github.com/DeedleFake/wdte/std"
 	"github.com/peterh/liner"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 func stdin(im wdte.Importer) {
+	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
+		file(im, os.Stdin)
+		return
+	}
+
 	lr := liner.NewLiner()
 	lr.SetCtrlCAborts(true)
 	defer lr.Close()
@@ -24,6 +30,9 @@ func stdin(im wdte.Importer) {
 	mode := modeTop
 	next := func() ([]byte, error) {
 		line, err := lr.Prompt(mode)
+		if err == nil {
+			lr.AppendHistory(line)
+		}
 		return []byte(line + "\n"), err
 	}
 

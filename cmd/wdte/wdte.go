@@ -51,6 +51,13 @@ func main() {
 		stdin(im)
 
 	default:
-		file(im, inpath)
+		f, err := os.Open(inpath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to open %q: %v", inpath, err)
+			os.Exit(1)
+		}
+		defer f.Close()
+
+		file(im, f)
 	}
 }
