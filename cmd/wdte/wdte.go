@@ -11,11 +11,12 @@ import (
 	_ "github.com/DeedleFake/wdte/std/all"
 )
 
-func Importer(blacklist []string) wdte.Importer {
+// TODO: This should be able to import other scripts.
+func importer(blacklist []string) wdte.Importer {
 	return wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
 		for _, m := range blacklist {
 			if from == m {
-				return nil, fmt.Errorf("%q is blacklisted")
+				return nil, fmt.Errorf("%q is blacklisted", from)
 			}
 		}
 
@@ -34,7 +35,7 @@ func main() {
 	}
 	flag.Parse()
 
-	im := Importer(strings.Split(*blacklist, ","))
+	im := importer(strings.Split(*blacklist, ","))
 
 	if *eval != "" {
 		file(im, strings.NewReader(*eval))
