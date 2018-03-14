@@ -106,8 +106,8 @@ func runTests(t *testing.T, tests []test) {
 func TestBasics(t *testing.T) {
 	t.Run("ScopeKnown", func(t *testing.T) {
 		scope := wdte.S()
-		scope = scope.Sub("x", wdte.Number(3))
-		scope = scope.Sub("test", wdte.String("This is a test."))
+		scope = scope.Add("x", wdte.Number(3))
+		scope = scope.Add("test", wdte.String("This is a test."))
 		scope = scope.Map(map[wdte.ID]wdte.Func{
 			"q":    wdte.String("Other"),
 			"test": wdte.String("Or is it?"),

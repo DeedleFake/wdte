@@ -180,7 +180,7 @@ func S() *Scope {
 	return nil
 }
 
-// Get returns the value of the variable with the given id. If the
+// Get returns the value of the variable with the given ID. If the
 // variable doesn't exist in either the current scope or any of its
 // parent scopes, nil is returned.
 func (s *Scope) Get(id ID) Func {
@@ -191,8 +191,23 @@ func (s *Scope) Get(id ID) Func {
 	return s.getFunc(id)
 }
 
-// Sub returns a new subscope with the given variable stored in it.
-func (s *Scope) Sub(id ID, val Func) *Scope {
+// Sub subscopes sub to s such that variables in sub will shadow
+// variables in s.
+func (s *Scope) Sub(sub *Scope) *Scope {
+	return &Scope{
+		p: s,
+		getFunc: func(g ID) Func {
+			if v := sub.Get(g); v != nil {
+				return v
+			}
+
+			return s.Get(g)
+		},
+	}
+}
+
+// Add returns a new subscope with the given variable stored in it.
+func (s *Scope) Add(id ID, val Func) *Scope {
 	return &Scope{
 		p: s,
 		known: map[ID]struct{}{
@@ -361,7 +376,7 @@ func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	n := f.Func.Call(frame, next...)
-	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
+	frame = frame.WithScope(frame.Scope().Add(f.Slot, n))
 
 	return f.Chain.Call(frame, n)
 }
@@ -381,7 +396,7 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	n := f.Func.Call(frame, next...).Call(frame, frame.Scope().Freeze(args[0]))
-	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
+	frame = frame.WithScope(frame.Scope().Add(f.Slot, n))
 
 	return f.Chain.Call(frame, n)
 }
@@ -402,7 +417,7 @@ func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	n := f.Func.Call(frame, next...).Call(frame, frame.Scope().Freeze(args[0]))
-	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
+	frame = frame.WithScope(frame.Scope().Add(f.Slot, n))
 
 	return f.Chain.Call(frame, args[0])
 }
@@ -479,7 +494,7 @@ func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 	for _, f := range c {
 		switch f := f.(type) {
 		case *Let:
-			frame = frame.WithScope(frame.Scope().Sub(f.ID, f.Expr))
+			frame = frame.WithScope(frame.Scope().Add(f.ID, f.Expr))
 			last = f
 		default:
 			last = f.Call(frame)
@@ -682,7 +697,7 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		vars[lambda.Args[i]] = args[i]
 	}
 
-	scope = scope.Map(vars).Sub(original.ID, original)
+	scope = scope.Map(vars).Add(original.ID, original)
 	return lambda.Expr.Call(frame.WithScope(scope), append(stored, args...)...)
 }
 
