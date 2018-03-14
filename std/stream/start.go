@@ -10,7 +10,11 @@ type array struct {
 	i int
 }
 
-// New returns a new stream that iterates over any arguments given.
+// New is a WDTE function with the following signature:
+//
+//    new ...
+//
+// It returns a Stream that iterates over its arguments.
 func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -24,11 +28,11 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-func (a *array) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (a *array) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return a
 }
 
-func (a *array) Next(frame wdte.Frame) (wdte.Func, bool) {
+func (a *array) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	if a.i >= len(a.a) {
 		return nil, false
 	}
@@ -50,12 +54,26 @@ type rng struct {
 	s wdte.Number
 }
 
-// Range returns a stream that yields successive numbers. If given a
-// single argument, the range yielded is [0, args[0]). If given two
-// arguments, the range is [args[0], args[1]). If given three
-// arguments, the range is the same as with two arguments, but the
-// step in between numbers yielded is the third argument, rather than
-// 1.
+// Range is a WDTE function with the following signatures:
+//
+//    range end
+//    range start end
+//    range start end step
+//
+// It returns a new Stream which iterates from start to end, stepping
+// by step each time. In other words, it's similar to the following
+// pseudo Go code
+//
+//    for i := start; i < end; i += step {
+//      yield i
+//    }
+//
+// but with the difference that if step is negative, then the loop
+// condition is inverted.
+//
+// If start is not specified, it is assumed to be 0. If step is not
+// specified it is assumed to be 1 if start is greater than or equal
+// to end, and -1 if start is less then end.
 func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Range)
@@ -71,10 +89,18 @@ func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		}
 
 	case 2:
+		start := args[0].Call(frame).(wdte.Number)
+		end := args[1].Call(frame).(wdte.Number)
+
+		s := wdte.Number(1)
+		if start > end {
+			s = -1
+		}
+
 		return &rng{
-			i: args[0].Call(frame).(wdte.Number),
-			m: args[1].Call(frame).(wdte.Number),
-			s: 1,
+			i: start,
+			m: end,
+			s: s,
 		}
 	}
 
@@ -85,12 +111,15 @@ func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-func (r *rng) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (r *rng) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return r
 }
 
-func (r *rng) Next(frame wdte.Frame) (wdte.Func, bool) {
-	if r.i >= r.m {
+func (r *rng) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
+	if (r.s >= 0) && (r.i >= r.m) {
+		return nil, false
+	}
+	if (r.s < 0) && (r.i <= r.m) {
 		return nil, false
 	}
 
@@ -99,11 +128,13 @@ func (r *rng) Next(frame wdte.Frame) (wdte.Func, bool) {
 	return n, true
 }
 
-// Concat contatenates two or more streams, returning a new stream
-// that yields all of the elements of the original streams in the
-// order that they were given. If it is only given one stream, it
-// returns a function that prepends that stream to any arguments that
-// it is given.
+// Concat is a WDTE function with the following signatures:
+//
+//    concat s ...
+//    (concat s) ...
+//
+// It returns a new Stream that yields the values of all of its
+// argument Streams in the order that they were given.
 func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:

@@ -357,10 +357,20 @@ func TestStream(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
 		},
 		{
-			name:   "Range",
+			name:   "Range/1",
 			script: `let s => import 'stream'; let main start end step => s.range start end step -> s.collect;`,
 			args:   []wdte.Func{wdte.Number(3), wdte.Number(12), wdte.Number(3)},
 			ret:    wdte.Array{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
+		},
+		{
+			name:   "Range/2",
+			script: `let s => import 'stream'; s.range 1 3 -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(1), wdte.Number(2)},
+		},
+		{
+			name:   "Range/3",
+			script: `let s => import 'stream'; s.range 1 6 2 -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(1), wdte.Number(3), wdte.Number(5)},
 		},
 		{
 			name:   "Concat",

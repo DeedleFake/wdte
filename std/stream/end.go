@@ -2,12 +2,12 @@ package stream
 
 import "github.com/DeedleFake/wdte"
 
-// Collect iterates over a stream, putting each of its elements into a
-// new array, in the order they are yielded by the stream, before
-// returning the array.
+// Collect is a WDTE function with the following signature:
 //
-// If any of the values yielded by the stream are errors, then
-// iteration stops and that error is returned instead.
+//    collect s
+//
+// Iterates through the Stream s, collecting the yielded elements into
+// an array. When the Stream ends, it returns the collected array.
 func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -37,16 +37,15 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return r
 }
 
-// Drain drains the stream, iterating over it much like collect does,
-// but discarding each value. When it's finished it returns the
-// now-empty stream. If an error is yielded by the stream, then
-// iteration stops and that error is returned instead.
+// Drain is a WDTE function with the following signature:
 //
-// The primary purpose of this function is to allow map to be used as
-// a type of foreach-style loop without the extra allocation that
-// collect performs. For example:
+//    drain s
 //
-//     s.range 5 -> s.map (io.writeln io.stdout) -> s.drain;
+// Drain is the same as Collect, but it simply discards elements as
+// they are yielded by the Stream, returning the empty Stream when
+// it's done. The main purpose of this function is to allow Map to be
+// used as a foreach-style loop without the allocation that Collect
+// performs.
 func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -67,20 +66,27 @@ func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// Reduce reduces a stream to a single value using a reduction
-// function. For example,
+// Reduce is a WDTE function with the following signatures:
 //
-//     s.range 5 -> s.reduce 0 +
+//    reduce s i r
+//    (reduce r) s i
+//    (reduce i r) s
 //
-// will yield a summation of the number 0 through 4, inclusive.
+// Reduce performs a reduction on the Stream s, resulting in a single
+// value, which is returned. i is the initial value for the reduction,
+// and r is the reducer. r is expected to have the following
+// signature:
 //
-// Reduce takes three arguments: A stream, an initial value, and a
-// function. It first calls the reduction function with the initial
-// value given and the first value from the stream. It then continues
-// iterating over every value in the stream, passing both the previous
-// output of the reduction function and the value the stream yielded
-// until the stream is empty, at which point it returns the most
-// recent output from the reduction function.
+//    r acc n
+//
+// r is passed the accumulated value as acc, starting with i, and the
+// latest value yielded by the Stream as n. Whatever value r returns
+// is used as the next value of acc until the Stream is empty, at
+// which point the last value of acc is returned. For example,
+//
+//    range 5 -> reduce 0 +
+//
+// returns a summation of the range [0,5).
 func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("reduce")
 
@@ -146,15 +152,14 @@ func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //	return prev
 //}
 
-// Any takes two arguments, a stream and a function. It iterates over
-// the stream's values, calling the given function on each element. If
-// any of the calls return true, than the whole function returns true.
-// If it reaches the end of the stream, then it returns
-// false.
+// Any is a WDTE function with the following signatures:
 //
-// If given only one argument, it returns a function which checks its
-// own argument, a stream, against the function it was originally
-// given.
+//    any s f
+//    (any f) s
+//
+// It iterates over the Stream s, passing each yielded element to f in
+// turn. If any of those calls returns true, then the entire function
+// returns true. Otherwise it returns false. It is short-circuiting.
 func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -182,15 +187,14 @@ func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// All takes two arguments, a stream and a function. It iterates over
-// the stream's values, calling the given function on each element. If
-// any of the calls don't return true, than the whole function returns
-// false. If it reaches the end of the stream, then it returns
-// true.
+// All is a WDTE function with the following signatures:
 //
-// If given only one argument, it returns a function which checks its
-// own argument, a stream, against the function it was originally
-// given.
+//    all s f
+//    (all f) s
+//
+// It iterates over the Stream s, passing each yielded element to f in
+// turn. If all of those calls return true, then the entire function
+// returns true. Otherwise it returns false. It is short-circuiting.
 func All(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
