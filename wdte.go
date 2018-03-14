@@ -171,7 +171,7 @@ func (f *Frame) backtrace(w io.Writer) error {
 // a blank, top-level scope.
 type Scope struct {
 	p       *Scope
-	known   map[ID]struct{}
+	known   func() map[ID]struct{}
 	getFunc func(id ID) Func
 }
 
@@ -196,6 +196,11 @@ func (s *Scope) Get(id ID) Func {
 func (s *Scope) Sub(sub *Scope) *Scope {
 	return &Scope{
 		p: s,
+		known: func() map[ID]struct{} {
+			known := make(map[ID]struct{})
+			sub.knownSet(known)
+			return known
+		},
 		getFunc: func(g ID) Func {
 			if v := sub.Get(g); v != nil {
 				return v
@@ -210,8 +215,10 @@ func (s *Scope) Sub(sub *Scope) *Scope {
 func (s *Scope) Add(id ID, val Func) *Scope {
 	return &Scope{
 		p: s,
-		known: map[ID]struct{}{
-			id: {},
+		known: func() map[ID]struct{} {
+			return map[ID]struct{}{
+				id: {},
+			}
 		},
 		getFunc: func(g ID) Func {
 			if g == id {
@@ -228,14 +235,15 @@ func (s *Scope) Add(id ID, val Func) *Scope {
 // the map after passing it to this method may result in undefined
 // behavior.
 func (s *Scope) Map(vars map[ID]Func) *Scope {
-	known := make(map[ID]struct{}, len(vars))
-	for v := range vars {
-		known[v] = struct{}{}
-	}
-
 	return &Scope{
-		p:     s,
-		known: known,
+		p: s,
+		known: func() map[ID]struct{} {
+			known := make(map[ID]struct{}, len(vars))
+			for v := range vars {
+				known[v] = struct{}{}
+			}
+			return known
+		},
 		getFunc: func(g ID) Func {
 			if v, ok := vars[g]; ok {
 				return s.Freeze(v)
@@ -247,18 +255,26 @@ func (s *Scope) Map(vars map[ID]Func) *Scope {
 }
 
 // Custom returns a new subscope that uses the given lookup function
-// to retrieve values. vars is an optional list of known variables for
-// listing purposes.
-func (s *Scope) Custom(getFunc func(ID) Func, vars ...ID) *Scope {
-	known := make(map[ID]struct{}, len(vars))
-	for _, v := range vars {
-		known[v] = struct{}{}
-	}
-
+// to retrieve values. If getFunc returns nil, the parent of s will be
+// searched. known is an optional function which returns a set
+// containing all known variables in this layer of the scope.
+func (s *Scope) Custom(getFunc func(ID) Func, known func() map[ID]struct{}) *Scope {
 	return &Scope{
-		p:       s,
-		known:   known,
-		getFunc: getFunc,
+		p: s,
+		known: func() map[ID]struct{} {
+			if known == nil {
+				return nil
+			}
+
+			return known()
+		},
+		getFunc: func(g ID) Func {
+			if v := getFunc(g); v != nil {
+				return v
+			}
+
+			return s.Get(g)
+		},
 	}
 }
 
@@ -285,14 +301,14 @@ func (s *Scope) knownSet(vars map[ID]struct{}) {
 		return
 	}
 
-	for v := range s.known {
+	for v := range s.known() {
 		vars[v] = struct{}{}
 	}
 
 	s.p.knownSet(vars)
 }
 
-// Known returns a list of variables that are in scope.
+// Known returns a sorted list of variables that are in scope.
 func (s *Scope) Known() []ID {
 	vars := make(map[ID]struct{})
 	s.knownSet(vars)
