@@ -27,7 +27,7 @@ func Example() {
 	lr.SetCtrlCAborts(true)
 	defer lr.Close()
 
-	r := repl.New(next(lr), std.Import, std.S())
+	r := repl.New(next(lr), std.Import, std.Scope)
 
 	for {
 		ret, err := r.Next()
