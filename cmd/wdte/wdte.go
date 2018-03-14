@@ -18,7 +18,7 @@ func main() {
 	}
 	flag.Parse()
 
-	im := importer(strings.Split(*blacklist, ","), flag.Args())
+	im := importer("", strings.Split(*blacklist, ","), flag.Args())
 
 	if *eval != "" {
 		file(im, strings.NewReader(*eval))
