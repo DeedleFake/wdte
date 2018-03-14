@@ -36,7 +36,7 @@ func stdin(im wdte.Importer) {
 		return []byte(line + "\n"), err
 	}
 
-	r := repl.New(next, im, std.S())
+	r := repl.New(next, im, std.Scope)
 
 	for {
 		ret, err := r.Next()
