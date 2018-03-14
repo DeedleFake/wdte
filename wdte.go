@@ -131,7 +131,7 @@ func main() {
 		}
 
 		stdout.Set("innerHTML", "")
-		if err, ok := m.Call(wdte.F().WithScope(std.S().Map(funcs))).(error); ok {
+		if err, ok := m.Call(wdte.F().WithScope(std.Scope.Map(funcs))).(error); ok {
 			log.Println(err)
 		}
 
