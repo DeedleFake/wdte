@@ -8,9 +8,12 @@ import (
 	"github.com/DeedleFake/wdte/std"
 )
 
-// Contains returns true if the second argument is a substring of the
-// first. If only given one argument, it returns a function that
-// checks if that argument is a substring of its own argument.
+// Contains is a WDTE function with the following signatures:
+//
+//    contains outer inner
+//    (contains inner) outer
+//
+// Returns true if inner is a substring of outer.
 func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("contains")
 
@@ -29,9 +32,12 @@ func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(strings.Contains(string(haystack), string(needle)))
 }
 
-// Prefix returns true if the first argument starts with the second.
-// If given only one argument, it returns a function that checks if
-// that argument is a prefix of its own argument.
+// Prefix is a WDTE function with the following signatures:
+//
+//    prefix s p
+//    (prefix p) s
+//
+// Returns true if p is a prefix of s.
 func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("prefix")
 
@@ -50,9 +56,12 @@ func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(strings.HasPrefix(string(haystack), string(needle)))
 }
 
-// Suffix returns true if the first argument ends with the second. If
-// given only one argument, it returns a function that checks if that
-// argument is a suffix of its own argument.
+// Suffix is a WDTE function with the following signatures:
+//
+//    suffix s p
+//    (suffix p) s
+//
+// Returns true if p is a suffix of s.
 func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("suffix")
 
@@ -71,10 +80,14 @@ func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(strings.HasSuffix(string(haystack), string(needle)))
 }
 
-// Index searches the first argument for the second argument,
-// returning the index of the beginning of its first instance, or -1
-// if its not present. If only given one argument, Index returns a
-// function which searches other strings for that argument.
+// Index is a WDTE function with the following signatures:
+//
+//    index outer inner
+//    (index inner) outer
+//
+// It returns the index of the first character of the first instances
+// of inner in outer. If inner is not a substring of outer, it returns
+// -1.
 func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("index")
 
@@ -93,7 +106,11 @@ func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Number(strings.Index(string(haystack), string(needle)))
 }
 
-// Upper returns its argument converted to uppercase.
+// Upper is a WDTE function with the following signatures:
+//
+//    upper s
+//
+// It returns s converted to uppercase.
 func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("upper")
 
@@ -105,7 +122,11 @@ func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(strings.ToUpper(string(args[0].Call(frame).(wdte.String))))
 }
 
-// Lower returns its argument converted to lowercase.
+// Lower is a WDTE function with the following signature:
+//
+//    lower s
+//
+// It returns s converted to lowercase.
 func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("lower")
 
@@ -117,21 +138,19 @@ func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(strings.ToLower(string(args[0].Call(frame).(wdte.String))))
 }
 
-// S returns a scope containing the various functions in this package.
-func S() *wdte.Scope {
-	return wdte.S().Map(map[wdte.ID]wdte.Func{
-		"contains": wdte.GoFunc(Contains),
-		"prefix":   wdte.GoFunc(Prefix),
-		"suffix":   wdte.GoFunc(Suffix),
-		"index":    wdte.GoFunc(Index),
+// Scope is a scope containing the functions in this package.
+var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
+	"contains": wdte.GoFunc(Contains),
+	"prefix":   wdte.GoFunc(Prefix),
+	"suffix":   wdte.GoFunc(Suffix),
+	"index":    wdte.GoFunc(Index),
 
-		"upper": wdte.GoFunc(Upper),
-		"lower": wdte.GoFunc(Lower),
+	"upper": wdte.GoFunc(Upper),
+	"lower": wdte.GoFunc(Lower),
 
-		"format": wdte.GoFunc(Format),
-	})
-}
+	"format": wdte.GoFunc(Format),
+})
 
 func init() {
-	std.Register("strings", S())
+	std.Register("strings", Scope)
 }

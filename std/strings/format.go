@@ -12,12 +12,17 @@ import (
 	"github.com/DeedleFake/wdte"
 )
 
-// Format formats a string. The first argument is a format
-// specification, and all trailing arguments are values to be
-// formatted into the string. It does *not* use Go's C-style
-// formatting specification. Instead, format specifications are {}
-// with optional flags placed between them. Flags may be any
-// combination of the following:
+// Format is a WDTE function with the following signatures:
+//
+//    format tmpl ...
+//    (format tmpl) ...
+//
+// This is the general-purpose string formatting function of the
+// standard library, similar to Go's fmt.Sprintf(). Unlike
+// fmt.Sprintf(), however, format uses a custom formatting
+// specification. A format in the string tmpl is of the form {} with
+// optional flags placed between them. Flags may be any combination of
+// the following:
 //
 //    #<num> The zero-based index of the argument to be inserted.
 //           Subsequent formats will increment from here. In other
@@ -26,10 +31,6 @@ import (
 //    q      Place the value in quotes using strconv.Quote.
 //    ?      Mark the value with it's underlying Go type, such as
 //           wdte.Number(3).
-//
-// Any unknown flags will cause an error to be returned instead.
-//
-// If Format is only given one argument, it returns a function that formats its own arguments using that original argument as the format specification.
 //
 // TODO: Add more flags.
 func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
