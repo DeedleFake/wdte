@@ -49,5 +49,5 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 })
 
 func init() {
-	std.Register("stream", S())
+	std.Register("stream", Scope)
 }
