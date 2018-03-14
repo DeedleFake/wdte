@@ -87,5 +87,5 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 })
 
 func init() {
-	std.Register("io/file", S())
+	std.Register("io/file", Scope)
 }
