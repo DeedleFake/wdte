@@ -11,7 +11,7 @@ func main() {
 	blacklist := flag.String("blacklist", "", "Comma-separated list of modules that can't be imported.")
 	eval := flag.String("e", "", "An expression to evaluate instead of reading from a file.")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %v [options] <file> | -\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %v [options] [<file> | -] [arguments...]\n\n", os.Args[0])
 
 		fmt.Fprintf(os.Stderr, "Options:\n")
 		flag.PrintDefaults()
