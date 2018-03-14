@@ -65,7 +65,20 @@ func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return w
 }
 
-// Seek seeks an io.Seeker and then returns it.
+// Seek is a WDTE function with the following signatures:
+//
+//    seek s n w
+//    (seek w) s n
+//    (seek n w) s
+//
+// Returns s after seeking s to n, with a relative position denoted by
+// w:
+//
+// If w is greater than 0, it seeks relative to the beginning of s.
+//
+// If w is equal to 0, it seeks relative to the current location in s.
+//
+// If w is less than 0, it seeks relative to the end of s.
 func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("seek")
 
@@ -96,8 +109,11 @@ func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return s.(wdte.Func)
 }
 
-// Close closes a closer. This includes files opened with other
-// functions in this module.
+// Close is a WDTE function with the following signatures:
+//
+//    close c
+//
+// Returns c after closing it.
 func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("close")
 
@@ -113,12 +129,18 @@ func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return c.(wdte.Func)
 }
 
-// Combine combines multiple readers or multiple writers. If the
-// arguments passed are readers, it uses Go's io.MultiReader to
-// concatenate them. If the arguments passed are writers, it uses Go's
-// io.MultiWriter to combine them. If only one argument is given, it
-// returns a function which combines its arguments with the argument
-// originally given.
+// Combine is a WDTE function with the following signatures:
+//
+//    combine a ...
+//    (combine a) ...
+//
+// If the arguments passed are readers, it returns a reader that reads
+// each until EOF before continuing to the next, and finally yielding
+// EOF itself when the last reader does.
+//
+// If the arguments passed are writers, it returns a writer that
+// writes each write to all of them in turn, only returning when they
+// have all returned.
 func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("combine")
 
@@ -153,22 +175,22 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// Copy copies from a reader to a writer until it hits EOF using Go's
-// io.Copy. It takes its arguments in either order, and, if given one
-// only argument, returns a function which performs the copy using
-// that argument and a single argument that it is given. In other
-// words:
+// Copy is a WDTE function with the following signatures:
 //
-//     io.stdout -> io.copy io.stdin
+//    copy w r
+//    (copy w) r
+//    copy r w
+//    (copy r) w
 //
-// and
+// Copies from the reader r into the writer w until r yields EOF.
+// Returns whichever argument was given second.
 //
-//     io.stdin -> io.copy io.stdout
+// The reason for this return discrepency is to allow both variants of
+// the function to be used more easily in chains. For example, both of
+// the following work:
 //
-// are mostly equivalent. The only difference is in the return value.
-// Copy returns the second argument it was given to allow for easier
-// chaining. For example, in the first example above it returns
-// io.stdout, while in the second it returns io.stdin.
+//    stdout -> copy stdin -> ... # Later elements will be given stdout.
+//    stdin -> copy stdout -> ... # Later elements will be given stdin.
 func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("copy")
 
@@ -211,7 +233,11 @@ func (r stringReader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // n
 	return r
 }
 
-// ReadString returns a reader that reads from a string.
+// ReadString is a WDTE function with the following signature:
+//
+//    readString s
+//
+// Returns a reader which reads from the string s.
 func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("readString")
 
@@ -223,7 +249,12 @@ func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return stringReader{Reader: strings.NewReader(string(s))}
 }
 
-// String reads the entirety of a reader into a string and returns it.
+// String is a WDTE function with the following signature:
+//
+//    strings r
+//
+// Reads the entirety of the reader r and returns the result as a
+// string.
 func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("string")
 
@@ -247,11 +278,11 @@ type scanner struct {
 	s *bufio.Scanner
 }
 
-func (s scanner) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (s scanner) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return s
 }
 
-func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) {
+func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	ok := s.s.Scan()
 	if !ok {
 		err := s.s.Err()
@@ -264,8 +295,12 @@ func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) {
 	return wdte.String(s.s.Text()), true
 }
 
-// Lines returns a stream that yields, as strings, successive lines
-// read from a reader.
+// Lines is a WDTE function with the following signature:
+//
+//    lines r
+//
+// Returns a stream.Stream that yields, as strings, successive lines
+// read from the reader r.
 func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("lines")
 
@@ -277,8 +312,12 @@ func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return scanner{s: bufio.NewScanner(r)}
 }
 
-// Words returns a stream that yields, as strings, successive words
-// read from a reader.
+// Words is a WDTE function with the following signature:
+//
+//    words r
+//
+// Returns a stream.Stream that yields, as strings, successive words
+// read from the reader r.
 func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("words")
 
@@ -292,12 +331,20 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return scanner{s: s}
 }
 
-// Scan returns a stream that splits a read around a given separator
-// string. For example,
+// Scan is a WDTE function with the following signatures:
 //
-//     io.readString str -> io.scan '--'
+//    scan r sep
+//    (scan r) sep
+//    scan sep r
+//    (scan sep) r
 //
-// splits str around instances of '--'.
+// Returns a stream.Stream that yields sections of the reader r split
+// around the seperator string sep. For example,
+//
+//    readString 'this--is--an--example' -> scan '--'
+//
+// will return a stream.Stream that will yield 'this', 'is', 'an', and
+// 'example'.
 func Scan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("scan")
 
@@ -347,11 +394,11 @@ type runeStream struct {
 	r io.RuneReader
 }
 
-func (r runeStream) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (r runeStream) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return r
 }
 
-func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) {
+func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	c, _, err := r.r.ReadRune()
 	if err != nil {
 		if err == io.EOF {
@@ -362,8 +409,15 @@ func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) {
 	return wdte.Number(c), true
 }
 
-// Runes returns a stream that yields individual runes from a reader
-// as wdte.Numbers.
+// Runes is a WDTE function with the following signature:
+//
+//    runes r
+//
+// Returns a stream.Stream that yields individual Unicode characters
+// from the reader r as numbers.
+//
+// TODO: Maybe it makes more sense for them to be yielded as strings
+// with a length of one.
 func Runes(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("runes")
 
@@ -418,21 +472,18 @@ func write(f func(io.Writer, interface{}) error) wdte.Func {
 	return gf
 }
 
-// Write writes to a writer. It takes two arguments, one of which is
-// the writer and one of which is the data. It is essentially
-// equivalent to fmt.Fprint. It accepts the arguments in either order
-// and, if given only one argument, returns a function that takes the
-// other. In other words,
+// Write is a WDTE function with the following signatures:
 //
-//     'Example' -> io.write io.stdout
+//    write w d
+//    (write w) d
+//    write d w
+//    (write d) w
 //
-// and
+// It writes the data d to the writer w in much the same way that Go's
+// fmt.Fprint does. It returns w to allow for easier chaining.
 //
-//     io.stdout -> io.write 'Example'
-//
-// are equivalent.
-//
-// It returns the writer that it was passed.
+// If both arguments are writers, it will consider either the first
+// argument or the outer argument to be w.
 func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("write")
 	return write(func(w io.Writer, v interface{}) error {
@@ -441,8 +492,18 @@ func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}).Call(frame, args...)
 }
 
-// Writeln is exactly like Write, but also writes a newline
-// afterwards. It is essentially equivalent to fmt.Fprintln.
+// Writeln is a WDTE function with the following signatures:
+//
+//    writeln w d
+//    (writeln w) d
+//    writeln d w
+//    (writeln d) w
+//
+// It writes the data d to the writer w in much the same way that Go's
+// fmt.Fprintln does. It returns w to allow for easier chaining.
+//
+// If both arguments are writers, it will consider either the first
+// argument or the outer argument to be w.
 func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("writeln")
 	return write(func(w io.Writer, v interface{}) error {
@@ -451,32 +512,29 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}).Call(frame, args...)
 }
 
-// S returns a scope that contains the various functions in this
-// package.
-func S() *wdte.Scope {
-	return wdte.S().Map(map[wdte.ID]wdte.Func{
-		"stdin":  wdte.GoFunc(stdin),
-		"stdout": wdte.GoFunc(stdout),
-		"stderr": wdte.GoFunc(stderr),
+// Scope is a scope containing the functions in this package.
+var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
+	"stdin":  wdte.GoFunc(stdin),
+	"stdout": wdte.GoFunc(stdout),
+	"stderr": wdte.GoFunc(stderr),
 
-		"seek":  wdte.GoFunc(Seek),
-		"close": wdte.GoFunc(Close),
+	"seek":  wdte.GoFunc(Seek),
+	"close": wdte.GoFunc(Close),
 
-		"combine": wdte.GoFunc(Combine),
-		"copy":    wdte.GoFunc(Copy),
+	"combine": wdte.GoFunc(Combine),
+	"copy":    wdte.GoFunc(Copy),
 
-		"readString": wdte.GoFunc(ReadString),
-		"string":     wdte.GoFunc(String),
-		"lines":      wdte.GoFunc(Lines),
-		"words":      wdte.GoFunc(Words),
-		"scan":       wdte.GoFunc(Scan),
-		"runes":      wdte.GoFunc(Runes),
+	"readString": wdte.GoFunc(ReadString),
+	"string":     wdte.GoFunc(String),
+	"lines":      wdte.GoFunc(Lines),
+	"words":      wdte.GoFunc(Words),
+	"scan":       wdte.GoFunc(Scan),
+	"runes":      wdte.GoFunc(Runes),
 
-		"write":   wdte.GoFunc(Write),
-		"writeln": wdte.GoFunc(Writeln),
-	})
-}
+	"write":   wdte.GoFunc(Write),
+	"writeln": wdte.GoFunc(Writeln),
+})
 
 func init() {
-	std.Register("io", S())
+	std.Register("io", Scope)
 }

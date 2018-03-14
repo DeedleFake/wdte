@@ -13,9 +13,12 @@ func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
 	})
 }
 
-// Add returns the sum of its arguments. If called with only 1
-// argument, it returns a function which adds arguments given to that
-// one argument.
+// Add is a WDTE function with the following signatures:
+//
+//    + a ...
+//    (+ a) ...
+//
+// Returns the sum of a and the rest of its arguments.
 func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Add), args...)
@@ -34,9 +37,12 @@ func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return sum
 }
 
-// Sub returns args[0] - args[1]. If called with only 1 argument, it
-// returns a function which returns the argument given minus that
-// argument.
+// Sub is a WDTE with the following signatures:
+//
+//    - a b
+//    (- b) a
+//
+// Returns a minus b.
 func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Sub), args...)
@@ -57,9 +63,12 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return a1.(wdte.Number) - a2.(wdte.Number)
 }
 
-// Mult returns the product of its arguments. If called with only 1
-// argument, it returns a function that multiplies that argument by
-// its own arguments.
+// Mult is a WDTE function with the following signatures:
+//
+//    * a ...
+//    (* a) ...
+//
+// Returns the product of a and its other arguments.
 func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Mult), args...)
@@ -78,9 +87,12 @@ func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return p
 }
 
-// Div returns args[0] / args[1]. If called with only 1 argument, it
-// returns a function which divides the original argument by its own
-// argument.
+// Div is a WDTE function with the following signatures:
+//
+//    / a b
+//    (/ b) a
+//
+// Returns a divided by b.
 func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Div), args...)
@@ -101,9 +113,12 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return a1.(wdte.Number) / a2.(wdte.Number)
 }
 
-// Mod returns args[0] % args[1]. If called with only 1 argument, it
-// returns a function which divides the original argument by its own
-// argument.
+// Mod is a WDTE function with the following signatures:
+//
+//    % a b
+//    (% b) a
+//
+// Returns a mod b.
 func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Mod), args...)
@@ -127,13 +142,15 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	))
 }
 
-// Equals checks if two values are equal or not. If called with only
-// one argument, it returns a function which checks that argument for
-// equality with other values.
+// Equals is a WDTE function with the following signatures:
 //
-// If the first argument given implements wdte.Comparer, it is used
-// for the comparison. If not, and the second does, then that is used.
-// If neither does, a simple, direct Go equality check is used.
+//    == a b
+//    (== b) a
+//
+// Returns true if a equals b. If a implements wdte.Comparer, the
+// equality check is done using that implementation. If a does not but
+// b does, b's implementation is used. If neither does, a direct Go
+// equality check is used.
 func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Equals), args...)
@@ -162,10 +179,15 @@ func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(a1 == a2)
 }
 
-// Less returns true if the first argument is less than the second.
-// It returns an error if two arguments can't be compared.
+// Less is a WDTE function with the following signatures:
 //
-// TODO: Document usage of wdte.Comparer.
+//    < a b
+//    (< b) a
+//
+// Returns true if a is less than b. Comparison rules are the same as
+// those used for Equals, with the exception that the argument used
+// must not only implement wdte.Comparer but that that implementation
+// must support ordering.
 func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Less), args...)
@@ -201,10 +223,15 @@ func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// Greater returns true if the first argument is less than the second.
-// It returns an error if two arguments can't be compared.
+// Greater is a WDTE function with the following signatures:
 //
-// TODO: Document usage of wdte.Comparer.
+//    > a b
+//    (> b) a
+//
+// Returns true if a is greater than b. Comparison rules are the same
+// as those used for Equals, with the exception that the argument used
+// must not only implement wdte.Comparer but that that implementation
+// must support ordering.
 func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Greater), args...)
@@ -240,10 +267,15 @@ func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// LessEqual returns true if the first argument is less than or equal
-// to the second.
+// LessEqual is a WDTE function with the following signatures:
 //
-// TODO: Document usage of wdte.Comparer.
+//    <= a b
+//    (<= b) a
+//
+// Returns true if a is less than or equal to b. Comparison rules are
+// the same as those used for Equals, with the exception that the
+// argument used must not only implement wdte.Comparer but that that
+// implementation must support ordering.
 func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(LessEqual), args...)
@@ -279,10 +311,15 @@ func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
-// GreaterEqual returns true if the first argument is greater than or
-// equal to the second.
+// GreaterEqual is a WDTE function with the following signatures:
 //
-// TODO: Document usage of wdte.Comparer.
+//    >= a b
+//    (>= b) a
+//
+// Returns true if a is greater than or equal to b. Comparison rules
+// are the same as those used for Equals, with the exception that the
+// argument used must not only implement wdte.Comparer but that that
+// implementation must support ordering.
 func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(GreaterEqual), args...)
@@ -319,16 +356,28 @@ func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 const (
-	// True returns a boolean true.
+	// True is a WDTE function with the following signature:
+	//
+	//    true
+	//
+	// As you can probably guess, it returns a boolean true.
 	True wdte.Bool = true
 
-	// False returns a boolean false. This is rarely necessary as most
+	// False is a WDTE function with the following signature:
+	//
+	//    false
+	//
+	// Returns a boolean false. This is rarely necessary as most
 	// built-in functionality considers any value other than a boolean
 	// true to be false, but it's provided for completeness.
 	False wdte.Bool = false
 )
 
-// And returns true if all of its arguments are true.
+// And is a WDTE function with the following signature:
+//
+//    && ...
+//
+// Returns true if all of its arguments are true.
 func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("&&")
 
@@ -347,7 +396,11 @@ func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(true)
 }
 
-// Or returns true if any of its arguments are true.
+// Or is a WDTE function with the following signature:
+//
+//    || ...
+//
+// Returns true if any of its arguments are true.
 func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("||")
 
@@ -366,8 +419,11 @@ func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(false)
 }
 
-// Not returns true if its argument isn't. Otherwise, it returns
-// false.
+// Not is a WDTE function with the following signature:
+//
+//    ! a
+//
+// Returns true if a is not true or false if a is not true.
 func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("!")
 
@@ -379,8 +435,12 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(args[0].Call(frame) != wdte.Bool(true))
 }
 
-// Len returns the length of anything that implements wdte.Lenner. If
-// its argument does not implement wdte.Lenner, it returns false.
+// Len is a WDTE function with the following signature:
+//
+//    len a
+//
+// Returns the length of a if a implements wdte.Lenner, or false if it
+// doesn't.
 func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("len")
 
@@ -396,20 +456,12 @@ func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.Bool(false)
 }
 
-// At returns the element at the index of the first argument, which is
-// assumed to be a wdte.Atter, specified by the second argument. In
-// other words,
+// At is a WDTE function with the following signatures:
 //
-//     at a i
+//    at a i
+//    (at i) a
 //
-// is the equivalent of
-//
-//     a[i]
-//
-// in a C-style language.
-//
-// If only given one argument, it returns a function which returns the
-// element at that index of its own argument.
+// Returns the ith index of a. a is assumed to implement wdte.Atter.
 func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(At), args...)
@@ -431,41 +483,35 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return ret
 }
 
-// S returns a scope containing all of the functions in this package.
-// It maps some functions to symbols, such as Add ("+"), Sub ("-"),
-// and Equals ("=="), and some to the same name that they have in here
-// but with the first letter lowercase, such as True ("true").
+// Scope is a scope containing the functions in this package.
 //
-// The scope returned from here is useful for skipping some simpler
-// boilerplate in a lot of cases. To use it, simply pass a frame
-// containing it or a subscope of it to a function call. In many
-// cases, it may be simpler to use the F function instead.
-func S() *wdte.Scope {
-	return wdte.S().Map(map[wdte.ID]wdte.Func{
-		"+": wdte.GoFunc(Add),
-		"-": wdte.GoFunc(Sub),
-		"*": wdte.GoFunc(Mult),
-		"/": wdte.GoFunc(Div),
-		"%": wdte.GoFunc(Mod),
+// This scope is primarily useful for bootstrapping an environment for
+// running scripts in. To use it, simply pass a frame containing it or
+// a subscope of it to a function call. In many cases, a client can
+// simply call F to obtain such a frame.
+var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
+	"+": wdte.GoFunc(Add),
+	"-": wdte.GoFunc(Sub),
+	"*": wdte.GoFunc(Mult),
+	"/": wdte.GoFunc(Div),
+	"%": wdte.GoFunc(Mod),
 
-		"==":    wdte.GoFunc(Equals),
-		"<":     wdte.GoFunc(Less),
-		">":     wdte.GoFunc(Greater),
-		"<=":    wdte.GoFunc(LessEqual),
-		">=":    wdte.GoFunc(GreaterEqual),
-		"true":  True,
-		"false": False,
-		"&&":    wdte.GoFunc(And),
-		"||":    wdte.GoFunc(Or),
-		"!":     wdte.GoFunc(Not),
+	"==":    wdte.GoFunc(Equals),
+	"<":     wdte.GoFunc(Less),
+	">":     wdte.GoFunc(Greater),
+	"<=":    wdte.GoFunc(LessEqual),
+	">=":    wdte.GoFunc(GreaterEqual),
+	"true":  True,
+	"false": False,
+	"&&":    wdte.GoFunc(And),
+	"||":    wdte.GoFunc(Or),
+	"!":     wdte.GoFunc(Not),
 
-		"len": wdte.GoFunc(Len),
-		"at":  wdte.GoFunc(At),
-	})
-}
+	"len": wdte.GoFunc(Len),
+	"at":  wdte.GoFunc(At),
+})
 
-// F returns a top-level frame that has the various functions in this
-// package already in scope.
+// F returns a top-level frame that has S as its scope.
 func F() wdte.Frame {
-	return wdte.F().WithScope(S())
+	return wdte.F().WithScope(Scope)
 }

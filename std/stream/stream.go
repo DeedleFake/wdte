@@ -29,27 +29,25 @@ func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return n(frame)
 }
 
-// S returns a scope containing the various functions in this package.
-func S() *wdte.Scope {
-	return wdte.S().Map(map[wdte.ID]wdte.Func{
-		"new":    wdte.GoFunc(New),
-		"range":  wdte.GoFunc(Range),
-		"concat": wdte.GoFunc(Concat),
+// Scope is a scope containing the functions in this package.
+var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
+	"new":    wdte.GoFunc(New),
+	"range":  wdte.GoFunc(Range),
+	"concat": wdte.GoFunc(Concat),
 
-		"map":       wdte.GoFunc(Map),
-		"filter":    wdte.GoFunc(Filter),
-		"flatMap":   wdte.GoFunc(FlatMap),
-		"enumerate": wdte.GoFunc(Enumerate),
+	"map":       wdte.GoFunc(Map),
+	"filter":    wdte.GoFunc(Filter),
+	"flatMap":   wdte.GoFunc(FlatMap),
+	"enumerate": wdte.GoFunc(Enumerate),
 
-		"collect": wdte.GoFunc(Collect),
-		"drain":   wdte.GoFunc(Drain),
-		"reduce":  wdte.GoFunc(Reduce),
-		//"chain":   wdte.GoFunc(Chain),
-		"any": wdte.GoFunc(Any),
-		"all": wdte.GoFunc(All),
-	})
-}
+	"collect": wdte.GoFunc(Collect),
+	"drain":   wdte.GoFunc(Drain),
+	"reduce":  wdte.GoFunc(Reduce),
+	//"chain":   wdte.GoFunc(Chain),
+	"any": wdte.GoFunc(Any),
+	"all": wdte.GoFunc(All),
+})
 
 func init() {
-	std.Register("stream", S())
+	std.Register("stream", Scope)
 }

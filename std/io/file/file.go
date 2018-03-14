@@ -17,7 +17,11 @@ func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return f
 }
 
-// Open opens a file and returns it as a reader.
+// Open is a WDTE function with the following signature:
+//
+//    open path
+//
+// Opens the file at path and returns it.
 func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("open")
 
@@ -33,8 +37,12 @@ func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return File{File: file}
 }
 
-// Create creates a file, truncating it if it exists, and returns it
-// as a writer.
+// Create is a WDTE function with the following signature:
+//
+//    create path
+//
+// Creates the file at path, truncating it if it already exists, and
+// returns it.
 func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("create")
 
@@ -50,8 +58,12 @@ func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return File{File: file}
 }
 
-// Append opens a file for appending as a writer. If it doesn't exist
-// already, it is created.
+// Append is a WDTE function with the following signature:
+//
+//    append path
+//
+// Opens the file at path for appending, creating it if it doesn't
+// already exist, and returns it.
 func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("append")
 
@@ -67,15 +79,13 @@ func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return File{File: file}
 }
 
-// S returns a scope containing the functions in this package.
-func S() *wdte.Scope {
-	return wdte.S().Map(map[wdte.ID]wdte.Func{
-		"open":   wdte.GoFunc(Open),
-		"create": wdte.GoFunc(Create),
-		"append": wdte.GoFunc(Append),
-	})
-}
+// Scope is a scope containing the functions in this package.
+var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
+	"open":   wdte.GoFunc(Open),
+	"create": wdte.GoFunc(Create),
+	"append": wdte.GoFunc(Append),
+})
 
 func init() {
-	std.Register("io/file", S())
+	std.Register("io/file", Scope)
 }

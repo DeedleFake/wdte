@@ -106,8 +106,8 @@ func runTests(t *testing.T, tests []test) {
 func TestBasics(t *testing.T) {
 	t.Run("ScopeKnown", func(t *testing.T) {
 		scope := wdte.S()
-		scope = scope.Sub("x", wdte.Number(3))
-		scope = scope.Sub("test", wdte.String("This is a test."))
+		scope = scope.Add("x", wdte.Number(3))
+		scope = scope.Add("test", wdte.String("This is a test."))
 		scope = scope.Map(map[wdte.ID]wdte.Func{
 			"q":    wdte.String("Other"),
 			"test": wdte.String("Or is it?"),
@@ -357,10 +357,20 @@ func TestStream(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
 		},
 		{
-			name:   "Range",
+			name:   "Range/1",
 			script: `let s => import 'stream'; let main start end step => s.range start end step -> s.collect;`,
 			args:   []wdte.Func{wdte.Number(3), wdte.Number(12), wdte.Number(3)},
 			ret:    wdte.Array{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
+		},
+		{
+			name:   "Range/2",
+			script: `let s => import 'stream'; s.range 1 3 -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(1), wdte.Number(2)},
+		},
+		{
+			name:   "Range/3",
+			script: `let s => import 'stream'; s.range 1 6 2 -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(1), wdte.Number(3), wdte.Number(5)},
 		},
 		{
 			name:   "Concat",

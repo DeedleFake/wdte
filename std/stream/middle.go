@@ -9,14 +9,12 @@ type mapper struct {
 	m wdte.Func
 }
 
-// Map returns a function that takes a stream and wraps the stream in
-// a new stream that calls the function originally given to Map on
-// each element before passing it on.
+// Map is a WDTE function with the following signature:
 //
-// Wow, that sound horrible. It's not too bad, though. It works like
-// this. Call Map with some function `f` and get a new function. Then,
-// call that returned function on a stream to get a new stream that
-// calls `f` on each element when Next is called.
+//    (map f) s
+//
+// It returns a Stream which calls f on each element yielded by the
+// Stream s, yielding the return values of f in their place.
 func Map(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -26,7 +24,7 @@ func Map(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return &mapper{m: args[0].Call(frame)}
 }
 
-func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	switch len(args) {
 	case 1:
 		if a, ok := args[0].Call(frame).(Stream); ok {
@@ -49,12 +47,12 @@ type filter struct {
 	f wdte.Func
 }
 
-// Filter returns a stream which yields values from a previous stream
-// that are passed through a filter. For example,
+// Filter is a WDTE function with the following signature:
 //
-//     s.range 5 -> s.filter (<= 2) -> s.collect
+//    (filter f) s
 //
-// returns [0; 1; 2].
+// It returns a Stream which yields only those values yielded by the
+// Stream s that (f value) results in true for.
 func Filter(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -64,7 +62,7 @@ func Filter(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return filter{f: args[0].Call(frame)}
 }
 
-func (f filter) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (f filter) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	switch len(args) {
 	case 1:
 		if a, ok := args[0].Call(frame).(Stream); ok {
@@ -91,16 +89,19 @@ type flatMapper struct {
 	m wdte.Func
 }
 
-// FlatMap works similarly to map, but if the mapping function returns
-// an stream, the contents of that stream are substituted for the
-// values of the stream, rather than the stream itself being yielded.
-// For example,
+// FlatMap is a WDTE function with the following signature:
 //
-//     s.range 3 -> s.flatMap (s.new 0 1) -> s.collect
+//    (flatMap f) s
+//
+// It's identical to Map with one caveat: If a call to f yields a
+// Stream, the elements of that Stream are yielded in turn before
+// continuing the iteration of s. In other words,
+//
+//    range 3 -> flatMap (new 0 1) -> collect
 //
 // returns
 //
-//     [0; 1; 0; 1; 0; 1]
+//    [0; 1; 0; 1; 0; 1]
 func FlatMap(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -110,7 +111,7 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return &flatMapper{m: args[0].Call(frame)}
 }
 
-func (m *flatMapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func (m *flatMapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	switch len(args) {
 	case 1:
 		if a, ok := args[0].Call(frame).(Stream); ok {
@@ -148,14 +149,13 @@ func (m *flatMapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return m
 }
 
-// Enumerate takes a stream and returns a new stream that yields
-// values from the original stream wrapped in an array such that each
-// value yielded is in the format
+// Enumerate is a WDTE function with the following signature:
 //
-//     [i; v]
+//    enumerate s
 //
-// where i is the index of the value yielded and v is the original
-// value.
+// It returns a Stream which yields values of the form [i; v] where i
+// is the zero-based index of the element v that was yielded by the
+// Stream s.
 func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:

@@ -171,7 +171,7 @@ func (f *Frame) backtrace(w io.Writer) error {
 // a blank, top-level scope.
 type Scope struct {
 	p       *Scope
-	known   map[ID]struct{}
+	known   func() map[ID]struct{}
 	getFunc func(id ID) Func
 }
 
@@ -180,7 +180,7 @@ func S() *Scope {
 	return nil
 }
 
-// Get returns the value of the variable with the given id. If the
+// Get returns the value of the variable with the given ID. If the
 // variable doesn't exist in either the current scope or any of its
 // parent scopes, nil is returned.
 func (s *Scope) Get(id ID) Func {
@@ -191,12 +191,34 @@ func (s *Scope) Get(id ID) Func {
 	return s.getFunc(id)
 }
 
-// Sub returns a new subscope with the given variable stored in it.
-func (s *Scope) Sub(id ID, val Func) *Scope {
+// Sub subscopes sub to s such that variables in sub will shadow
+// variables in s.
+func (s *Scope) Sub(sub *Scope) *Scope {
 	return &Scope{
 		p: s,
-		known: map[ID]struct{}{
-			id: {},
+		known: func() map[ID]struct{} {
+			known := make(map[ID]struct{})
+			sub.knownSet(known)
+			return known
+		},
+		getFunc: func(g ID) Func {
+			if v := sub.Get(g); v != nil {
+				return v
+			}
+
+			return s.Get(g)
+		},
+	}
+}
+
+// Add returns a new subscope with the given variable stored in it.
+func (s *Scope) Add(id ID, val Func) *Scope {
+	return &Scope{
+		p: s,
+		known: func() map[ID]struct{} {
+			return map[ID]struct{}{
+				id: {},
+			}
 		},
 		getFunc: func(g ID) Func {
 			if g == id {
@@ -213,14 +235,15 @@ func (s *Scope) Sub(id ID, val Func) *Scope {
 // the map after passing it to this method may result in undefined
 // behavior.
 func (s *Scope) Map(vars map[ID]Func) *Scope {
-	known := make(map[ID]struct{}, len(vars))
-	for v := range vars {
-		known[v] = struct{}{}
-	}
-
 	return &Scope{
-		p:     s,
-		known: known,
+		p: s,
+		known: func() map[ID]struct{} {
+			known := make(map[ID]struct{}, len(vars))
+			for v := range vars {
+				known[v] = struct{}{}
+			}
+			return known
+		},
 		getFunc: func(g ID) Func {
 			if v, ok := vars[g]; ok {
 				return s.Freeze(v)
@@ -232,18 +255,26 @@ func (s *Scope) Map(vars map[ID]Func) *Scope {
 }
 
 // Custom returns a new subscope that uses the given lookup function
-// to retrieve values. vars is an optional list of known variables for
-// listing purposes.
-func (s *Scope) Custom(getFunc func(ID) Func, vars ...ID) *Scope {
-	known := make(map[ID]struct{}, len(vars))
-	for _, v := range vars {
-		known[v] = struct{}{}
-	}
-
+// to retrieve values. If getFunc returns nil, the parent of s will be
+// searched. known is an optional function which returns a set
+// containing all known variables in this layer of the scope.
+func (s *Scope) Custom(getFunc func(ID) Func, known func() map[ID]struct{}) *Scope {
 	return &Scope{
-		p:       s,
-		known:   known,
-		getFunc: getFunc,
+		p: s,
+		known: func() map[ID]struct{} {
+			if known == nil {
+				return nil
+			}
+
+			return known()
+		},
+		getFunc: func(g ID) Func {
+			if v := getFunc(g); v != nil {
+				return v
+			}
+
+			return s.Get(g)
+		},
 	}
 }
 
@@ -270,14 +301,14 @@ func (s *Scope) knownSet(vars map[ID]struct{}) {
 		return
 	}
 
-	for v := range s.known {
+	for v := range s.known() {
 		vars[v] = struct{}{}
 	}
 
 	s.p.knownSet(vars)
 }
 
-// Known returns a list of variables that are in scope.
+// Known returns a sorted list of variables that are in scope.
 func (s *Scope) Known() []ID {
 	vars := make(map[ID]struct{})
 	s.knownSet(vars)
@@ -361,7 +392,7 @@ func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	n := f.Func.Call(frame, next...)
-	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
+	frame = frame.WithScope(frame.Scope().Add(f.Slot, n))
 
 	return f.Chain.Call(frame, n)
 }
@@ -381,7 +412,7 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	n := f.Func.Call(frame, next...).Call(frame, frame.Scope().Freeze(args[0]))
-	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
+	frame = frame.WithScope(frame.Scope().Add(f.Slot, n))
 
 	return f.Chain.Call(frame, n)
 }
@@ -402,7 +433,7 @@ func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	n := f.Func.Call(frame, next...).Call(frame, frame.Scope().Freeze(args[0]))
-	frame = frame.WithScope(frame.Scope().Sub(f.Slot, n))
+	frame = frame.WithScope(frame.Scope().Add(f.Slot, n))
 
 	return f.Chain.Call(frame, args[0])
 }
@@ -479,7 +510,7 @@ func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 	for _, f := range c {
 		switch f := f.(type) {
 		case *Let:
-			frame = frame.WithScope(frame.Scope().Sub(f.ID, f.Expr))
+			frame = frame.WithScope(frame.Scope().Add(f.ID, f.Expr))
 			last = f
 		default:
 			last = f.Call(frame)
@@ -682,7 +713,7 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		vars[lambda.Args[i]] = args[i]
 	}
 
-	scope = scope.Map(vars).Sub(original.ID, original)
+	scope = scope.Map(vars).Add(original.ID, original)
 	return lambda.Expr.Call(frame.WithScope(scope), append(stored, args...)...)
 }
 
