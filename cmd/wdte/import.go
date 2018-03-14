@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/DeedleFake/wdte"
@@ -45,14 +45,15 @@ func importer(wd string, blacklist []string, args []string) wdte.Importer {
 		}
 
 		if strings.HasPrefix(from, ".") || strings.HasPrefix(from, "/") {
-			im := importer(path.Dir(from), blacklist, args)
+			path := filepath.FromSlash(from)
+			im := importer(filepath.Dir(path), blacklist, args)
 
-			s, err := importPlugin(from, im)
+			s, err := importPlugin(filepath.Join(wd, path), im)
 			if !os.IsNotExist(err) {
 				return s, err
 			}
 
-			s, err = importScript(from, im)
+			s, err = importScript(filepath.Join(wd, path), im)
 			if !os.IsNotExist(err) {
 				return s, err
 			}
