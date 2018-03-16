@@ -13,8 +13,13 @@ import (
 )
 
 func printRet(ret wdte.Func) {
-	if ret, ok := ret.(fmt.Stringer); ok {
+	switch ret := ret.(type) {
+	case error, fmt.Stringer:
 		fmt.Printf(": %v\n", ret)
+		return
+
+	case wdte.GoFunc:
+		fmt.Println(": complex value (GoFunc)")
 		return
 	}
 
