@@ -334,22 +334,22 @@ func (s *Scope) Latest(boundary string) ([]ID, *Scope) {
 		return nil, nil
 	}
 
-	if s.bound == boundary {
-		known := make(map[ID]struct{})
-		s.p.knownSet(known, true)
-		if len(known) == 0 {
-			return nil, s
-		}
-
-		list := make([]ID, 0, len(known))
-		for v := range known {
-			list = append(list, v)
-		}
-
-		return list, s
+	if s.bound != boundary {
+		return s.p.Latest(boundary)
 	}
 
-	return s.p.Latest(boundary)
+	known := make(map[ID]struct{})
+	s.p.knownSet(known, true)
+	if len(known) == 0 {
+		return nil, s
+	}
+
+	list := make([]ID, 0, len(known))
+	for v := range known {
+		list = append(list, v)
+	}
+
+	return list, s
 }
 
 // Parent returns the parent of the current scope.
@@ -578,7 +578,7 @@ func (sub Sub) Compare(other Func) (int, bool) { // nolint
 // specified by the right-hand side. The remainder of the elements in
 // the compound are then evaluated under this new subscope. If the
 // last element in the compound is a *Let, the right-hand side is
-// returned as a lambda.
+// returned as a lambda if it has arugments.
 type Compound []Func
 
 // Collect executes the compound the same as Call, but also returns
@@ -751,6 +751,10 @@ func (cache *memoCache) Set(args []Func, val Func) {
 // it will create a new subscope containing itself under the ID "ex",
 // and its first and second arguments under the IDs "x" and "y",
 // respectively. It will then evaluate `+ x y` in that new scope.
+//
+// The arguments in the subscope, not including the self-reference,
+// are contained in the boundary "args". The self-reference is contained
+// in the boundary "self".
 type Lambda struct {
 	ID   ID
 	Expr Func
@@ -803,7 +807,7 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 
 // A Let is an expression that maps an expression to an ID. It's used
 // inside compounds to create subscopes, essentially allowing for
-// read-only, shadowable variable declaration.
+// read-only, shadowable variable declarations.
 //
 // When evaluated, a Let simply passes everything through to its inner
 // expression.
