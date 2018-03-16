@@ -12,6 +12,26 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+func printRet(ret wdte.Func) {
+	switch ret := ret.(type) {
+	case error, fmt.Stringer:
+		fmt.Printf(": %v\n", ret)
+		return
+
+	case wdte.GoFunc:
+		fmt.Println(": complex value (GoFunc)")
+		return
+	}
+
+	switch k := reflect.Indirect(reflect.ValueOf(ret)).Kind(); k {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Struct, reflect.UnsafePointer:
+		fmt.Printf(": complex value (%v)\n", k)
+
+	default:
+		fmt.Printf(": %v\n", ret)
+	}
+}
+
 func stdin(im wdte.Importer) {
 	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
 		file(im, os.Stdin)
@@ -59,13 +79,7 @@ func stdin(im wdte.Importer) {
 			break
 		}
 
-		switch reflect.Indirect(reflect.ValueOf(ret)).Kind() {
-		case reflect.Struct:
-			fmt.Printf(": complex value\n")
-
-		default:
-			fmt.Printf(": %v\n", ret)
-		}
+		printRet(ret)
 
 		mode = modeTop
 	}
