@@ -87,10 +87,10 @@ let a => import 'arrays';
 
 let fib n => s.range 1 n
 	-> s.reduce [0; 1] (@ self p n => [
-		a.at p 1;
-		+ (a.at p 0) (a.at p 1);
+		at p 1;
+		+ (at p 0) (at p 1);
 	])
-	-> a.at 1
+	-> at 1
 	;
 
 fib 30
