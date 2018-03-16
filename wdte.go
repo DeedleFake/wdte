@@ -173,6 +173,7 @@ type Scope struct {
 	p       *Scope
 	known   func() map[ID]struct{}
 	getFunc func(id ID) Func
+	bound   string
 }
 
 // S is a convenience function that returns a blank, top-level scope.
@@ -188,6 +189,10 @@ func (s *Scope) Get(id ID) Func {
 		return nil
 	}
 
+	if s.getFunc == nil {
+		return s.p.Get(id)
+	}
+
 	return s.getFunc(id)
 }
 
@@ -198,7 +203,7 @@ func (s *Scope) Sub(sub *Scope) *Scope {
 		p: s,
 		known: func() map[ID]struct{} {
 			known := make(map[ID]struct{})
-			sub.knownSet(known)
+			sub.knownSet(known, false)
 			return known
 		},
 		getFunc: func(g ID) Func {
@@ -278,6 +283,75 @@ func (s *Scope) Custom(getFunc func(ID) Func, known func() map[ID]struct{}) *Sco
 	}
 }
 
+// UpperBound places an upper boundary in the scope hierarchy. A
+// boundary is useful for dilineating parts of the scope so that
+// certain variable IDs can be found later.
+//
+// For example:
+//
+//    scope = scope.UpperBound().Add("ex", 3).LowerBound("example")
+//    scope.Latest("example") // ([]ID{"ex"}, scope)
+//
+// If no upper bound is specified before a lower bound is, the
+// top-level of the hierarchy is used.
+func (s *Scope) UpperBound() *Scope {
+	return &Scope{
+		p:       s,
+		known:   nil,
+		getFunc: nil,
+	}
+}
+
+// LowerBound is the complement to UpperBound. It places a named lower
+// bound into the hierarchy, allowing for the variables between the
+// lower bound and the previous upper bound to be found later.
+//
+// For example:
+//
+//    scope = scope.UpperBound().Add("ex", 3).LowerBound("example")
+//    scope.Latest("example") // ([]ID{"ex"}, scope)
+func (s *Scope) LowerBound(name string) *Scope {
+	if name == "" {
+		panic("Boundary name can't be empty")
+	}
+
+	return &Scope{
+		p:       s,
+		known:   nil,
+		getFunc: nil,
+		bound:   name,
+	}
+}
+
+// Latest finds the lower bound with the given name in the hierarchy
+// and returns a list of all of the known IDs defined between that
+// bound and the next upper bound or the top of the hierarchy if none
+// exists. It also returns the lower bound itself to allow for finding
+// the values associated with the IDs even if they were later
+// shadowed.
+func (s *Scope) Latest(boundary string) ([]ID, *Scope) {
+	if s == nil {
+		return nil, nil
+	}
+
+	if s.bound == boundary {
+		known := make(map[ID]struct{})
+		s.p.knownSet(known, true)
+		if len(known) == 0 {
+			return nil, s
+		}
+
+		list := make([]ID, 0, len(known))
+		for v := range known {
+			list = append(list, v)
+		}
+
+		return list, s
+	}
+
+	return s.p.Latest(boundary)
+}
+
 // Parent returns the parent of the current scope.
 func (s *Scope) Parent() *Scope {
 	if s == nil {
@@ -296,8 +370,12 @@ func (s *Scope) Freeze(f Func) Func {
 	}
 }
 
-func (s *Scope) knownSet(vars map[ID]struct{}) {
+func (s *Scope) knownSet(vars map[ID]struct{}, boundary bool) {
 	if s == nil {
+		return
+	}
+
+	if boundary && (s.getFunc == nil) && (s.bound == "") {
 		return
 	}
 
@@ -305,15 +383,18 @@ func (s *Scope) knownSet(vars map[ID]struct{}) {
 		vars[v] = struct{}{}
 	}
 
-	s.p.knownSet(vars)
+	s.p.knownSet(vars, boundary)
 }
 
 // Known returns a sorted list of variables that are in scope.
 func (s *Scope) Known() []ID {
 	vars := make(map[ID]struct{})
-	s.knownSet(vars)
+	s.knownSet(vars, false)
+	if len(vars) == 0 {
+		return nil
+	}
 
-	var list []ID
+	list := make([]ID, 0, len(vars))
 	for v := range vars {
 		list = append(list, v)
 	}
@@ -608,9 +689,11 @@ type Memo struct {
 }
 
 func (m *Memo) Call(frame Frame, args ...Func) Func { // nolint
+	ids, s := frame.Scope().Latest("args")
+
 	check := make([]Func, 0, len(args))
-	for _, arg := range args {
-		check = append(check, arg.Call(frame))
+	for _, id := range ids {
+		check = append(check, s.Get(id).Call(frame))
 	}
 
 	cached, ok := m.cache.Get(check)
@@ -713,8 +796,9 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		vars[lambda.Args[i]] = args[i]
 	}
 
-	scope = scope.Map(vars).Add(original.ID, original)
-	return lambda.Expr.Call(frame.WithScope(scope), append(stored, args...)...)
+	scope = scope.UpperBound().Map(vars).LowerBound("args")
+	scope = scope.UpperBound().Add(original.ID, original).LowerBound("self")
+	return lambda.Expr.Call(frame.WithScope(scope))
 }
 
 // A Let is an expression that maps an expression to an ID. It's used
