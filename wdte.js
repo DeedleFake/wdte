@@ -24362,6 +24362,16 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		return s;
 	};
 	Scope.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	Scope.ptr.prototype.String = function() {
+		var _r, _r$1, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		s = this;
+		_r = s.Known(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_r$1 = fmt.Sprint(new sliceType$1([_r])); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		$s = -1; return _r$1;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Scope.ptr.prototype.String }; } $f._r = _r; $f._r$1 = _r$1; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	Scope.prototype.String = function() { return this.$val.String(); };
 	GoFunc.prototype.Call = function(frame, args) {
 		var _r, args, f, frame, r, $s, $deferred, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; args = $f.args; f = $f.f; frame = $f.frame; r = $f.r; $s = $f.$s; $deferred = $f.$deferred; $r = $f.$r; } var $err = null; try { s: while (true) { switch ($s) { case 0: $deferred = []; $deferred.index = $curGoroutine.deferStack.length; $curGoroutine.deferStack.push($deferred);
@@ -24719,6 +24729,30 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Lambda.ptr.prototype.Call }; } $f._i = _i; $f._i$1 = _i$1; $f._key = _key; $f._key$1 = _key$1; $f._r = _r; $f._ref = _ref; $f._ref$1 = _ref$1; $f.args = args; $f.frame = frame; $f.i = i; $f.i$1 = i$1; $f.lambda = lambda; $f.original = original; $f.scope = scope; $f.stored = stored; $f.vars = vars; $f.vars$1 = vars$1; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Lambda.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
+	Lambda.ptr.prototype.String = function() {
+		var _i, _r, _ref, arg, buf, lambda, raw, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _ref = $f._ref; arg = $f.arg; buf = $f.buf; lambda = $f.lambda; raw = $f.raw; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		buf = [buf];
+		raw = [raw];
+		lambda = this;
+		buf[0] = new bytes.Buffer.ptr(sliceType$4.nil, 0, arrayType$1.zero(), 0);
+		_r = fmt.Fprintf(buf[0], "(@ %v", new sliceType$1([new ID(lambda.ID)])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_r;
+		_ref = lambda.Args;
+		_i = 0;
+		while (true) {
+			if (!(_i < _ref.$length)) { break; }
+			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			buf[0].WriteByte(32);
+			buf[0].WriteString((arg));
+			_i++;
+		}
+		buf[0].WriteString(" => ...)");
+		raw[0] = buf[0].Bytes();
+		$s = -1; return raw[0];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Lambda.ptr.prototype.String }; } $f._i = _i; $f._r = _r; $f._ref = _ref; $f.arg = arg; $f.buf = buf; $f.lambda = lambda; $f.raw = raw; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	Lambda.prototype.String = function() { return this.$val.String(); };
 	Let.ptr.prototype.Call = function(frame, args) {
 		var _r, args, frame, let$1, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; args = $f.args; frame = $f.frame; let$1 = $f.let$1; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -24737,7 +24771,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	ImportFunc.methods = [{prop: "Import", name: "Import", pkg: "", typ: $funcType([$String], [ptrType$3, $error], false)}];
 	Frame.methods = [{prop: "Sub", name: "Sub", pkg: "", typ: $funcType([ID], [Frame], false)}, {prop: "WithScope", name: "WithScope", pkg: "", typ: $funcType([ptrType$3], [Frame], false)}, {prop: "ID", name: "ID", pkg: "", typ: $funcType([], [ID], false)}, {prop: "Scope", name: "Scope", pkg: "", typ: $funcType([], [ptrType$3], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [Frame], false)}, {prop: "Backtrace", name: "Backtrace", pkg: "", typ: $funcType([io.Writer], [$error], false)}];
 	ptrType$5.methods = [{prop: "backtrace", name: "backtrace", pkg: "github.com/DeedleFake/wdte", typ: $funcType([io.Writer], [$error], false)}];
-	ptrType$3.methods = [{prop: "Get", name: "Get", pkg: "", typ: $funcType([ID], [Func], false)}, {prop: "Sub", name: "Sub", pkg: "", typ: $funcType([ptrType$3], [ptrType$3], false)}, {prop: "Add", name: "Add", pkg: "", typ: $funcType([ID, Func], [ptrType$3], false)}, {prop: "Map", name: "Map", pkg: "", typ: $funcType([mapType], [ptrType$3], false)}, {prop: "Custom", name: "Custom", pkg: "", typ: $funcType([funcType, funcType$1], [ptrType$3], false)}, {prop: "UpperBound", name: "UpperBound", pkg: "", typ: $funcType([], [ptrType$3], false)}, {prop: "LowerBound", name: "LowerBound", pkg: "", typ: $funcType([$String], [ptrType$3], false)}, {prop: "Latest", name: "Latest", pkg: "", typ: $funcType([$String], [sliceType$2, ptrType$3], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [ptrType$3], false)}, {prop: "Freeze", name: "Freeze", pkg: "", typ: $funcType([Func], [Func], false)}, {prop: "knownSet", name: "knownSet", pkg: "github.com/DeedleFake/wdte", typ: $funcType([mapType$1, $Bool], [], false)}, {prop: "Known", name: "Known", pkg: "", typ: $funcType([], [sliceType$2], false)}, {prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
+	ptrType$3.methods = [{prop: "Get", name: "Get", pkg: "", typ: $funcType([ID], [Func], false)}, {prop: "Sub", name: "Sub", pkg: "", typ: $funcType([ptrType$3], [ptrType$3], false)}, {prop: "Add", name: "Add", pkg: "", typ: $funcType([ID, Func], [ptrType$3], false)}, {prop: "Map", name: "Map", pkg: "", typ: $funcType([mapType], [ptrType$3], false)}, {prop: "Custom", name: "Custom", pkg: "", typ: $funcType([funcType, funcType$1], [ptrType$3], false)}, {prop: "UpperBound", name: "UpperBound", pkg: "", typ: $funcType([], [ptrType$3], false)}, {prop: "LowerBound", name: "LowerBound", pkg: "", typ: $funcType([$String], [ptrType$3], false)}, {prop: "Latest", name: "Latest", pkg: "", typ: $funcType([$String], [sliceType$2, ptrType$3], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [ptrType$3], false)}, {prop: "Freeze", name: "Freeze", pkg: "", typ: $funcType([Func], [Func], false)}, {prop: "knownSet", name: "knownSet", pkg: "github.com/DeedleFake/wdte", typ: $funcType([mapType$1, $Bool], [], false)}, {prop: "Known", name: "Known", pkg: "", typ: $funcType([], [sliceType$2], false)}, {prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}, {prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}];
 	GoFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	Expr.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	Chain.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
@@ -24750,7 +24784,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	ScopedFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	ptrType$9.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	ptrType$7.methods = [{prop: "Get", name: "Get", pkg: "", typ: $funcType([sliceType], [Func, $Bool], false)}, {prop: "Set", name: "Set", pkg: "", typ: $funcType([sliceType, Func], [], false)}];
-	ptrType$4.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
+	ptrType$4.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}, {prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}];
 	ptrType$6.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	translator.init("github.com/DeedleFake/wdte", [{prop: "im", name: "im", anonymous: false, exported: false, typ: Importer, tag: ""}]);
 	Comparer.init([{prop: "Compare", name: "Compare", pkg: "", typ: $funcType([Func], [$Int, $Bool], false)}]);
