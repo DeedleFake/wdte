@@ -23266,17 +23266,19 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		this.scope = scope_;
 		this.p = p_;
 	});
-	Scope = $pkg.Scope = $newType(0, $kindStruct, "wdte.Scope", true, "github.com/DeedleFake/wdte", true, function(p_, known_, getFunc_) {
+	Scope = $pkg.Scope = $newType(0, $kindStruct, "wdte.Scope", true, "github.com/DeedleFake/wdte", true, function(p_, known_, getFunc_, bound_) {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.p = ptrType$3.nil;
 			this.known = $throwNilPointerError;
 			this.getFunc = $throwNilPointerError;
+			this.bound = "";
 			return;
 		}
 		this.p = p_;
 		this.known = known_;
 		this.getFunc = getFunc_;
+		this.bound = bound_;
 	});
 	GoFunc = $pkg.GoFunc = $newType(4, $kindFunc, "wdte.GoFunc", true, "github.com/DeedleFake/wdte", true, null);
 	Expr = $pkg.Expr = $newType(0, $kindStruct, "wdte.Expr", true, "github.com/DeedleFake/wdte", true, function(Func_, Args_, Chain_, Slot_) {
@@ -24104,15 +24106,21 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	$pkg.S = S;
 	Scope.ptr.prototype.Get = function(id) {
-		var _r, id, s, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; id = $f.id; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _r, _r$1, id, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; id = $f.id; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		s = this;
 		if (s === ptrType$3.nil) {
 			$s = -1; return $ifaceNil;
 		}
-		_r = s.getFunc(id); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		$s = -1; return _r;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Scope.ptr.prototype.Get }; } $f._r = _r; $f.id = id; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ if (s.getFunc === $throwNilPointerError) { $s = 1; continue; }
+		/* */ $s = 2; continue;
+		/* if (s.getFunc === $throwNilPointerError) { */ case 1:
+			_r = s.p.Get(id); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			$s = -1; return _r;
+		/* } */ case 2:
+		_r$1 = s.getFunc(id); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		$s = -1; return _r$1;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Scope.ptr.prototype.Get }; } $f._r = _r; $f._r$1 = _r$1; $f.id = id; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Scope.prototype.Get = function(id) { return this.$val.Get(id); };
 	Scope.ptr.prototype.Sub = function(sub) {
@@ -24122,7 +24130,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			var known, $s, $r;
 			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; known = $f.known; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 			known = {};
-			$r = sub.knownSet(known); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+			$r = sub.knownSet(known, false); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 			$s = -1; return known;
 			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f.known = known; $f.$s = $s; $f.$r = $r; return $f;
 		}), (function $b(g) {
@@ -24136,7 +24144,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			_r$1 = s.Get(g); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 			$s = -1; return _r$1;
 			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f._r$1 = _r$1; $f.g = g; $f.v = v; $f.$s = $s; $f.$r = $r; return $f;
-		}));
+		}), "");
 	};
 	Scope.prototype.Sub = function(sub) { return this.$val.Sub(sub); };
 	Scope.ptr.prototype.Add = function(id, val) {
@@ -24153,7 +24161,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			_r = s.Get(g); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 			$s = -1; return _r;
 			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.g = g; $f.$s = $s; $f.$r = $r; return $f;
-		}));
+		}), "");
 	};
 	Scope.prototype.Add = function(id, val) { return this.$val.Add(id, val); };
 	Scope.ptr.prototype.Map = function(vars) {
@@ -24189,7 +24197,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			_r = s.Get(g); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 			$s = -1; return _r;
 			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._entry = _entry; $f._r = _r; $f._tuple = _tuple; $f.g = g; $f.ok = ok; $f.v = v; $f.$s = $s; $f.$r = $r; return $f;
-		}));
+		}), "");
 	};
 	Scope.prototype.Map = function(vars) { return this.$val.Map(vars); };
 	Scope.ptr.prototype.Custom = function(getFunc, known) {
@@ -24215,9 +24223,61 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			_r$1 = s.Get(g); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 			$s = -1; return _r$1;
 			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f._r$1 = _r$1; $f.g = g; $f.v = v; $f.$s = $s; $f.$r = $r; return $f;
-		}));
+		}), "");
 	};
 	Scope.prototype.Custom = function(getFunc, known) { return this.$val.Custom(getFunc, known); };
+	Scope.ptr.prototype.UpperBound = function() {
+		var s;
+		s = this;
+		return new Scope.ptr(s, $throwNilPointerError, $throwNilPointerError, "");
+	};
+	Scope.prototype.UpperBound = function() { return this.$val.UpperBound(); };
+	Scope.ptr.prototype.LowerBound = function(name) {
+		var name, s;
+		s = this;
+		if (name === "") {
+			$panic(new $String("Boundary name can't be empty"));
+		}
+		return new Scope.ptr(s, $throwNilPointerError, $throwNilPointerError, name);
+	};
+	Scope.prototype.LowerBound = function(name) { return this.$val.LowerBound(name); };
+	Scope.ptr.prototype.Latest = function(boundary) {
+		var _entry, _i, _keys, _r, _ref, boundary, known, list, s, v, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _keys = $f._keys; _r = $f._r; _ref = $f._ref; boundary = $f.boundary; known = $f.known; list = $f.list; s = $f.s; v = $f.v; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		s = this;
+		if (s === ptrType$3.nil) {
+			$s = -1; return [sliceType$2.nil, ptrType$3.nil];
+		}
+		/* */ if (!(s.bound === boundary)) { $s = 1; continue; }
+		/* */ $s = 2; continue;
+		/* if (!(s.bound === boundary)) { */ case 1:
+			_r = s.p.Latest(boundary); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			$s = -1; return _r;
+		/* } */ case 2:
+		known = {};
+		$r = s.p.knownSet(known, true); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		if ($keys(known).length === 0) {
+			$s = -1; return [sliceType$2.nil, s];
+		}
+		list = $makeSlice(sliceType$2, 0, $keys(known).length);
+		_ref = known;
+		_i = 0;
+		_keys = $keys(_ref);
+		while (true) {
+			if (!(_i < _keys.length)) { break; }
+			_entry = _ref[_keys[_i]];
+			if (_entry === undefined) {
+				_i++;
+				continue;
+			}
+			v = _entry.k;
+			list = $append(list, v);
+			_i++;
+		}
+		$s = -1; return [list, s];
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Scope.ptr.prototype.Latest }; } $f._entry = _entry; $f._i = _i; $f._keys = _keys; $f._r = _r; $f._ref = _ref; $f.boundary = boundary; $f.known = known; $f.list = list; $f.s = s; $f.v = v; $f.$s = $s; $f.$r = $r; return $f;
+	};
+	Scope.prototype.Latest = function(boundary) { return this.$val.Latest(boundary); };
 	Scope.ptr.prototype.Parent = function() {
 		var s;
 		s = this;
@@ -24233,11 +24293,14 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		return new ScopedFunc.ptr(f, s);
 	};
 	Scope.prototype.Freeze = function(f) { return this.$val.Freeze(f); };
-	Scope.ptr.prototype.knownSet = function(vars) {
-		var _entry, _i, _key, _keys, _r, _ref, s, v, vars, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _key = $f._key; _keys = $f._keys; _r = $f._r; _ref = $f._ref; s = $f.s; v = $f.v; vars = $f.vars; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+	Scope.ptr.prototype.knownSet = function(vars, boundary) {
+		var _entry, _i, _key, _keys, _r, _ref, boundary, s, v, vars, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _key = $f._key; _keys = $f._keys; _r = $f._r; _ref = $f._ref; boundary = $f.boundary; s = $f.s; v = $f.v; vars = $f.vars; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		s = this;
 		if (s === ptrType$3.nil) {
+			$s = -1; return;
+		}
+		if (boundary && (s.getFunc === $throwNilPointerError) && (s.bound === "")) {
 			$s = -1; return;
 		}
 		_r = s.known(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
@@ -24255,19 +24318,22 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			_key = v; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: new structType.ptr() };
 			_i++;
 		/* } */ $s = 2; continue; case 3:
-		$r = s.p.knownSet(vars); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = s.p.knownSet(vars, boundary); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$s = -1; return;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Scope.ptr.prototype.knownSet }; } $f._entry = _entry; $f._i = _i; $f._key = _key; $f._keys = _keys; $f._r = _r; $f._ref = _ref; $f.s = s; $f.v = v; $f.vars = vars; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Scope.ptr.prototype.knownSet }; } $f._entry = _entry; $f._i = _i; $f._key = _key; $f._keys = _keys; $f._r = _r; $f._ref = _ref; $f.boundary = boundary; $f.s = s; $f.v = v; $f.vars = vars; $f.$s = $s; $f.$r = $r; return $f;
 	};
-	Scope.prototype.knownSet = function(vars) { return this.$val.knownSet(vars); };
+	Scope.prototype.knownSet = function(vars, boundary) { return this.$val.knownSet(vars, boundary); };
 	Scope.ptr.prototype.Known = function() {
 		var _entry, _i, _keys, _ref, list, s, v, vars, $s, $r;
 		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _keys = $f._keys; _ref = $f._ref; list = $f.list; s = $f.s; v = $f.v; vars = $f.vars; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		list = [list];
 		s = this;
 		vars = {};
-		$r = s.knownSet(vars); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		list[0] = sliceType$2.nil;
+		$r = s.knownSet(vars, false); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		if ($keys(vars).length === 0) {
+			$s = -1; return sliceType$2.nil;
+		}
+		list[0] = $makeSlice(sliceType$2, 0, $keys(vars).length);
 		_ref = vars;
 		_i = 0;
 		_keys = $keys(_ref);
@@ -24551,30 +24617,35 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	ScopedFunc.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	Memo.ptr.prototype.Call = function(frame, args) {
-		var _i, _r, _r$1, _ref, _tuple, arg, args, cached, check, frame, m, ok, r, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _r$1 = $f._r$1; _ref = $f._ref; _tuple = $f._tuple; arg = $f.arg; args = $f.args; cached = $f.cached; check = $f.check; frame = $f.frame; m = $f.m; ok = $f.ok; r = $f.r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _i, _r, _r$1, _r$2, _r$3, _ref, _tuple, _tuple$1, args, cached, check, frame, id, ids, m, ok, r, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _ref = $f._ref; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; args = $f.args; cached = $f.cached; check = $f.check; frame = $f.frame; id = $f.id; ids = $f.ids; m = $f.m; ok = $f.ok; r = $f.r; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		m = this;
+		_r = $clone(frame, Frame).Scope().Latest("args"); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_tuple = _r;
+		ids = _tuple[0];
+		s = _tuple[1];
 		check = $makeSlice(sliceType, 0, args.$length);
-		_ref = args;
+		_ref = ids;
 		_i = 0;
-		/* while (true) { */ case 1:
-			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 2; continue; }
-			arg = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
-			_r = arg.Call($clone(frame, Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-			check = $append(check, _r);
+		/* while (true) { */ case 2:
+			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 3; continue; }
+			id = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+			_r$1 = s.Get(id); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+			_r$2 = _r$1.Call($clone(frame, Frame), new sliceType([])); /* */ $s = 5; case 5: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+			check = $append(check, _r$2);
 			_i++;
-		/* } */ $s = 1; continue; case 2:
-		_tuple = m.cache.Get(check);
-		cached = _tuple[0];
-		ok = _tuple[1];
+		/* } */ $s = 2; continue; case 3:
+		_tuple$1 = m.cache.Get(check);
+		cached = _tuple$1[0];
+		ok = _tuple$1[1];
 		if (ok) {
 			$s = -1; return cached;
 		}
-		_r$1 = m.Func.Call($clone(frame, Frame), check); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
-		r = _r$1;
+		_r$3 = m.Func.Call($clone(frame, Frame), check); /* */ $s = 6; case 6: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+		r = _r$3;
 		m.cache.Set(check, r);
 		$s = -1; return r;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Memo.ptr.prototype.Call }; } $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._ref = _ref; $f._tuple = _tuple; $f.arg = arg; $f.args = args; $f.cached = cached; $f.check = check; $f.frame = frame; $f.m = m; $f.ok = ok; $f.r = r; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Memo.ptr.prototype.Call }; } $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._ref = _ref; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.args = args; $f.cached = cached; $f.check = check; $f.frame = frame; $f.id = id; $f.ids = ids; $f.m = m; $f.ok = ok; $f.r = r; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Memo.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	memoCache.ptr.prototype.Get = function(args) {
@@ -24641,8 +24712,9 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			_key$1 = (x$3 = lambda.Args, ((i$1 < 0 || i$1 >= x$3.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$3.$array[x$3.$offset + i$1])); (vars$1 || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key$1)] = { k: _key$1, v: ((i$1 < 0 || i$1 >= args.$length) ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + i$1]) };
 			_i$1++;
 		}
-		scope = scope.Map(vars$1).Add(original.ID, original);
-		_r = lambda.Expr.Call($clone($clone(frame, Frame).WithScope(scope), Frame), $appendSlice(stored, args)); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		scope = scope.UpperBound().Map(vars$1).LowerBound("args");
+		scope = scope.UpperBound().Add(original.ID, original).LowerBound("self");
+		_r = lambda.Expr.Call($clone($clone(frame, Frame).WithScope(scope), Frame), new sliceType([])); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		$s = -1; return _r;
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Lambda.ptr.prototype.Call }; } $f._i = _i; $f._i$1 = _i$1; $f._key = _key; $f._key$1 = _key$1; $f._r = _r; $f._ref = _ref; $f._ref$1 = _ref$1; $f.args = args; $f.frame = frame; $f.i = i; $f.i$1 = i$1; $f.lambda = lambda; $f.original = original; $f.scope = scope; $f.stored = stored; $f.vars = vars; $f.vars$1 = vars$1; $f.x = x; $f.x$1 = x$1; $f.x$2 = x$2; $f.x$3 = x$3; $f.$s = $s; $f.$r = $r; return $f;
 	};
@@ -24665,7 +24737,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	ImportFunc.methods = [{prop: "Import", name: "Import", pkg: "", typ: $funcType([$String], [ptrType$3, $error], false)}];
 	Frame.methods = [{prop: "Sub", name: "Sub", pkg: "", typ: $funcType([ID], [Frame], false)}, {prop: "WithScope", name: "WithScope", pkg: "", typ: $funcType([ptrType$3], [Frame], false)}, {prop: "ID", name: "ID", pkg: "", typ: $funcType([], [ID], false)}, {prop: "Scope", name: "Scope", pkg: "", typ: $funcType([], [ptrType$3], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [Frame], false)}, {prop: "Backtrace", name: "Backtrace", pkg: "", typ: $funcType([io.Writer], [$error], false)}];
 	ptrType$5.methods = [{prop: "backtrace", name: "backtrace", pkg: "github.com/DeedleFake/wdte", typ: $funcType([io.Writer], [$error], false)}];
-	ptrType$3.methods = [{prop: "Get", name: "Get", pkg: "", typ: $funcType([ID], [Func], false)}, {prop: "Sub", name: "Sub", pkg: "", typ: $funcType([ptrType$3], [ptrType$3], false)}, {prop: "Add", name: "Add", pkg: "", typ: $funcType([ID, Func], [ptrType$3], false)}, {prop: "Map", name: "Map", pkg: "", typ: $funcType([mapType], [ptrType$3], false)}, {prop: "Custom", name: "Custom", pkg: "", typ: $funcType([funcType, funcType$1], [ptrType$3], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [ptrType$3], false)}, {prop: "Freeze", name: "Freeze", pkg: "", typ: $funcType([Func], [Func], false)}, {prop: "knownSet", name: "knownSet", pkg: "github.com/DeedleFake/wdte", typ: $funcType([mapType$1], [], false)}, {prop: "Known", name: "Known", pkg: "", typ: $funcType([], [sliceType$2], false)}, {prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
+	ptrType$3.methods = [{prop: "Get", name: "Get", pkg: "", typ: $funcType([ID], [Func], false)}, {prop: "Sub", name: "Sub", pkg: "", typ: $funcType([ptrType$3], [ptrType$3], false)}, {prop: "Add", name: "Add", pkg: "", typ: $funcType([ID, Func], [ptrType$3], false)}, {prop: "Map", name: "Map", pkg: "", typ: $funcType([mapType], [ptrType$3], false)}, {prop: "Custom", name: "Custom", pkg: "", typ: $funcType([funcType, funcType$1], [ptrType$3], false)}, {prop: "UpperBound", name: "UpperBound", pkg: "", typ: $funcType([], [ptrType$3], false)}, {prop: "LowerBound", name: "LowerBound", pkg: "", typ: $funcType([$String], [ptrType$3], false)}, {prop: "Latest", name: "Latest", pkg: "", typ: $funcType([$String], [sliceType$2, ptrType$3], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [ptrType$3], false)}, {prop: "Freeze", name: "Freeze", pkg: "", typ: $funcType([Func], [Func], false)}, {prop: "knownSet", name: "knownSet", pkg: "github.com/DeedleFake/wdte", typ: $funcType([mapType$1, $Bool], [], false)}, {prop: "Known", name: "Known", pkg: "", typ: $funcType([], [sliceType$2], false)}, {prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	GoFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	Expr.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	Chain.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
@@ -24690,7 +24762,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	ImportFunc.init([$String], [ptrType$3, $error], false);
 	Func.init([{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}]);
 	Frame.init("github.com/DeedleFake/wdte", [{prop: "id", name: "id", anonymous: false, exported: false, typ: ID, tag: ""}, {prop: "scope", name: "scope", anonymous: false, exported: false, typ: ptrType$3, tag: ""}, {prop: "p", name: "p", anonymous: false, exported: false, typ: ptrType$5, tag: ""}]);
-	Scope.init("github.com/DeedleFake/wdte", [{prop: "p", name: "p", anonymous: false, exported: false, typ: ptrType$3, tag: ""}, {prop: "known", name: "known", anonymous: false, exported: false, typ: funcType$1, tag: ""}, {prop: "getFunc", name: "getFunc", anonymous: false, exported: false, typ: funcType, tag: ""}]);
+	Scope.init("github.com/DeedleFake/wdte", [{prop: "p", name: "p", anonymous: false, exported: false, typ: ptrType$3, tag: ""}, {prop: "known", name: "known", anonymous: false, exported: false, typ: funcType$1, tag: ""}, {prop: "getFunc", name: "getFunc", anonymous: false, exported: false, typ: funcType, tag: ""}, {prop: "bound", name: "bound", anonymous: false, exported: false, typ: $String, tag: ""}]);
 	GoFunc.init([Frame, sliceType], [Func], true);
 	Expr.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType, tag: ""}, {prop: "Chain", name: "Chain", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Slot", name: "Slot", anonymous: false, exported: true, typ: ID, tag: ""}]);
 	Chain.init("", [{prop: "Func", name: "Func", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Args", name: "Args", anonymous: false, exported: true, typ: sliceType, tag: ""}, {prop: "Chain", name: "Chain", anonymous: false, exported: true, typ: Func, tag: ""}, {prop: "Slot", name: "Slot", anonymous: false, exported: true, typ: ID, tag: ""}]);
@@ -27444,7 +27516,7 @@ $packages["."] = (function() {
 		example = null;
 		in$1 = $ifaceNil;
 		out = $ifaceNil;
-		examples = $makeMap($String.keyFor, [{ k: "fib", v: "# Welcome to the WDTE playground, a browser based evaluation\n# environment for WDTE. This playground's features includes the\n# standard function set as well as a number of importable modules.\n#\n# If you have never seen WDTE before and are completely confused at\n# the moment, try reading the overview on the WDTE project's wiki:\n# https://github.com/DeedleFake/wdte/wiki\n#\n# For documentation on the standard function set, see\n# https://godoc.org/github.com/DeedleFake/wdte/std\n#\n# The standard library is available for importing, along with the\n# following special modules:\n#\n# * 'canvas' (See the 'Canvas' example.)\n# * 'io/file' (This makes no sense in a browser, so it's disabled.)\n# * 'io' (Disabled pending https://github.com/gopherjs/gopherjs/issues/705.)\n#\n# In addition, a print function is provided which uses the Go fmt\n# package to create a string representation of its arguments. This\n# string is printed to the output pane and then returned.\n\nlet memo fib n => switch n {\n\t== 0 => 0;\n\t== 1 => 1;\n\tdefault => + (fib (- n 1)) (fib (- n 2));\n};\n\nlet memo ! n => switch n {\n\t<= 1 => 1;\n\tdefault => - n 1 -> ! -> * n;\n};\n\nfib 30\n-- print\n-> / 5\n-- print\n;" }, { k: "stream", v: "# This example demonstrates the stream module. This module allows\n# classic functional iterator operations, such as map, reduce, and\n# filter.\n\nlet m => import 'math';\nlet s => import 'stream';\n\nprint 'Map and filter:';\ns.range 0 (* m.pi 2) (/ m.pi 2)\n-> s.map m.sin\n-> s.filter (>= 0)\n-> s.map print\n-> s.drain\n;\n\nprint 'Reduce:';\ns.range 1 5\n-> s.reduce 1 *\n-- print\n;" }, { k: "strings", v: "# This example demonstrates the strings module. This module provides\n# basic string operations, such as finding the index of a substring,\n# as well as more complicated operations, such as formatting.\n\nlet s => import 'stream';\nlet str => import 'strings';\n\ns.new 'abc' 'bcd' 'cde'\n-> s.map (str.index 'cd')\n-> s.collect\n-- print\n;\n\n'This is the type of English up with which I will not put.'\n-> str.format '{q}'\n-- print\n;" }, { k: "lambda", v: "# This example demonstrates lambdas by implementing an iterative\n# Fibonacci number calculator using streams.\n\nlet s => import 'stream';\nlet a => import 'arrays';\n\nlet fib n => s.range 1 n\n\t-> s.reduce [0; 1] (@ self p n => [\n\t\ta.at p 1;\n\t\t+ (a.at p 0) (a.at p 1);\n\t])\n\t-> a.at 1\n\t;\n\nfib 30\n-- print\n;" }, { k: "canvas", v: "# This example demonstrates the canvas module. This module is a module\n# implemented just for this playground. Importing it automatically\n# puts the playground in canvas mode, which allows for drawing to the\n# output pane. It also redirects the normal output into the error pane.\n\nlet m => import 'math';\nlet c => import 'canvas';\n\n# circleRec is the recursive part of circle.\nlet circleRec r cx cy res t p => switch t {\n\t> (* 2 m.pi) => p -> c.close;\n\tdefault => p\n\t\t-> c.line (+ cx (* (m.cos t) r)) (+ cy (* (m.sin t) r))\n\t\t-> circleRec r cx cy res (+ t (/ m.pi res))\n\t\t;\n};\n\n# circle returns a circular path centered at (cx, cy) with radius r\n# and resolution res.\nlet circle r cx cy res => c.path\n\t-> c.move (+ cx r) cy\n\t-> circleRec r cx cy res (/ m.pi res)\n\t;\n\nc.start\n-> c.color 'purple'\n-> c.rect 10 10 100 50\n-> c.draw;\n\nc.start\n-> c.color 'pink'\n-> (\n\tc.path\n\t-> c.move 10 50\n\t-> c.line 30 30\n\t-> c.line 50 30\n\t-> c.line 100 100\n\t-> c.close\n)\n-> c.draw;\n\nc.start\n-> c.color 'red'\n-> circle 30 100 100 6\n-> c.draw;" }]);
+		examples = $makeMap($String.keyFor, [{ k: "fib", v: "# Welcome to the WDTE playground, a browser based evaluation\n# environment for WDTE. This playground's features includes the\n# standard function set as well as a number of importable modules.\n#\n# If you have never seen WDTE before and are completely confused at\n# the moment, try reading the overview on the WDTE project's wiki:\n# https://github.com/DeedleFake/wdte/wiki\n#\n# For documentation on the standard function set, see\n# https://godoc.org/github.com/DeedleFake/wdte/std\n#\n# The standard library is available for importing, along with the\n# following special modules:\n#\n# * 'canvas' (See the 'Canvas' example.)\n# * 'io/file' (This makes no sense in a browser, so it's disabled.)\n# * 'io' (Disabled pending https://github.com/gopherjs/gopherjs/issues/705.)\n#\n# In addition, a print function is provided which uses the Go fmt\n# package to create a string representation of its arguments. This\n# string is printed to the output pane and then returned.\n\nlet memo fib n => switch n {\n\t== 0 => 0;\n\t== 1 => 1;\n\tdefault => + (fib (- n 1)) (fib (- n 2));\n};\n\nlet memo ! n => switch n {\n\t<= 1 => 1;\n\tdefault => - n 1 -> ! -> * n;\n};\n\nfib 30\n-- print\n-> / 5\n-- print\n;" }, { k: "stream", v: "# This example demonstrates the stream module. This module allows\n# classic functional iterator operations, such as map, reduce, and\n# filter.\n\nlet m => import 'math';\nlet s => import 'stream';\n\nprint 'Map and filter:';\ns.range 0 (* m.pi 2) (/ m.pi 2)\n-> s.map m.sin\n-> s.filter (>= 0)\n-> s.map print\n-> s.drain\n;\n\nprint 'Reduce:';\ns.range 1 5\n-> s.reduce 1 *\n-- print\n;" }, { k: "strings", v: "# This example demonstrates the strings module. This module provides\n# basic string operations, such as finding the index of a substring,\n# as well as more complicated operations, such as formatting.\n\nlet s => import 'stream';\nlet str => import 'strings';\n\ns.new 'abc' 'bcd' 'cde'\n-> s.map (str.index 'cd')\n-> s.collect\n-- print\n;\n\n'This is the type of English up with which I will not put.'\n-> str.format '{q}'\n-- print\n;" }, { k: "lambda", v: "# This example demonstrates lambdas by implementing an iterative\n# Fibonacci number calculator using streams.\n\nlet s => import 'stream';\nlet a => import 'arrays';\n\nlet fib n => s.range 1 n\n\t-> s.reduce [0; 1] (@ self p n => [\n\t\tat p 1;\n\t\t+ (at p 0) (at p 1);\n\t])\n\t-> at 1\n\t;\n\nfib 30\n-- print\n;" }, { k: "canvas", v: "# This example demonstrates the canvas module. This module is a module\n# implemented just for this playground. Importing it automatically\n# puts the playground in canvas mode, which allows for drawing to the\n# output pane. It also redirects the normal output into the error pane.\n\nlet m => import 'math';\nlet c => import 'canvas';\n\n# circleRec is the recursive part of circle.\nlet circleRec r cx cy res t p => switch t {\n\t> (* 2 m.pi) => p -> c.close;\n\tdefault => p\n\t\t-> c.line (+ cx (* (m.cos t) r)) (+ cy (* (m.sin t) r))\n\t\t-> circleRec r cx cy res (+ t (/ m.pi res))\n\t\t;\n};\n\n# circle returns a circular path centered at (cx, cy) with radius r\n# and resolution res.\nlet circle r cx cy res => c.path\n\t-> c.move (+ cx r) cy\n\t-> circleRec r cx cy res (/ m.pi res)\n\t;\n\nc.start\n-> c.color 'purple'\n-> c.rect 10 10 100 50\n-> c.draw;\n\nc.start\n-> c.color 'pink'\n-> (\n\tc.path\n\t-> c.move 10 50\n\t-> c.line 30 30\n\t-> c.line 50 30\n\t-> c.line 100 100\n\t-> c.close\n)\n-> c.draw;\n\nc.start\n-> c.color 'red'\n-> circle 30 100 100 6\n-> c.draw;" }]);
 		if ($pkg === $mainPkg) {
 			main();
 			$mainFinished = true;
