@@ -339,7 +339,7 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //    (scan sep) r
 //
 // Returns a stream.Stream that yields sections of the reader r split
-// around the seperator string sep. For example,
+// around the separator string sep. For example,
 //
 //    readString 'this--is--an--example' -> scan '--'
 //
