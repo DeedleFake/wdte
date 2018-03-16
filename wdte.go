@@ -1,9 +1,11 @@
 package wdte
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"sort"
+	"unsafe"
 
 	"github.com/DeedleFake/wdte/ast"
 )
@@ -410,6 +412,10 @@ func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
 	return s
 }
 
+func (s *Scope) String() string { // nolint
+	return fmt.Sprint(s.Known())
+}
+
 // A GoFunc is an implementation of Func that calls a Go function.
 // This is the easiest way to implement lower-level systems for WDTE
 // scripts to make use of.
@@ -803,6 +809,22 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	scope = scope.UpperBound().Map(vars).LowerBound("args")
 	scope = scope.UpperBound().Add(original.ID, original).LowerBound("self")
 	return lambda.Expr.Call(frame.WithScope(scope))
+}
+
+func (lambda *Lambda) String() string { // nolint
+	// Could use strings.Builder, but then it'll only work on Go 10+...
+
+	var buf bytes.Buffer
+
+	fmt.Fprintf(&buf, "(@ %v", lambda.ID)
+	for _, arg := range lambda.Args {
+		buf.WriteByte(' ')
+		buf.WriteString(string(arg))
+	}
+	buf.WriteString(" => ...)")
+
+	raw := buf.Bytes()
+	return *(*string)(unsafe.Pointer(&raw))
 }
 
 // A Let is an expression that maps an expression to an ID. It's used
