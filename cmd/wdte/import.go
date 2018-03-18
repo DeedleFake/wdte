@@ -37,6 +37,8 @@ func importer(wd string, blacklist []string, args []string) wdte.Importer {
 		"args": wargs,
 	})
 
+	std.Register("cli", cliScope)
+
 	return wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
 		for _, m := range blacklist {
 			if from == m {
@@ -57,10 +59,6 @@ func importer(wd string, blacklist []string, args []string) wdte.Importer {
 			if !os.IsNotExist(err) {
 				return s, err
 			}
-		}
-
-		if from == "cli" {
-			return cliScope, nil
 		}
 
 		return std.Import(from)
