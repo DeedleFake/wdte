@@ -661,7 +661,7 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	return nil
+	return check
 }
 
 // A Var represents a local variable. When called, it looks itself up
