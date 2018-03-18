@@ -333,12 +333,7 @@ func (s *Scope) Latest(boundary string) *Scope {
 		return s.p.Latest(boundary)
 	}
 
-	return &Scope{
-		p:       s.p,
-		known:   nil,
-		getFunc: s.getFunc,
-		bound:   s.bound,
-	}
+	return s
 }
 
 // Parent returns the parent of the current scope.
@@ -378,7 +373,7 @@ func (s *Scope) knownSet(vars map[ID]struct{}, boundary bool) {
 // Known returns a sorted list of variables that are in scope.
 func (s *Scope) Known() []ID {
 	vars := make(map[ID]struct{})
-	s.knownSet(vars, s.known == nil)
+	s.knownSet(vars, s.bound != "")
 	if len(vars) == 0 {
 		return nil
 	}
