@@ -466,10 +466,11 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 // right-hand side of a function declaration, but could also be any of
 // various pieces of switches, compounds, or arrays.
 type Expr struct {
-	Func  Func
-	Args  []Func
-	Chain Func
-	Slot  ID
+	Func Func
+	Args []Func
+
+	Slot    ID
+	Ignored bool
 }
 
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
@@ -478,60 +479,28 @@ func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 		next[i] = frame.Scope().Freeze(f.Args[i])
 	}
 
-	n := f.Func.Call(frame, next...)
-	frame = frame.WithScope(frame.Scope().Add(f.Slot, n))
-
-	return f.Chain.Call(frame, n)
+	return f.Func.Call(frame, next...)
 }
 
 // Chain is an unevaluated chain expression.
-type Chain struct {
-	Func  Func
-	Args  []Func
-	Chain Func
-	Slot  ID
-}
+type Chain []*Expr
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
-	next := make([]Func, len(f.Args))
-	for i := range f.Args {
-		next[i] = frame.Scope().Freeze(f.Args[i])
+	ret := f[0].Call(frame)
+	if f[0].Slot != "" {
+		frame = frame.WithScope(frame.Scope().Add(f[0].Slot, ret))
 	}
 
-	n := f.Func.Call(frame, next...).Call(frame, frame.Scope().Freeze(args[0]))
-	frame = frame.WithScope(frame.Scope().Add(f.Slot, n))
-
-	return f.Chain.Call(frame, n)
-}
-
-// IgnoredChain is an unevaluated chain expression that returns the
-// previous expression's return value, rather than its own.
-type IgnoredChain struct {
-	Func  Func
-	Args  []Func
-	Chain Func
-	Slot  ID
-}
-
-func (f IgnoredChain) Call(frame Frame, args ...Func) Func { // nolint
-	next := make([]Func, len(f.Args))
-	for i := range f.Args {
-		next[i] = frame.Scope().Freeze(f.Args[i])
+	for i := 1; i < len(f); i++ {
+		tmp := f[i].Call(frame).Call(frame, ret)
+		if f[i].Slot != "" {
+			frame = frame.WithScope(frame.Scope().Add(f[i].Slot, tmp))
+		}
+		if !f[i].Ignored {
+			ret = tmp
+		}
 	}
-
-	n := f.Func.Call(frame, next...).Call(frame, frame.Scope().Freeze(args[0]))
-	frame = frame.WithScope(frame.Scope().Add(f.Slot, n))
-
-	return f.Chain.Call(frame, args[0])
-}
-
-// An EndChain is a no-op that just returns its own first argument.
-// This is used as the last element of a chain.
-type EndChain struct {
-}
-
-func (f EndChain) Call(frame Frame, args ...Func) Func { // nolint
-	return args[0]
+	return ret
 }
 
 // A Sub is a function that is in a subscope. This is most commonly an
@@ -661,7 +630,7 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	return nil
+	return check
 }
 
 // A Var represents a local variable. When called, it looks itself up

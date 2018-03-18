@@ -67,15 +67,20 @@ func (m *translator) fromArgDecls(argdecls *ast.NTerm, ids []ID) []ID {
 func (m *translator) fromExpr(expr *ast.NTerm) Func {
 	first := m.fromSingle(expr.Children()[0].(*ast.NTerm))
 	in := m.fromArgs(expr.Children()[1].(*ast.NTerm), nil)
-
 	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
 
-	return &Expr{
-		Func:  first,
-		Args:  in,
-		Slot:  slot,
-		Chain: m.fromChain(expr.Children()[3].(*ast.NTerm)),
+	r := &Expr{
+		Func: first,
+		Args: in,
+		Slot: slot,
 	}
+
+	chain := m.fromChain(expr.Children()[3].(*ast.NTerm), Chain{r})
+	if len(chain) == 1 {
+		return r
+	}
+
+	return chain
 }
 
 func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
@@ -273,39 +278,23 @@ func (m *translator) fromArgs(args *ast.NTerm, funcs []Func) []Func {
 	}
 }
 
-func (m *translator) fromChain(chain *ast.NTerm) Func {
+func (m *translator) fromChain(chain *ast.NTerm, acc Chain) Chain {
 	if _, ok := chain.Children()[0].(*ast.Epsilon); ok {
-		return &EndChain{}
+		return acc
 	}
 
-	// TODO: Make this properly recursive with m.fromExpr().
 	expr := chain.Children()[1].(*ast.NTerm)
-
 	first := m.fromSingle(expr.Children()[0].(*ast.NTerm))
 	in := m.fromArgs(expr.Children()[1].(*ast.NTerm), nil)
-
 	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
+	ignored := chain.Children()[0].(*ast.Term).Tok().Val == "--"
 
-	switch t := chain.Children()[0].(*ast.Term).Tok().Val.(string); t {
-	case "->":
-		return &Chain{
-			Func:  first,
-			Args:  in,
-			Slot:  slot,
-			Chain: m.fromChain(expr.Children()[3].(*ast.NTerm)),
-		}
-
-	case "--":
-		return &IgnoredChain{
-			Func:  first,
-			Args:  in,
-			Slot:  slot,
-			Chain: m.fromChain(expr.Children()[3].(*ast.NTerm)),
-		}
-
-	default:
-		panic(fmt.Errorf("Malformed AST with unexpected chain type: %q", t))
-	}
+	return m.fromChain(expr.Children()[3].(*ast.NTerm), append(acc, &Expr{
+		Func:    first,
+		Args:    in,
+		Slot:    slot,
+		Ignored: ignored,
+	}))
 }
 
 type funcMod uint
