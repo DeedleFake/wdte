@@ -23,8 +23,8 @@ func importScript(from string, im wdte.Importer) (*wdte.Scope, error) {
 		return nil, err
 	}
 
-	s, _ := c.Collect(std.F())
-	return s, nil
+	s, _ := c.Collect(wdte.F().WithScope(std.Scope.UpperBound()))
+	return s.LowerBound("module").Latest("module"), nil
 }
 
 func importer(wd string, blacklist []string, args []string) wdte.Importer {
@@ -36,6 +36,8 @@ func importer(wd string, blacklist []string, args []string) wdte.Importer {
 	cliScope := wdte.S().Map(map[wdte.ID]wdte.Func{
 		"args": wargs,
 	})
+
+	std.Register("cli", cliScope)
 
 	return wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
 		for _, m := range blacklist {
@@ -57,10 +59,6 @@ func importer(wd string, blacklist []string, args []string) wdte.Importer {
 			if !os.IsNotExist(err) {
 				return s, err
 			}
-		}
-
-		if from == "cli" {
-			return cliScope, nil
 		}
 
 		return std.Import(from)

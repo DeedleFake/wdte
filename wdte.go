@@ -173,7 +173,7 @@ func (f *Frame) backtrace(w io.Writer) error {
 // a blank, top-level scope.
 type Scope struct {
 	p       *Scope
-	known   func() map[ID]struct{}
+	known   func(m map[ID]struct{})
 	getFunc func(id ID) Func
 	bound   string
 }
@@ -203,10 +203,8 @@ func (s *Scope) Get(id ID) Func {
 func (s *Scope) Sub(sub *Scope) *Scope {
 	return &Scope{
 		p: s,
-		known: func() map[ID]struct{} {
-			known := make(map[ID]struct{})
-			sub.knownSet(known, false)
-			return known
+		known: func(m map[ID]struct{}) {
+			sub.knownSet(m, false)
 		},
 		getFunc: func(g ID) Func {
 			if v := sub.Get(g); v != nil {
@@ -222,10 +220,8 @@ func (s *Scope) Sub(sub *Scope) *Scope {
 func (s *Scope) Add(id ID, val Func) *Scope {
 	return &Scope{
 		p: s,
-		known: func() map[ID]struct{} {
-			return map[ID]struct{}{
-				id: {},
-			}
+		known: func(m map[ID]struct{}) {
+			m[id] = struct{}{}
 		},
 		getFunc: func(g ID) Func {
 			if g == id {
@@ -244,12 +240,10 @@ func (s *Scope) Add(id ID, val Func) *Scope {
 func (s *Scope) Map(vars map[ID]Func) *Scope {
 	return &Scope{
 		p: s,
-		known: func() map[ID]struct{} {
-			known := make(map[ID]struct{}, len(vars))
+		known: func(m map[ID]struct{}) {
 			for v := range vars {
-				known[v] = struct{}{}
+				m[v] = struct{}{}
 			}
-			return known
 		},
 		getFunc: func(g ID) Func {
 			if v, ok := vars[g]; ok {
@@ -263,17 +257,18 @@ func (s *Scope) Map(vars map[ID]Func) *Scope {
 
 // Custom returns a new subscope that uses the given lookup function
 // to retrieve values. If getFunc returns nil, the parent of s will be
-// searched. known is an optional function which returns a set
-// containing all known variables in this layer of the scope.
-func (s *Scope) Custom(getFunc func(ID) Func, known func() map[ID]struct{}) *Scope {
+// searched. known is an optional function which adds all variables
+// known to this layer of the scope into the map that it is passed as
+// keys.
+func (s *Scope) Custom(getFunc func(ID) Func, known func(map[ID]struct{})) *Scope {
 	return &Scope{
 		p: s,
-		known: func() map[ID]struct{} {
+		known: func(m map[ID]struct{}) {
 			if known == nil {
-				return nil
+				return
 			}
 
-			return known()
+			known(m)
 		},
 		getFunc: func(g ID) Func {
 			if v := getFunc(g); v != nil {
@@ -312,6 +307,9 @@ func (s *Scope) UpperBound() *Scope {
 //
 //    scope = scope.UpperBound().Add("ex", 3).LowerBound("example")
 //    scope.Latest("example") // ([]ID{"ex"}, scope)
+//
+// Calling Known on a lower bound will only return the known variables
+// declared between it and the next upper bound found.
 func (s *Scope) LowerBound(name string) *Scope {
 	if name == "" {
 		panic("Boundary name can't be empty")
@@ -326,32 +324,19 @@ func (s *Scope) LowerBound(name string) *Scope {
 }
 
 // Latest finds the lower bound with the given name in the hierarchy
-// and returns a list of all of the known IDs defined between that
-// bound and the next upper bound or the top of the hierarchy if none
-// exists. It also returns the lower bound itself to allow for finding
-// the values associated with the IDs even if they were later
-// shadowed.
-func (s *Scope) Latest(boundary string) ([]ID, *Scope) {
+// and returns a scope that contains the variables defined between
+// there and the next upper bound, or the top of the scope hierarchy
+// if none exists.
+func (s *Scope) Latest(boundary string) *Scope {
 	if s == nil {
-		return nil, nil
+		return nil
 	}
 
 	if s.bound != boundary {
 		return s.p.Latest(boundary)
 	}
 
-	known := make(map[ID]struct{})
-	s.p.knownSet(known, true)
-	if len(known) == 0 {
-		return nil, s
-	}
-
-	list := make([]ID, 0, len(known))
-	for v := range known {
-		list = append(list, v)
-	}
-
-	return list, s
+	return s
 }
 
 // Parent returns the parent of the current scope.
@@ -381,17 +366,19 @@ func (s *Scope) knownSet(vars map[ID]struct{}, boundary bool) {
 		return
 	}
 
-	for v := range s.known() {
-		vars[v] = struct{}{}
+	if s.known != nil {
+		s.known(vars)
 	}
 
 	s.p.knownSet(vars, boundary)
 }
 
-// Known returns a sorted list of variables that are in scope.
+// Known returns a sorted list of variables that are in scope. If the
+// scope it is called on is a lower bound, it will only return a list
+// of variables between it and the next upper bound found.
 func (s *Scope) Known() []ID {
 	vars := make(map[ID]struct{})
-	s.knownSet(vars, false)
+	s.knownSet(vars, s.bound != "")
 	if len(vars) == 0 {
 		return nil
 	}
@@ -664,10 +651,11 @@ type Memo struct {
 }
 
 func (m *Memo) Call(frame Frame, args ...Func) Func { // nolint
-	ids, s := frame.Scope().Latest("args")
+	s := frame.Scope().Latest("args")
 
-	check := make([]Func, 0, len(args))
-	for _, id := range ids {
+	known := s.Known()
+	check := make([]Func, 0, len(known))
+	for _, id := range known {
 		check = append(check, s.Get(id).Call(frame))
 	}
 
