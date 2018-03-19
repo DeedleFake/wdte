@@ -13,15 +13,15 @@ func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
 	})
 }
 
-// Add is a WDTE function with the following signatures:
+// Plus is a WDTE function with the following signatures:
 //
 //    + a ...
 //    (+ a) ...
 //
 // Returns the sum of a and the rest of its arguments.
-func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func Plus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Add), args...)
+		return save(wdte.GoFunc(Plus), args...)
 	}
 
 	frame = frame.Sub("+")
@@ -37,15 +37,15 @@ func Add(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return sum
 }
 
-// Sub is a WDTE with the following signatures:
+// Minus is a WDTE with the following signatures:
 //
 //    - a b
 //    (- b) a
 //
 // Returns a minus b.
-func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func Minus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Sub), args...)
+		return save(wdte.GoFunc(Minus), args...)
 	}
 
 	frame = frame.Sub("-")
@@ -63,15 +63,15 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return a1.(wdte.Number) - a2.(wdte.Number)
 }
 
-// Mult is a WDTE function with the following signatures:
+// Times is a WDTE function with the following signatures:
 //
 //    * a ...
 //    (* a) ...
 //
 // Returns the product of a and its other arguments.
-func Mult(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func Times(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Mult), args...)
+		return save(wdte.GoFunc(Times), args...)
 	}
 
 	frame = frame.Sub("*")
@@ -502,6 +502,28 @@ func Objectify(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return s
 }
 
+// Sub is a WDTE function with the following signatures:
+//
+//    sub scope id val
+//    (sub val) scope id
+//    (sub id val) scope
+//
+// Sub returns a subscope of scope with the value val bound to the ID
+// id. It puts a "compound" lower bound on the scope.
+func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) <= 2 {
+		return save(wdte.GoFunc(Sub), args...)
+	}
+
+	frame = frame.Sub("sub")
+
+	s := args[0].Call(frame).(*wdte.Scope)
+	id := wdte.ID(args[1].Call(frame).(wdte.String))
+	v := args[2]
+
+	return s.Add(id, v).LowerBound("compound")
+}
+
 // Scope is a scope containing the functions in this package.
 //
 // This scope is primarily useful for bootstrapping an environment for
@@ -509,9 +531,9 @@ func Objectify(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // a subscope of it to a function call. In many cases, a client can
 // simply call F to obtain such a frame.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
-	"+": wdte.GoFunc(Add),
-	"-": wdte.GoFunc(Sub),
-	"*": wdte.GoFunc(Mult),
+	"+": wdte.GoFunc(Plus),
+	"-": wdte.GoFunc(Minus),
+	"*": wdte.GoFunc(Times),
 	"/": wdte.GoFunc(Div),
 	"%": wdte.GoFunc(Mod),
 
@@ -529,6 +551,7 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"len":       wdte.GoFunc(Len),
 	"at":        wdte.GoFunc(At),
 	"objectify": wdte.GoFunc(Objectify),
+	"sub":       wdte.GoFunc(Sub),
 })
 
 // F returns a top-level frame that has S as its scope.
