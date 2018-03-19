@@ -23397,7 +23397,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	mapType = $mapType(ID, Func);
 	funcType = $funcType([ID], [Func], false);
 	mapType$1 = $mapType(ID, structType);
-	funcType$1 = $funcType([], [mapType$1], false);
+	funcType$1 = $funcType([mapType$1], [], false);
 	ptrType$10 = $ptrType(Memo);
 	mapType$2 = $mapType(Func, ptrType$8);
 	translator.ptr.prototype.fromScript = function(script) {
@@ -24085,13 +24085,12 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	Scope.ptr.prototype.Sub = function(sub) {
 		var s, sub;
 		s = this;
-		return new Scope.ptr(s, (function $b() {
-			var known, $s, $r;
-			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; known = $f.known; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
-			known = {};
-			$r = sub.knownSet(known, false); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-			$s = -1; return known;
-			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f.known = known; $f.$s = $s; $f.$r = $r; return $f;
+		return new Scope.ptr(s, (function $b(m) {
+			var m, $s, $r;
+			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; m = $f.m; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+			$r = sub.knownSet(m, false); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+			$s = -1; return;
+			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f.m = m; $f.$s = $s; $f.$r = $r; return $f;
 		}), (function $b(g) {
 			var _r, _r$1, g, v, $s, $r;
 			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; g = $f.g; v = $f.v; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -24109,8 +24108,9 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	Scope.ptr.prototype.Add = function(id, val) {
 		var id, s, val;
 		s = this;
-		return new Scope.ptr(s, (function() {
-			return $makeMap(ID.keyFor, [{ k: id, v: new structType.ptr() }]);
+		return new Scope.ptr(s, (function(m) {
+			var _key, m;
+			_key = id; (m || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: new structType.ptr() };
 		}), (function $b(g) {
 			var _r, g, $s, $r;
 			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; g = $f.g; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -24126,9 +24126,8 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	Scope.ptr.prototype.Map = function(vars) {
 		var s, vars;
 		s = this;
-		return new Scope.ptr(s, (function() {
-			var _entry, _i, _key, _keys, _ref, known, v, x;
-			known = (x = $keys(vars).length, ((x < 0 || x > 2147483647) ? $throwRuntimeError("makemap: size out of range") : {}));
+		return new Scope.ptr(s, (function(m) {
+			var _entry, _i, _key, _keys, _ref, m, v;
 			_ref = vars;
 			_i = 0;
 			_keys = $keys(_ref);
@@ -24140,10 +24139,9 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 					continue;
 				}
 				v = _entry.k;
-				_key = v; (known || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: new structType.ptr() };
+				_key = v; (m || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: new structType.ptr() };
 				_i++;
 			}
-			return known;
 		}), (function $b(g) {
 			var _entry, _r, _tuple, g, ok, v, $s, $r;
 			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _r = $f._r; _tuple = $f._tuple; g = $f.g; ok = $f.ok; v = $f.v; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -24162,15 +24160,15 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	Scope.ptr.prototype.Custom = function(getFunc, known) {
 		var getFunc, known, s;
 		s = this;
-		return new Scope.ptr(s, (function $b() {
-			var _r, $s, $r;
-			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		return new Scope.ptr(s, (function $b(m) {
+			var m, $s, $r;
+			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; m = $f.m; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 			if (known === $throwNilPointerError) {
-				$s = -1; return false;
+				$s = -1; return;
 			}
-			_r = known(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-			$s = -1; return _r;
-			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f._r = _r; $f.$s = $s; $f.$r = $r; return $f;
+			$r = known(m); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+			$s = -1; return;
+			/* */ } return; } if ($f === undefined) { $f = { $blk: $b }; } $f.m = m; $f.$s = $s; $f.$r = $r; return $f;
 		}), (function $b(g) {
 			var _r, _r$1, g, v, $s, $r;
 			/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _r = $f._r; _r$1 = $f._r$1; g = $f.g; v = $f.v; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -24201,40 +24199,15 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	Scope.prototype.LowerBound = function(name) { return this.$val.LowerBound(name); };
 	Scope.ptr.prototype.Latest = function(boundary) {
-		var _entry, _i, _keys, _r, _ref, boundary, known, list, s, v, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _keys = $f._keys; _r = $f._r; _ref = $f._ref; boundary = $f.boundary; known = $f.known; list = $f.list; s = $f.s; v = $f.v; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var boundary, s;
 		s = this;
 		if (s === ptrType$4.nil) {
-			$s = -1; return [sliceType$2.nil, ptrType$4.nil];
+			return ptrType$4.nil;
 		}
-		/* */ if (!(s.bound === boundary)) { $s = 1; continue; }
-		/* */ $s = 2; continue;
-		/* if (!(s.bound === boundary)) { */ case 1:
-			_r = s.p.Latest(boundary); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-			$s = -1; return _r;
-		/* } */ case 2:
-		known = {};
-		$r = s.p.knownSet(known, true); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		if ($keys(known).length === 0) {
-			$s = -1; return [sliceType$2.nil, s];
+		if (!(s.bound === boundary)) {
+			return s.p.Latest(boundary);
 		}
-		list = $makeSlice(sliceType$2, 0, $keys(known).length);
-		_ref = known;
-		_i = 0;
-		_keys = $keys(_ref);
-		while (true) {
-			if (!(_i < _keys.length)) { break; }
-			_entry = _ref[_keys[_i]];
-			if (_entry === undefined) {
-				_i++;
-				continue;
-			}
-			v = _entry.k;
-			list = $append(list, v);
-			_i++;
-		}
-		$s = -1; return [list, s];
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Scope.ptr.prototype.Latest }; } $f._entry = _entry; $f._i = _i; $f._keys = _keys; $f._r = _r; $f._ref = _ref; $f.boundary = boundary; $f.known = known; $f.list = list; $f.s = s; $f.v = v; $f.$s = $s; $f.$r = $r; return $f;
+		return s;
 	};
 	Scope.prototype.Latest = function(boundary) { return this.$val.Latest(boundary); };
 	Scope.ptr.prototype.Parent = function() {
@@ -24253,8 +24226,8 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	Scope.prototype.Freeze = function(f) { return this.$val.Freeze(f); };
 	Scope.ptr.prototype.knownSet = function(vars, boundary) {
-		var _entry, _i, _key, _keys, _r, _ref, boundary, s, v, vars, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _entry = $f._entry; _i = $f._i; _key = $f._key; _keys = $f._keys; _r = $f._r; _ref = $f._ref; boundary = $f.boundary; s = $f.s; v = $f.v; vars = $f.vars; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var boundary, s, vars, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; boundary = $f.boundary; s = $f.s; vars = $f.vars; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		s = this;
 		if (s === ptrType$4.nil) {
 			$s = -1; return;
@@ -24262,24 +24235,14 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		if (boundary && (s.getFunc === $throwNilPointerError) && (s.bound === "")) {
 			$s = -1; return;
 		}
-		_r = s.known(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		_ref = _r;
-		_i = 0;
-		_keys = $keys(_ref);
-		/* while (true) { */ case 2:
-			/* if (!(_i < _keys.length)) { break; } */ if(!(_i < _keys.length)) { $s = 3; continue; }
-			_entry = _ref[_keys[_i]];
-			if (_entry === undefined) {
-				_i++;
-				/* continue; */ $s = 2; continue;
-			}
-			v = _entry.k;
-			_key = v; (vars || $throwRuntimeError("assignment to entry in nil map"))[ID.keyFor(_key)] = { k: _key, v: new structType.ptr() };
-			_i++;
-		/* } */ $s = 2; continue; case 3:
+		/* */ if (!(s.known === $throwNilPointerError)) { $s = 1; continue; }
+		/* */ $s = 2; continue;
+		/* if (!(s.known === $throwNilPointerError)) { */ case 1:
+			$r = s.known(vars); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		/* } */ case 2:
 		$r = s.p.knownSet(vars, boundary); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$s = -1; return;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Scope.ptr.prototype.knownSet }; } $f._entry = _entry; $f._i = _i; $f._key = _key; $f._keys = _keys; $f._r = _r; $f._ref = _ref; $f.boundary = boundary; $f.s = s; $f.v = v; $f.vars = vars; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Scope.ptr.prototype.knownSet }; } $f.boundary = boundary; $f.s = s; $f.vars = vars; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Scope.prototype.knownSet = function(vars, boundary) { return this.$val.knownSet(vars, boundary); };
 	Scope.ptr.prototype.Known = function() {
@@ -24288,7 +24251,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		list = [list];
 		s = this;
 		vars = {};
-		$r = s.knownSet(vars, false); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = s.knownSet(vars, !(s.bound === "")); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		if ($keys(vars).length === 0) {
 			$s = -1; return sliceType$2.nil;
 		}
@@ -24560,15 +24523,14 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	};
 	ScopedFunc.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	Memo.ptr.prototype.Call = function(frame, args) {
-		var _i, _r, _r$1, _r$2, _r$3, _ref, _tuple, _tuple$1, args, cached, check, frame, id, ids, m, ok, r, s, $s, $r;
-		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _ref = $f._ref; _tuple = $f._tuple; _tuple$1 = $f._tuple$1; args = $f.args; cached = $f.cached; check = $f.check; frame = $f.frame; id = $f.id; ids = $f.ids; m = $f.m; ok = $f.ok; r = $f.r; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		var _i, _r, _r$1, _r$2, _r$3, _ref, _tuple, args, cached, check, frame, id, known, m, ok, r, s, $s, $r;
+		/* */ $s = 0; var $f, $c = false; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; _i = $f._i; _r = $f._r; _r$1 = $f._r$1; _r$2 = $f._r$2; _r$3 = $f._r$3; _ref = $f._ref; _tuple = $f._tuple; args = $f.args; cached = $f.cached; check = $f.check; frame = $f.frame; id = $f.id; known = $f.known; m = $f.m; ok = $f.ok; r = $f.r; s = $f.s; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
 		m = this;
-		_r = $clone(frame, Frame).Scope().Latest("args"); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		_tuple = _r;
-		ids = _tuple[0];
-		s = _tuple[1];
-		check = $makeSlice(sliceType, 0, args.$length);
-		_ref = ids;
+		s = $clone(frame, Frame).Scope().Latest("args");
+		_r = s.Known(); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		known = _r;
+		check = $makeSlice(sliceType, 0, known.$length);
+		_ref = known;
 		_i = 0;
 		/* while (true) { */ case 2:
 			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 3; continue; }
@@ -24578,9 +24540,9 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			check = $append(check, _r$2);
 			_i++;
 		/* } */ $s = 2; continue; case 3:
-		_tuple$1 = m.cache.Get(check);
-		cached = _tuple$1[0];
-		ok = _tuple$1[1];
+		_tuple = m.cache.Get(check);
+		cached = _tuple[0];
+		ok = _tuple[1];
 		if (ok) {
 			$s = -1; return cached;
 		}
@@ -24588,7 +24550,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		r = _r$3;
 		m.cache.Set(check, r);
 		$s = -1; return r;
-		/* */ } return; } if ($f === undefined) { $f = { $blk: Memo.ptr.prototype.Call }; } $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._ref = _ref; $f._tuple = _tuple; $f._tuple$1 = _tuple$1; $f.args = args; $f.cached = cached; $f.check = check; $f.frame = frame; $f.id = id; $f.ids = ids; $f.m = m; $f.ok = ok; $f.r = r; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
+		/* */ } return; } if ($f === undefined) { $f = { $blk: Memo.ptr.prototype.Call }; } $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._r$3 = _r$3; $f._ref = _ref; $f._tuple = _tuple; $f.args = args; $f.cached = cached; $f.check = check; $f.frame = frame; $f.id = id; $f.known = known; $f.m = m; $f.ok = ok; $f.r = r; $f.s = s; $f.$s = $s; $f.$r = $r; return $f;
 	};
 	Memo.prototype.Call = function(frame, args) { return this.$val.Call(frame, args); };
 	memoCache.ptr.prototype.Get = function(args) {
@@ -24704,7 +24666,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 	ImportFunc.methods = [{prop: "Import", name: "Import", pkg: "", typ: $funcType([$String], [ptrType$4, $error], false)}];
 	Frame.methods = [{prop: "Sub", name: "Sub", pkg: "", typ: $funcType([ID], [Frame], false)}, {prop: "WithScope", name: "WithScope", pkg: "", typ: $funcType([ptrType$4], [Frame], false)}, {prop: "ID", name: "ID", pkg: "", typ: $funcType([], [ID], false)}, {prop: "Scope", name: "Scope", pkg: "", typ: $funcType([], [ptrType$4], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [Frame], false)}, {prop: "Backtrace", name: "Backtrace", pkg: "", typ: $funcType([io.Writer], [$error], false)}];
 	ptrType$6.methods = [{prop: "backtrace", name: "backtrace", pkg: "github.com/DeedleFake/wdte", typ: $funcType([io.Writer], [$error], false)}];
-	ptrType$4.methods = [{prop: "Get", name: "Get", pkg: "", typ: $funcType([ID], [Func], false)}, {prop: "Sub", name: "Sub", pkg: "", typ: $funcType([ptrType$4], [ptrType$4], false)}, {prop: "Add", name: "Add", pkg: "", typ: $funcType([ID, Func], [ptrType$4], false)}, {prop: "Map", name: "Map", pkg: "", typ: $funcType([mapType], [ptrType$4], false)}, {prop: "Custom", name: "Custom", pkg: "", typ: $funcType([funcType, funcType$1], [ptrType$4], false)}, {prop: "UpperBound", name: "UpperBound", pkg: "", typ: $funcType([], [ptrType$4], false)}, {prop: "LowerBound", name: "LowerBound", pkg: "", typ: $funcType([$String], [ptrType$4], false)}, {prop: "Latest", name: "Latest", pkg: "", typ: $funcType([$String], [sliceType$2, ptrType$4], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [ptrType$4], false)}, {prop: "Freeze", name: "Freeze", pkg: "", typ: $funcType([Func], [Func], false)}, {prop: "knownSet", name: "knownSet", pkg: "github.com/DeedleFake/wdte", typ: $funcType([mapType$1, $Bool], [], false)}, {prop: "Known", name: "Known", pkg: "", typ: $funcType([], [sliceType$2], false)}, {prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}, {prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}];
+	ptrType$4.methods = [{prop: "Get", name: "Get", pkg: "", typ: $funcType([ID], [Func], false)}, {prop: "Sub", name: "Sub", pkg: "", typ: $funcType([ptrType$4], [ptrType$4], false)}, {prop: "Add", name: "Add", pkg: "", typ: $funcType([ID, Func], [ptrType$4], false)}, {prop: "Map", name: "Map", pkg: "", typ: $funcType([mapType], [ptrType$4], false)}, {prop: "Custom", name: "Custom", pkg: "", typ: $funcType([funcType, funcType$1], [ptrType$4], false)}, {prop: "UpperBound", name: "UpperBound", pkg: "", typ: $funcType([], [ptrType$4], false)}, {prop: "LowerBound", name: "LowerBound", pkg: "", typ: $funcType([$String], [ptrType$4], false)}, {prop: "Latest", name: "Latest", pkg: "", typ: $funcType([$String], [ptrType$4], false)}, {prop: "Parent", name: "Parent", pkg: "", typ: $funcType([], [ptrType$4], false)}, {prop: "Freeze", name: "Freeze", pkg: "", typ: $funcType([Func], [Func], false)}, {prop: "knownSet", name: "knownSet", pkg: "github.com/DeedleFake/wdte", typ: $funcType([mapType$1, $Bool], [], false)}, {prop: "Known", name: "Known", pkg: "", typ: $funcType([], [sliceType$2], false)}, {prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}, {prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}];
 	GoFunc.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	Expr.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
 	Chain.methods = [{prop: "Call", name: "Call", pkg: "", typ: $funcType([Frame, sliceType], [Func], true)}];
