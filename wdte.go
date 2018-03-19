@@ -553,7 +553,12 @@ type Compound []Func
 // alongside the usual return value. This is useful when dealing with
 // scopes as modules, as it allows you to evaluate specific functions
 // in a script.
+//
+// Collect automatically surrounds the returned scope with a
+// "compound" bound.
 func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
+	frame = frame.WithScope(frame.Scope().UpperBound())
+
 	var last Func
 	for _, f := range c {
 		switch f := f.(type) {
@@ -576,7 +581,7 @@ func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 		last = last.Call(frame, args...)
 	}
 
-	return frame.Scope(), last
+	return frame.Scope().LowerBound("compound"), last
 }
 
 func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
