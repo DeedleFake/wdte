@@ -490,16 +490,19 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Objectify takes a compound as its argument and returns the scope
 // collected from executing that compound. The argument must be a
 // compound or the function will fail.
+//
+// It surrounds the returned scope with a bound called "object".
 func Objectify(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Objectify)
 	}
 
 	frame = frame.Sub("objectify")
+	frame = frame.WithScope(frame.Scope().UpperBound())
 
 	// TODO: Figure out cleaner way to do this?
 	s, _ := args[0].(*wdte.ScopedFunc).Func.(wdte.Compound).Collect(frame)
-	return s
+	return s.LowerBound("object")
 }
 
 // Sub is a WDTE function with the following signatures:
@@ -509,7 +512,8 @@ func Objectify(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //    (sub id val) scope
 //
 // Sub returns a subscope of scope with the value val bound to the ID
-// id. It puts a "compound" lower bound on the scope.
+// id. It puts a "object" lower bound on the scope but does not add
+// any upper bounds.
 func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 2 {
 		return save(wdte.GoFunc(Sub), args...)
@@ -521,7 +525,7 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	id := wdte.ID(args[1].Call(frame).(wdte.String))
 	v := args[2]
 
-	return s.Add(id, v).LowerBound("compound")
+	return s.Add(id, v).LowerBound("object")
 }
 
 // Scope is a scope containing the functions in this package.
