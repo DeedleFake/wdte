@@ -403,6 +403,11 @@ func (s *Scope) String() string { // nolint
 	return fmt.Sprint(s.Known())
 }
 
+func (s *Scope) At(i Func) (Func, bool) { // nolint
+	v := s.Get(ID(i.(String)))
+	return v, v != nil
+}
+
 // A GoFunc is an implementation of Func that calls a Go function.
 // This is the easiest way to implement lower-level systems for WDTE
 // scripts to make use of.
