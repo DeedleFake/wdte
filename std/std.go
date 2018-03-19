@@ -483,6 +483,25 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return ret
 }
 
+// Objectify is a WDTE function with the following signature:
+//
+//    objectify compound
+//
+// Objectify takes a compound as its argument and returns the scope
+// collected from executing that compound. The argument must be a
+// compound or the function will fail.
+func Objectify(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) == 0 {
+		return wdte.GoFunc(Objectify)
+	}
+
+	frame = frame.Sub("objectify")
+
+	// TODO: Figure out cleaner way to do this?
+	s, _ := args[0].(*wdte.ScopedFunc).Func.(wdte.Compound).Collect(frame)
+	return s
+}
+
 // Scope is a scope containing the functions in this package.
 //
 // This scope is primarily useful for bootstrapping an environment for
@@ -507,8 +526,9 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"||":    wdte.GoFunc(Or),
 	"!":     wdte.GoFunc(Not),
 
-	"len": wdte.GoFunc(Len),
-	"at":  wdte.GoFunc(At),
+	"len":       wdte.GoFunc(Len),
+	"at":        wdte.GoFunc(At),
+	"objectify": wdte.GoFunc(Objectify),
 })
 
 // F returns a top-level frame that has S as its scope.

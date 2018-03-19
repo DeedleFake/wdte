@@ -318,6 +318,11 @@ func TestBasics(t *testing.T) {
 			script: `let m => import 'math'; at m 'pi';`,
 			ret:    wdte.Number(math.Pi),
 		},
+		{
+			name:   "Objectify",
+			script: `let t => objectify (let test => 3); t.test;`,
+			ret:    wdte.Number(3),
+		},
 	})
 }
 
