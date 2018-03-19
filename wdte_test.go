@@ -68,10 +68,7 @@ func runTests(t *testing.T, tests []test) {
 				t.Fatalf("Failed to parse script: %v", err)
 			}
 
-			ret := m.Call(std.F())
-			if len(test.args) > 0 {
-				ret = ret.Call(std.F(), test.args...)
-			}
+			ret := m.Call(std.F()).Call(std.F(), test.args...)
 
 			switch test.ret {
 			case nil:
@@ -315,6 +312,21 @@ func TestBasics(t *testing.T) {
 			name:   "At/Array",
 			script: `at [3; 5; 1] 0;`,
 			ret:    wdte.Number(3),
+		},
+		{
+			name:   "At/Scope",
+			script: `let m => import 'math'; at m 'pi';`,
+			ret:    wdte.Number(math.Pi),
+		},
+		{
+			name:   "Objectify",
+			script: `let t => objectify (let test => 3); t.test;`,
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "Sub",
+			script: `let t => objectify (let test => 3); let t => sub t 'test2' 5; t.test2;`,
+			ret:    wdte.Number(5),
 		},
 	})
 }

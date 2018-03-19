@@ -403,6 +403,11 @@ func (s *Scope) String() string { // nolint
 	return fmt.Sprint(s.Known())
 }
 
+func (s *Scope) At(i Func) (Func, bool) { // nolint
+	v := s.Get(ID(i.(String)))
+	return v, v != nil
+}
+
 // A GoFunc is an implementation of Func that calls a Go function.
 // This is the easiest way to implement lower-level systems for WDTE
 // scripts to make use of.
@@ -549,6 +554,8 @@ type Compound []Func
 // scopes as modules, as it allows you to evaluate specific functions
 // in a script.
 func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
+	frame = frame.WithScope(frame.Scope())
+
 	var last Func
 	for _, f := range c {
 		switch f := f.(type) {
