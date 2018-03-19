@@ -307,6 +307,9 @@ func (s *Scope) UpperBound() *Scope {
 //
 //    scope = scope.UpperBound().Add("ex", 3).LowerBound("example")
 //    scope.Latest("example") // ([]ID{"ex"}, scope)
+//
+// Calling Known on a lower bound will only return the known variables
+// declared between it and the next upper bound found.
 func (s *Scope) LowerBound(name string) *Scope {
 	if name == "" {
 		panic("Boundary name can't be empty")
@@ -370,7 +373,9 @@ func (s *Scope) knownSet(vars map[ID]struct{}, boundary bool) {
 	s.p.knownSet(vars, boundary)
 }
 
-// Known returns a sorted list of variables that are in scope.
+// Known returns a sorted list of variables that are in scope. If the
+// scope it is called on is a lower bound, it will only return a list
+// of variables between it and the next upper bound found.
 func (s *Scope) Known() []ID {
 	vars := make(map[ID]struct{})
 	s.knownSet(vars, s.bound != "")
