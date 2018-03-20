@@ -29,6 +29,15 @@ type Atter interface {
 	At(i Func) (Func, bool)
 }
 
+// A Collector is a Func that generates a subscope during its normal
+// execution. For example, a Compound creates a subscope whenever a
+// let expression is encountered.
+type Collector interface {
+	// Collect calls the function, but returns the collected subscope
+	// alongside the normal return value.
+	Collect(Frame, ...Func) (*Scope, Func)
+}
+
 // A String is a string, as parsed from a string literal. That's about
 // it. Like everything else, it's a function. It simply returns itself
 // when called.
