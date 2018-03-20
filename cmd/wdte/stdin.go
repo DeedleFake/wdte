@@ -79,7 +79,7 @@ func stdin(im wdte.Importer) {
 			break
 		}
 
-		printRet(ret)
+		printRet(ret.Call(wdte.F().WithScope(r.Scope)))
 
 		mode = modeTop
 	}
