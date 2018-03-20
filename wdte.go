@@ -623,7 +623,15 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 type Var ID
 
 func (v Var) Call(frame Frame, args ...Func) Func { // nolint
-	return frame.Scope().Get(ID(v)).Call(frame, args...)
+	f := frame.Scope().Get(ID(v))
+	if f == nil {
+		return &Error{
+			Err:   fmt.Errorf("%q is not in scope", v),
+			Frame: frame,
+		}
+	}
+
+	return f.Call(frame, args...)
 }
 
 // A ScopedFunc is an expression that uses a predefined scope instead
