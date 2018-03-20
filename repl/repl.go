@@ -44,9 +44,13 @@ func SimpleNext(r io.Reader) NextFunc {
 // separate lines of a WDTE script, allowing for the implementation of
 // a read-eval-print loop.
 type REPL struct {
-	next  NextFunc
-	im    wdte.Importer
-	scope *wdte.Scope
+	// Scope is the scope that the next line will be executed in. It is
+	// automatically updated every time an executed line changes the
+	// scope.
+	Scope *wdte.Scope
+
+	next NextFunc
+	im   wdte.Importer
 
 	stack []string
 	buf   []byte
@@ -58,7 +62,7 @@ func New(next NextFunc, im wdte.Importer, start *wdte.Scope) *REPL {
 	return &REPL{
 		next:  next,
 		im:    im,
-		scope: start,
+		Scope: start,
 	}
 }
 
@@ -104,12 +108,12 @@ func (r *REPL) Next() (ret wdte.Func, err error) {
 		return nil, err
 	}
 
-	next, ret := m.Collect(wdte.F().WithScope(r.scope))
+	next, ret := m.Collect(wdte.F().WithScope(r.Scope))
 	if err, ok := ret.(error); ok {
 		return nil, err
 	}
 
-	r.scope = next
+	r.Scope = next
 	return ret, nil
 }
 
