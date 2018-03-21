@@ -14,14 +14,13 @@
             | ε
   <single> -> number
             | string
-            | <func>
-            | <array>
-            | <switch>
-            | <compound>
-            | <lambda>
+            | id <sub>
             | <import>
-    <func> -> id <subfunc>
- <subfunc> -> . id
+            | <lambda>
+            | <array>
+            | <switch> <sub>
+            | <compound> <sub>
+     <sub> -> . id <sub>
             | ε
    <array> -> [ <exprs> ]
   <switch> -> switch <expr> { <switches> }
