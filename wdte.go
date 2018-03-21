@@ -493,43 +493,24 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 
 // A Sub is a function that is in a subscope. This is most commonly an
 // imported function.
-type Sub struct {
-	// Scope is a function that returns the subscope. If it does not
-	// return a *Scope, calling the Sub will fail.
-	Scope Func
-
-	// Func is the ID of the function being called.
-	Func ID
-}
+type Sub []Func
 
 func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
-	ns := sub.Scope.Call(frame)
-	scope, ok := ns.(*Scope)
-	if !ok {
-		return Error{
-			Err:   fmt.Errorf("Function called on non-scope %#v", ns),
-			Frame: frame,
+	scope := frame.Scope()
+	for _, f := range sub[:len(sub)-1] {
+		next := f.Call(frame.WithScope(scope))
+		tmp, ok := next.(*Scope)
+		if !ok {
+			return Error{
+				Err:   fmt.Errorf("Function called on non-scope %#v", next),
+				Frame: frame,
+			}
 		}
+
+		scope = tmp
 	}
 
-	f := scope.Get(sub.Func)
-	if f == nil {
-		return Error{
-			Err:   fmt.Errorf("Function %q does not exist in subscope", sub.Func),
-			Frame: frame,
-		}
-	}
-
-	return f.Call(frame, args...)
-}
-
-func (sub Sub) Compare(other Func) (int, bool) { // nolint
-	o, ok := other.(Sub)
-	if ok && (sub.Scope == o.Scope) && (sub.Func == o.Func) {
-		return 0, false
-	}
-
-	return -1, false
+	return sub[len(sub)-1].Call(frame.WithScope(scope), args...)
 }
 
 // A Compound represents a compound expression. Calling it calls each

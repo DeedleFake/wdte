@@ -200,11 +200,21 @@ func TestBasics(t *testing.T) {
 			name:   "PassModule",
 			script: `let m => import 'somemodule'; let test im => im.num; test m;`,
 			im: wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
-				return wdte.S().Map(map[wdte.ID]wdte.Func{
-					"num": wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-						return wdte.Number(3)
-					}),
-				}), nil
+				return wdte.S().Add("num", wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+					return wdte.Number(3)
+				}),
+				), nil
+			}),
+			ret: wdte.Number(3),
+		},
+		{
+			name:   "MultiSub",
+			script: `let m => import 'somemodule'; (m).sub.num;`,
+			im: wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
+				return wdte.S().Add("sub", wdte.S().Add("num", wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+					return wdte.Number(3)
+				}),
+				)), nil
 			}),
 			ret: wdte.Number(3),
 		},
