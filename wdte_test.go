@@ -208,7 +208,7 @@ func TestBasics(t *testing.T) {
 			ret: wdte.Number(3),
 		},
 		{
-			name:   "MultiSub",
+			name:   "Sub/Multiple",
 			script: `let m => import 'somemodule'; (m).sub.num;`,
 			im: wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
 				return wdte.S().Add("sub", wdte.S().Add("num", wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -217,6 +217,11 @@ func TestBasics(t *testing.T) {
 				)), nil
 			}),
 			ret: wdte.Number(3),
+		},
+		{
+			name:   "Sub/Expr",
+			script: `let m => import 'math'; m.(cos 3);`,
+			ret:    wdte.Number(math.Cos(3)),
 		},
 		{
 			name:   "Array/Args",
@@ -334,6 +339,8 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(3),
 		},
 		{
+			// TODO: Move this and some others into a separate test, such as
+			// `TestStd` or something.
 			name:   "Sub",
 			script: `let t => collect (let test => 3); let t => sub t 'test2' 5; t.test2;`,
 			ret:    wdte.Number(5),
