@@ -200,11 +200,21 @@ func TestBasics(t *testing.T) {
 			name:   "PassModule",
 			script: `let m => import 'somemodule'; let test im => im.num; test m;`,
 			im: wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
-				return wdte.S().Map(map[wdte.ID]wdte.Func{
-					"num": wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-						return wdte.Number(3)
-					}),
-				}), nil
+				return wdte.S().Add("num", wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+					return wdte.Number(3)
+				}),
+				), nil
+			}),
+			ret: wdte.Number(3),
+		},
+		{
+			name:   "MultiSub",
+			script: `let m => import 'somemodule'; (m).sub.num;`,
+			im: wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
+				return wdte.S().Add("sub", wdte.S().Add("num", wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+					return wdte.Number(3)
+				}),
+				)), nil
 			}),
 			ret: wdte.Number(3),
 		},
@@ -319,13 +329,13 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(math.Pi),
 		},
 		{
-			name:   "Objectify",
-			script: `let t => objectify (let test => 3); t.test;`,
+			name:   "Collect",
+			script: `let t => collect (let test => 3); t.test;`,
 			ret:    wdte.Number(3),
 		},
 		{
 			name:   "Sub",
-			script: `let t => objectify (let test => 3); let t => sub t 'test2' 5; t.test2;`,
+			script: `let t => collect (let test => 3); let t => sub t 'test2' 5; t.test2;`,
 			ret:    wdte.Number(5),
 		},
 	})

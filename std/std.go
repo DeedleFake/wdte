@@ -483,26 +483,24 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return ret
 }
 
-// Objectify is a WDTE function with the following signature:
+// Collect is a WDTE function with the following signature:
 //
-//    objectify compound
+//    collect collector
 //
-// Objectify takes a compound as its argument and returns the scope
-// collected from executing that compound. The argument must be a
-// compound or the function will fail.
+// Collect takes a Collector, such as a Compound, as its argument and
+// returns the scope collected from executing that compound. The
+// argument must be a compound or the function will fail.
 //
-// It surrounds the returned scope with a bound called "object".
-func Objectify(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+// It surrounds the returned scope with a bound called "collect".
+func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
-		return wdte.GoFunc(Objectify)
+		return wdte.GoFunc(Collect)
 	}
 
-	frame = frame.Sub("objectify")
-	frame = frame.WithScope(frame.Scope().UpperBound())
+	frame = frame.Sub("collect")
 
-	// TODO: Figure out cleaner way to do this?
-	s, _ := args[0].(*wdte.ScopedFunc).Func.(wdte.Compound).Collect(frame)
-	return s.LowerBound("object")
+	s, _ := args[0].(wdte.Collector).Collect(frame.WithScope(frame.Scope().UpperBound()))
+	return s.LowerBound("collect")
 }
 
 // Sub is a WDTE function with the following signatures:
@@ -512,7 +510,7 @@ func Objectify(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //    (sub id val) scope
 //
 // Sub returns a subscope of scope with the value val bound to the ID
-// id. It puts a "object" lower bound on the scope but does not add
+// id. It puts a "collect" lower bound on the scope but does not add
 // any upper bounds.
 func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 2 {
@@ -525,7 +523,7 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	id := wdte.ID(args[1].Call(frame).(wdte.String))
 	v := args[2]
 
-	return s.Add(id, v).LowerBound("object")
+	return s.Add(id, v).LowerBound("collect")
 }
 
 // Scope is a scope containing the functions in this package.
@@ -552,10 +550,10 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"||":    wdte.GoFunc(Or),
 	"!":     wdte.GoFunc(Not),
 
-	"len":       wdte.GoFunc(Len),
-	"at":        wdte.GoFunc(At),
-	"objectify": wdte.GoFunc(Objectify),
-	"sub":       wdte.GoFunc(Sub),
+	"len":     wdte.GoFunc(Len),
+	"at":      wdte.GoFunc(At),
+	"collect": wdte.GoFunc(Collect),
+	"sub":     wdte.GoFunc(Sub),
 })
 
 // F returns a top-level frame that has S as its scope.

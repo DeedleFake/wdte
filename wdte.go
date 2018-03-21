@@ -293,9 +293,7 @@ func (s *Scope) Custom(getFunc func(ID) Func, known func(map[ID]struct{})) *Scop
 // top-level of the hierarchy is used.
 func (s *Scope) UpperBound() *Scope {
 	return &Scope{
-		p:       s,
-		known:   nil,
-		getFunc: nil,
+		p: s,
 	}
 }
 
@@ -316,10 +314,8 @@ func (s *Scope) LowerBound(name string) *Scope {
 	}
 
 	return &Scope{
-		p:       s,
-		known:   nil,
-		getFunc: nil,
-		bound:   name,
+		p:     s,
+		bound: name,
 	}
 }
 
@@ -497,43 +493,24 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 
 // A Sub is a function that is in a subscope. This is most commonly an
 // imported function.
-type Sub struct {
-	// Scope is a function that returns the subscope. If it does not
-	// return a *Scope, calling the Sub will fail.
-	Scope Func
-
-	// Func is the ID of the function being called.
-	Func ID
-}
+type Sub []Func
 
 func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
-	ns := sub.Scope.Call(frame)
-	scope, ok := ns.(*Scope)
-	if !ok {
-		return Error{
-			Err:   fmt.Errorf("Function called on non-scope %#v", ns),
-			Frame: frame,
+	scope := frame.Scope()
+	for _, f := range sub[:len(sub)-1] {
+		next := f.Call(frame.WithScope(scope))
+		tmp, ok := next.(*Scope)
+		if !ok {
+			return Error{
+				Err:   fmt.Errorf("Function called on non-scope %#v", next),
+				Frame: frame,
+			}
 		}
+
+		scope = tmp
 	}
 
-	f := scope.Get(sub.Func)
-	if f == nil {
-		return Error{
-			Err:   fmt.Errorf("Function %q does not exist in subscope", sub.Func),
-			Frame: frame,
-		}
-	}
-
-	return f.Call(frame, args...)
-}
-
-func (sub Sub) Compare(other Func) (int, bool) { // nolint
-	o, ok := other.(Sub)
-	if ok && (sub.Scope == o.Scope) && (sub.Func == o.Func) {
-		return 0, false
-	}
-
-	return -1, false
+	return sub[len(sub)-1].Call(frame.WithScope(scope), args...)
 }
 
 // A Compound represents a compound expression. Calling it calls each
@@ -548,12 +525,7 @@ func (sub Sub) Compare(other Func) (int, bool) { // nolint
 // returned as a lambda if it has arugments.
 type Compound []Func
 
-// Collect executes the compound the same as Call, but also returns
-// the collected scope that has been modified by let expressions
-// alongside the usual return value. This is useful when dealing with
-// scopes as modules, as it allows you to evaluate specific functions
-// in a script.
-func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
+func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) { // nolint
 	frame = frame.WithScope(frame.Scope())
 
 	var last Func
@@ -632,17 +604,40 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 type Var ID
 
 func (v Var) Call(frame Frame, args ...Func) Func { // nolint
-	return frame.Scope().Get(ID(v)).Call(frame, args...)
+	f := frame.Scope().Get(ID(v))
+	if f == nil {
+		return &Error{
+			Err:   fmt.Errorf("%q is not in scope", v),
+			Frame: frame,
+		}
+	}
+
+	return f.Call(frame, args...)
 }
 
 // A ScopedFunc is an expression that uses a predefined scope instead
 // of the one that comes with its frame. This is to make sure that a
 // lazily evaluated expression has access to the correct scope.
+//
+// ScopedFunc implements Collector to allow for scoped Collect calls
+// as well, but this does not guaruntee that the underlying function
+// implements Collector as well. If the underlying function does not,
+// it will cause a panic.
+//
+// If the frame passed to Collect is an upper bound, an upper bound is
+// attached to the scope that is passed to the function as well.
 type ScopedFunc struct {
-	// Func is the actual function.
-	Func Func
-
+	Func  Func
 	Scope *Scope
+}
+
+func (f ScopedFunc) Collect(frame Frame, args ...Func) (*Scope, Func) { // nolint
+	scope := f.Scope
+	if (frame.Scope().getFunc == nil) && (frame.Scope().bound == "") {
+		scope = scope.UpperBound()
+	}
+
+	return f.Func.(Collector).Collect(frame.WithScope(scope), args...)
 }
 
 func (f ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint

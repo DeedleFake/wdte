@@ -130,48 +130,50 @@ func (m *translator) fromSingle(single *ast.NTerm) Func {
 			return Number(s.Tok().Val.(float64))
 		case scanner.String:
 			return String(s.Tok().Val.(string))
+
+		case scanner.ID:
+			sub := m.fromSub(single.Children()[1].(*ast.NTerm), Sub{Var(s.Tok().Val.(string))})
+			if len(sub) == 1 {
+				return sub[0]
+			}
+			return sub
 		}
 
 	case *ast.NTerm:
+		sub := make(Sub, 1)
 		switch s.Name() {
-		case "func":
-			return m.fromFunc(s)
+		case "switch":
+			sub[0] = m.fromSwitch(s)
+		case "compound":
+			sub[0] = m.fromCompound(s)
+
 		case "array":
 			return m.fromArray(s)
-		case "switch":
-			return m.fromSwitch(s)
-		case "compound":
-			return m.fromCompound(s)
 		case "lambda":
 			return m.fromLambda(s)
 		case "import":
 			return m.fromImport(s)
 		}
+
+		sub = m.fromSub(single.Children()[1].(*ast.NTerm), sub)
+		if len(sub) == 1 {
+			return sub[0]
+		}
+		return sub
 	}
 
 	panic(fmt.Errorf("Malformed AST with bad <single>: %#v", single))
 }
 
-func (m *translator) fromFunc(f *ast.NTerm) Func {
-	id := ID(f.Children()[0].(*ast.Term).Tok().Val.(string))
-
-	sub := m.fromSubFunc(f.Children()[1].(*ast.NTerm))
-	if sub == "" {
-		return Var(id)
+func (m *translator) fromSub(sub *ast.NTerm, acc Sub) Sub {
+	if _, ok := sub.Children()[0].(*ast.Epsilon); ok {
+		return acc
 	}
 
-	return Sub{
-		Scope: Var(id),
-		Func:  sub,
-	}
-}
+	id := Var(sub.Children()[1].(*ast.Term).Tok().Val.(string))
 
-func (m *translator) fromSubFunc(subfunc *ast.NTerm) ID {
-	if _, ok := subfunc.Children()[0].(*ast.Epsilon); ok {
-		return ""
-	}
-
-	return ID(subfunc.Children()[1].(*ast.Term).Tok().Val.(string))
+	acc = append(acc, id)
+	return m.fromSub(sub.Children()[2].(*ast.NTerm), acc)
 }
 
 func (m *translator) fromArray(array *ast.NTerm) Func {
