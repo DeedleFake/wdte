@@ -6,7 +6,7 @@
   "scripts": {
     "start": "BROWSER=none react-scripts start",
     "build": "react-scripts build && mv build/* ..",
-    "clean": "react-scripts clean"
+		"eject": "react-scripts eject"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
     "semantic-ui-react": "^0.79.0"
   },
   "devDependencies": {
+    "raw-loader": "^0.5.1",
     "react-scripts": "^1.1.1"
   }
 }

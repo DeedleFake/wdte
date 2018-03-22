@@ -10,6 +10,9 @@ import {
 	Container,
 } from 'semantic-ui-react'
 
+import initialDesc from './initialDesc.txt'
+import * as examples from './examples'
+
 import { connect } from 'react-redux'
 import {
 	runWDTE,
@@ -41,6 +44,7 @@ const styles = {
 
 class App extends Component {
 	state = {
+		description: initialDesc,
 		input: '',
 	}
 
@@ -52,11 +56,21 @@ class App extends Component {
 		this.props.runWDTE(this.state.input)
 	}
 
+	onClickExample = (ev, data) => {
+		this.setState({
+			description: examples[data.children].desc,
+			input: examples[data.children].input,
+		})
+	}
+
 	render() {
 		return (
 			<div style={styles.main}>
 				<Grid style={styles.grid} columns={2} divided stretched>
 					<Grid.Column style={styles.scroll}>
+						<Container>
+							{this.state.description}
+						</Container>
 					</Grid.Column>
 
 					<Grid.Column style={styles.column}>
@@ -65,11 +79,11 @@ class App extends Component {
 
 							<Dropdown item text='Examples'>
 								<Dropdown.Menu>
-									<Dropdown.Item>Fibonacci</Dropdown.Item>
-									<Dropdown.Item>Stream</Dropdown.Item>
-									<Dropdown.Item>Strings</Dropdown.Item>
-									<Dropdown.Item>Lambda</Dropdown.Item>
-									{/*<Dropdown.Item>Canvas</Dropdown.Item>*/}
+									<Dropdown.Item onClick={this.onClickExample}>Fibonacci</Dropdown.Item>
+									<Dropdown.Item onClick={this.onClickExample}>Stream</Dropdown.Item>
+									<Dropdown.Item onClick={this.onClickExample}>Strings</Dropdown.Item>
+									<Dropdown.Item onClick={this.onClickExample}>Lambda</Dropdown.Item>
+									{/*<Dropdown.Item onClick={this.onClickExample}>Canvas</Dropdown.Item>*/}
 								</Dropdown.Menu>
 							</Dropdown>
 						</Menu>
