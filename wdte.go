@@ -498,7 +498,7 @@ type Sub []Func
 func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
 	scope := frame.Scope()
 	for _, f := range sub[:len(sub)-1] {
-		next := f.Call(frame.WithScope(scope))
+		next := f.Call(frame.WithScope(frame.Scope().Sub(scope)))
 		tmp, ok := next.(*Scope)
 		if !ok {
 			return Error{
@@ -510,7 +510,7 @@ func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
 		scope = tmp
 	}
 
-	return sub[len(sub)-1].Call(frame.WithScope(scope), args...)
+	return sub[len(sub)-1].Call(frame.WithScope(frame.Scope().Sub(scope)), args...)
 }
 
 // A Compound represents a compound expression. Calling it calls each
