@@ -6,7 +6,14 @@ import './brace'
 import {
 	Grid,
 	Menu,
+	Dropdown,
+	Container,
 } from 'semantic-ui-react'
+
+import { connect } from 'react-redux'
+import {
+	runWDTE,
+} from './store'
 
 const styles = {
 	main: {
@@ -42,7 +49,7 @@ class App extends Component {
 	})
 
 	onRun = () => {
-		alert('Not implemented.')
+		this.props.runWDTE(this.state.input)
 	}
 
 	render() {
@@ -50,12 +57,21 @@ class App extends Component {
 			<div style={styles.main}>
 				<Grid style={styles.grid} columns={2} divided stretched>
 					<Grid.Column style={styles.scroll}>
-						<div style={{backgroundColor: 'black'}} />
 					</Grid.Column>
 
 					<Grid.Column style={styles.column}>
 						<Menu inverted>
 							<Menu.Item onClick={this.onRun}>Run</Menu.Item>
+
+							<Dropdown item text='Examples'>
+								<Dropdown.Menu>
+									<Dropdown.Item>Fibonacci</Dropdown.Item>
+									<Dropdown.Item>Stream</Dropdown.Item>
+									<Dropdown.Item>Strings</Dropdown.Item>
+									<Dropdown.Item>Lambda</Dropdown.Item>
+									{/*<Dropdown.Item>Canvas</Dropdown.Item>*/}
+								</Dropdown.Menu>
+							</Dropdown>
 						</Menu>
 
 						<Grid columns={1} divided stretched>
@@ -72,7 +88,9 @@ class App extends Component {
 
 							<Grid.Row>
 								<Grid.Column style={styles.scroll}>
-									<pre>{this.props.output}</pre>
+									<Container>
+										<pre>{this.props.output}</pre>
+									</Container>
 								</Grid.Column>
 							</Grid.Row>
 						</Grid>
@@ -83,4 +101,12 @@ class App extends Component {
 	}
 }
 
-export default App
+export default connect(
+	(state) => ({
+		output: state.wdte.output,
+	}),
+
+	{
+		runWDTE,
+	},
+)(App)
