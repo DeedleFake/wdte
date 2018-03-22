@@ -1,54 +1,86 @@
 import React, { Component } from 'react'
 
-import Typography from 'material-ui/Typography'
-import Paper from 'material-ui/Paper'
-import Grid from 'material-ui/Grid'
-import { withStyles } from 'material-ui/styles'
+import AceEditor from 'react-ace'
+import './brace'
 
-const styles = (theme) => ({
-	root: {
+import {
+	Grid,
+	Menu,
+} from 'semantic-ui-react'
+
+const styles = {
+	main: {
+		display: 'flex',
+		flexDirection: 'column',
+
+		padding: 8,
+
 		position: 'absolute',
-		top: theme.spacing.unit,
-		bottom: theme.spacing.unit,
-		left: theme.spacing.unit,
-		right: theme.spacing.unit,
+		top: 0,
+		bottom: 0,
+		left: 0,
+		right: 0,
 	},
-})
+
+	column: {
+		display: 'flex',
+		flexDirection: 'column',
+	},
+
+	scroll: {
+		overflow: 'auto',
+	},
+}
 
 class App extends Component {
+	state = {
+		input: '',
+	}
+
+	setVal = (k, f) => (val) => this.setState({
+		[k]: (f || ((v) => v))(val),
+	})
+
 	onRun = () => {
 		alert('Not implemented.')
 	}
 
 	render() {
 		return (
-			<React.Fragment>
-				<div className={this.props.classes.root}>
-					<Grid container>
-						<Grid item xs>
-							<Paper>This is a test.</Paper>
+			<div style={styles.main}>
+				<Grid style={styles.grid} columns={2} divided stretched>
+					<Grid.Column style={styles.scroll}>
+						<div style={{backgroundColor: 'black'}} />
+					</Grid.Column>
+
+					<Grid.Column style={styles.column}>
+						<Menu inverted>
+							<Menu.Item onClick={this.onRun}>Run</Menu.Item>
+						</Menu>
+
+						<Grid columns={1} divided stretched>
+							<Grid.Row>
+								<Grid.Column style={styles.scroll}>
+									<AceEditor
+										mode='wdte'
+										theme='vibrant_ink'
+										value={this.state.input}
+										onChange={this.setVal('input')}
+									/>
+								</Grid.Column>
+							</Grid.Row>
+
+							<Grid.Row>
+								<Grid.Column style={styles.scroll}>
+									<pre>{this.props.output}</pre>
+								</Grid.Column>
+							</Grid.Row>
 						</Grid>
-
-						<Grid container direction='column' item xs>
-							<Grid item>
-								<Typography>
-									Toolbar
-								</Typography>
-							</Grid>
-
-							<Grid item xs>
-								<Paper>This is also a test.</Paper>
-							</Grid>
-
-							<Grid item xs>
-								<Paper>This might not be.</Paper>
-							</Grid>
-						</Grid>
-					</Grid>
-				</div>
-			</React.Fragment>
+					</Grid.Column>
+				</Grid>
+			</div>
 		)
 	}
 }
 
-export default withStyles(styles)(App)
+export default App
