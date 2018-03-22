@@ -1,0 +1,31 @@
+{
+  "name": "wdte-playground",
+  "version": "0.1.0",
+  "description": "WDTE Playground",
+  "main": "index.js",
+  "scripts": {
+    "start": "BROWSER=none react-scripts start",
+    "build": "react-scripts build && mv build/* ..",
+    "clean": "react-scripts clean"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeedleFake/wdte.git"
+  },
+  "author": "DeedleFake",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DeedleFake/wdte/issues"
+  },
+  "homepage": "https://github.com/DeedleFake/wdte#readme",
+  "dependencies": {
+    "material-ui": "^1.0.0-beta.38",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-redux": "^5.0.7",
+    "redux": "^3.7.2"
+  },
+  "devDependencies": {
+    "react-scripts": "^1.1.1"
+  }
+}
