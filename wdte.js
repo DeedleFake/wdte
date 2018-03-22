@@ -24409,7 +24409,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 		/* while (true) { */ case 1:
 			/* if (!(_i < _ref.$length)) { break; } */ if(!(_i < _ref.$length)) { $s = 2; continue; }
 			f = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
-			_r = f.Call($clone($clone(frame, Frame).WithScope(scope), Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+			_r = f.Call($clone($clone(frame, Frame).WithScope($clone(frame, Frame).Scope().Sub(scope)), Frame), new sliceType([])); /* */ $s = 3; case 3: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 			next = _r;
 			_tuple = $assertType(next, ptrType$4, true);
 			tmp = _tuple[0];
@@ -24423,7 +24423,7 @@ $packages["github.com/DeedleFake/wdte"] = (function() {
 			scope = tmp;
 			_i++;
 		/* } */ $s = 1; continue; case 2:
-		_r$2 = (x$1 = sub.$length - 1 >> 0, ((x$1 < 0 || x$1 >= sub.$length) ? ($throwRuntimeError("index out of range"), undefined) : sub.$array[sub.$offset + x$1])).Call($clone($clone(frame, Frame).WithScope(scope), Frame), args); /* */ $s = 7; case 7: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+		_r$2 = (x$1 = sub.$length - 1 >> 0, ((x$1 < 0 || x$1 >= sub.$length) ? ($throwRuntimeError("index out of range"), undefined) : sub.$array[sub.$offset + x$1])).Call($clone($clone(frame, Frame).WithScope($clone(frame, Frame).Scope().Sub(scope)), Frame), args); /* */ $s = 7; case 7: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
 		$s = -1; return _r$2;
 		/* */ } return; } if ($f === undefined) { $f = { $blk: Sub.prototype.Call }; } $f._i = _i; $f._r = _r; $f._r$1 = _r$1; $f._r$2 = _r$2; $f._ref = _ref; $f._tuple = _tuple; $f.args = args; $f.f = f; $f.frame = frame; $f.next = next; $f.ok = ok; $f.scope = scope; $f.sub = sub; $f.tmp = tmp; $f.x = x; $f.x$1 = x$1; $f.$s = $s; $f.$r = $r; return $f;
 	};
