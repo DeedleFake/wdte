@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 
+import ReactMarkdown from 'react-markdown'
+
 import AceEditor from 'react-ace'
 import './brace'
 
@@ -58,8 +60,8 @@ class App extends Component {
 
 	onClickExample = (ev, data) => {
 		this.setState({
-			description: examples[data.children].desc,
-			input: examples[data.children].input,
+			description: examples[data.value].desc,
+			input: examples[data.value].input,
 		})
 	}
 
@@ -69,7 +71,7 @@ class App extends Component {
 				<Grid style={styles.grid} columns={2} divided stretched>
 					<Grid.Column style={styles.scroll}>
 						<Container>
-							{this.state.description}
+							<ReactMarkdown source={this.state.description} />
 						</Container>
 					</Grid.Column>
 
@@ -79,10 +81,9 @@ class App extends Component {
 
 							<Dropdown item text='Examples'>
 								<Dropdown.Menu>
-									<Dropdown.Item onClick={this.onClickExample}>Fibonacci</Dropdown.Item>
-									<Dropdown.Item onClick={this.onClickExample}>Stream</Dropdown.Item>
-									<Dropdown.Item onClick={this.onClickExample}>Strings</Dropdown.Item>
-									<Dropdown.Item onClick={this.onClickExample}>Lambda</Dropdown.Item>
+									{Object.entries(examples).map(([id, example]) => (
+										<Dropdown.Item value={id} onClick={this.onClickExample}>{example.name}</Dropdown.Item>
+									))}
 									{/*<Dropdown.Item onClick={this.onClickExample}>Canvas</Dropdown.Item>*/}
 								</Dropdown.Menu>
 							</Dropdown>

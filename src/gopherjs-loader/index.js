@@ -7,7 +7,7 @@ module.exports = function(source) {
 
   const tmp = path.join(__dirname, 'tmp')
   const fname = path.basename(this.resourcePath, '.go')
-  const cmd = `gopherjs build ${this.resourcePath} -o '${path.join(tmp, `${fname}.js`)}'`
+  const cmd = `gopherjs build -m ${this.resourcePath} -o '${path.join(tmp, `${fname}.js`)}'`
 
   child_process.execSync(`rm -fr '${tmp}'`)
   child_process.execSync(`mkdir -p '${tmp}'`)
