@@ -22,16 +22,12 @@ const styles = {
 	main: {
 		display: 'flex',
 		flexDirection: 'row',
+		//flexWrap: 'wrap-reverse',
 
 		backgroundColor: '#EEEEEE',
 		boxSizing: 'border-box',
 		padding: 8,
-
-		position: 'absolute',
-		top: 0,
-		bottom: 0,
-		left: 0,
-		right: 0,
+		height: '100%',
 	},
 
 	column: {
@@ -40,22 +36,28 @@ const styles = {
 
 		flex: 1,
 		margin: 8,
-		overflow: 'auto',
+		overflowY: 'auto',
+		minWidth: 300,
 	},
 
 	input: {
 		width: null,
 		height: null,
+		minHeight: 300,
 		flex: 1,
+		borderRadius: 8,
 	},
 
 	output: {
+		minHeight: 300,
 		fontFamily: 'Go-Mono',
 		fontSize: 12,
 		flex: 1,
 		overflow: 'auto',
 		padding: 8,
-		boxShadow: 'inset 4px 4px 4px #DDDDDD',
+		boxShadow: 'inset 4px 4px 4px #AAAAAA',
+		borderRadius: 8,
+		backgroundColor: '#CCCCCC',
 	}
 }
 
