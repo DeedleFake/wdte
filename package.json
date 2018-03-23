@@ -2,10 +2,11 @@
   "name": "wdte-playground",
   "version": "0.1.0",
   "description": "WDTE Playground",
-  "main": "index.js",
   "scripts": {
     "start": "BROWSER=none node scripts/start.js",
-    "build": "node scripts/build.js"
+    "build": "node scripts/build.js",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "repository": {
     "type": "git",
@@ -16,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/DeedleFake/wdte/issues"
   },
-  "homepage": "https://github.com/DeedleFake/wdte#readme",
+  "homepage": "https://deedlefake.github.io/wdte",
   "dependencies": {
     "autoprefixer": "7.1.6",
     "babel-core": "6.26.0",
@@ -66,6 +67,7 @@
     "whatwg-fetch": "2.0.3"
   },
   "devDependencies": {
+    "gh-pages": "^1.1.0",
     "raw-loader": "^0.5.1"
   },
   "jest": {
