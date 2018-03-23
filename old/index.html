@@ -1,0 +1,105 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+		<title>WDTE Playground</title>
+		<script type='application/javascript' src='wdte.js' defer></script>
+
+		<style type='text/css'>
+			@font-face
+			{
+				font-family:'Go Mono';
+				src: url('Go-Mono.ttf');
+			}
+
+			body
+			{
+				background-color:#EEEEEE;
+				display:flex;
+				flex-direction:row;
+				margin:0px;
+				padding:0px;
+				width:100%;
+				height:100%;
+			}
+
+			input[type=button]
+			{
+				min-height:2em;
+			}
+
+			#left, #right
+			{
+				display:flex;
+				flex-direction:column;
+				flex:1;
+				max-width:50%;
+			}
+
+			#input, #output, #error
+			{
+				background-color:#DDDDDD;
+				margin:8px;
+				padding:4px;
+			}
+
+			#input
+			{
+				font-family:'Go Mono';
+				flex:15;
+				font-size:12px;
+			}
+
+			#controls
+			{
+				display:flex;
+				flex:1;
+				flex-wrap:wrap;
+				margin:8px;
+			}
+
+			#controls > *
+			{
+				margin:8px;
+			}
+
+			#output, #error
+			{
+				flex:1;
+				overflow:auto;
+			}
+
+			#canvas
+			{
+				flex:1;
+				align-self:center;
+				display:none;
+				background-color:#FFFFFF;
+				max-width:640px;
+				max-height:480px;
+			}
+		</style>
+	</head>
+	<body onload='window.main()'>
+		<div id='left'>
+			<textarea id='input' class='tab'></textarea>
+			<div id='controls'>
+				<input type='button' value='Run' onclick='window.run()' />
+				<input type='button' value='Clear Errors' onclick='window.clear()' />
+				<select id='example' onchange='window.changeExample()'>
+					<option value='fib'>Fibonacci</option>
+					<option value='stream'>Stream</option>
+					<option value='strings'>Strings</option>
+					<option value='lambda'>Lambda</option>
+					<option value='canvas'>Canvas</option>
+				</select>
+				<input type='button' value='Save to Clipboard' onclick='window.save()' />
+			</div>
+		</div>
+
+		<div id='right'>
+			<pre id='output'></pre>
+			<canvas id='canvas'></canvas>
+			<pre id='error'></pre>
+		</div>
+	</body>
+</html>
