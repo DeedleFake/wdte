@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "BROWSER=none node scripts/start.js",
-    "build": "node scripts/build.js && mv build/* .."
+    "build": "node scripts/build.js"
   },
   "repository": {
     "type": "git",
