@@ -6,10 +6,8 @@ import AceEditor from 'react-ace'
 import './brace'
 
 import {
-	Grid,
 	Menu,
 	Dropdown,
-	Container,
 } from 'semantic-ui-react'
 
 import initialDesc from './initialDesc.txt'
@@ -23,8 +21,10 @@ import {
 const styles = {
 	main: {
 		display: 'flex',
-		flexDirection: 'column',
+		flexDirection: 'row',
 
+		backgroundColor: '#EEEEEE',
+		boxSizing: 'border-box',
 		padding: 8,
 
 		position: 'absolute',
@@ -37,11 +37,26 @@ const styles = {
 	column: {
 		display: 'flex',
 		flexDirection: 'column',
-	},
 
-	scroll: {
+		flex: 1,
+		margin: 8,
 		overflow: 'auto',
 	},
+
+	input: {
+		width: null,
+		height: null,
+		flex: 1,
+	},
+
+	output: {
+		fontFamily: 'Go-Mono',
+		fontSize: 12,
+		flex: 1,
+		overflow: 'auto',
+		padding: 8,
+		boxShadow: 'inset 4px 4px 4px #DDDDDD',
+	}
 }
 
 class App extends Component {
@@ -68,49 +83,34 @@ class App extends Component {
 	render() {
 		return (
 			<div style={styles.main}>
-				<Grid style={styles.grid} columns={2} divided stretched>
-					<Grid.Column style={styles.scroll}>
-						<Container>
-							<ReactMarkdown source={this.state.description} />
-						</Container>
-					</Grid.Column>
+				<div style={styles.column}>
+					<ReactMarkdown source={this.state.description} />
+				</div>
 
-					<Grid.Column style={styles.column}>
-						<Menu inverted>
-							<Menu.Item onClick={this.onRun}>Run</Menu.Item>
+				<div style={styles.column}>
+					<Menu inverted>
+						<Menu.Item onClick={this.onRun}>Run</Menu.Item>
 
-							<Dropdown item text='Examples'>
-								<Dropdown.Menu>
-									{Object.entries(examples).map(([id, example]) => (
-										<Dropdown.Item value={id} onClick={this.onClickExample}>{example.name}</Dropdown.Item>
-									))}
-									{/*<Dropdown.Item onClick={this.onClickExample}>Canvas</Dropdown.Item>*/}
-								</Dropdown.Menu>
-							</Dropdown>
-						</Menu>
+						<Dropdown item text='Examples'>
+							<Dropdown.Menu>
+								{Object.entries(examples).map(([id, example]) => (
+									<Dropdown.Item value={id} onClick={this.onClickExample}>{example.name}</Dropdown.Item>
+								))}
+								{/*<Dropdown.Item onClick={this.onClickExample}>Canvas</Dropdown.Item>*/}
+							</Dropdown.Menu>
+						</Dropdown>
+					</Menu>
 
-						<Grid columns={1} divided stretched>
-							<Grid.Row>
-								<Grid.Column style={styles.scroll}>
-									<AceEditor
-										mode='wdte'
-										theme='vibrant_ink'
-										value={this.state.input}
-										onChange={this.setVal('input')}
-									/>
-								</Grid.Column>
-							</Grid.Row>
+					<AceEditor
+						style={styles.input}
+						mode='wdte'
+						theme='vibrant_ink'
+						value={this.state.input}
+						onChange={this.setVal('input')}
+					/>
 
-							<Grid.Row>
-								<Grid.Column style={styles.scroll}>
-									<Container>
-										<pre>{this.props.output}</pre>
-									</Container>
-								</Grid.Column>
-							</Grid.Row>
-						</Grid>
-					</Grid.Column>
-				</Grid>
+					<pre style={styles.output}>{this.props.output}</pre>
+				</div>
 			</div>
 		)
 	}
