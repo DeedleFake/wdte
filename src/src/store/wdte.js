@@ -1,9 +1,11 @@
 import * as actions from './actions'
 
+import * as wdte from '../wdte.go'
+
 export const runWDTE = async (input) => {
 	return {
 		type: actions.RUN_WDTE,
-		output: 'Not implemented.',
+		output: wdte.eval(input),
 	}
 }
 

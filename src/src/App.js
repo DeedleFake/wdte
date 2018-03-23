@@ -13,8 +13,6 @@ import {
 import initialDesc from './initialDesc.txt'
 import * as examples from './examples'
 
-import './wdte.go'
-
 import { connect } from 'react-redux'
 import {
 	runWDTE,
