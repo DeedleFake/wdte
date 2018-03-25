@@ -568,10 +568,6 @@ type Switch struct {
 	// right-hand side. When the switch is evaluated, the cases are run
 	// in order. If any matches, the right-hand side is evaluated and
 	// its return value is returned.
-	//
-	// A default case is represented by a nil in the first index. It is
-	// possible to have cases after a default, but pointless, as a
-	// default is always run when it is encountered.
 	Cases [][2]Func
 }
 
@@ -582,10 +578,6 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	for _, c := range s.Cases {
-		if c[0] == nil {
-			return c[1].Call(frame)
-		}
-
 		lhs := c[0].Call(frame)
 		if _, ok := lhs.(error); ok {
 			return lhs
