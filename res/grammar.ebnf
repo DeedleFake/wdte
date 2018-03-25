@@ -29,7 +29,6 @@
    <exprs> -> <expr> ; <exprs>
             | ε
 <switches> -> <expr> => <expr> ; <switches>
-            | default => <expr> ; <switches>
             | ε
   <cexprs> -> <expr> ; <cexprs>
             | <letexpr> ; <cexprs>
