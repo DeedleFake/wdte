@@ -467,7 +467,7 @@ func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 		next[i] = frame.Scope().Freeze(f.Args[i])
 	}
 
-	return f.Func.Call(frame, next...)
+	return f.Func.Call(frame).Call(frame, next...)
 }
 
 // Chain is an unevaluated chain expression.
