@@ -105,7 +105,7 @@ type flatMapper struct {
 func FlatMap(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
-		return wdte.GoFunc(Map)
+		return wdte.GoFunc(FlatMap)
 	}
 
 	return &flatMapper{m: args[0].Call(frame)}
