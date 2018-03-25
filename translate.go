@@ -205,13 +205,6 @@ func (m *translator) fromSwitch(s *ast.NTerm) Func {
 
 func (m *translator) fromSwitches(switches *ast.NTerm, cases [][2]Func) [][2]Func {
 	switch sw := switches.Children()[0].(type) {
-	case *ast.Term:
-		cases = append(cases, [...]Func{
-			nil,
-			m.fromExpr(switches.Children()[2].(*ast.NTerm)),
-		})
-		return cases
-
 	case *ast.NTerm:
 		cases = append(cases, [...]Func{
 			m.fromExpr(sw),
