@@ -13,10 +13,7 @@ import {
 import initialDesc from './initialDesc.txt'
 import * as examples from './examples'
 
-import { connect } from 'react-redux'
-import {
-	runWDTE,
-} from './store'
+import * as wdte from './wdte.go'
 
 const styles = {
 	main: {
@@ -66,6 +63,7 @@ class App extends Component {
 	state = {
 		description: initialDesc,
 		input: '',
+		output: '',
 	}
 
 	setVal = (k, f) => (val) => this.setState({
@@ -73,7 +71,9 @@ class App extends Component {
 	})
 
 	onRun = () => {
-		this.props.runWDTE(this.state.input)
+		this.setState({
+			output: wdte.eval(this.state.input),
+		})
 	}
 
 	onClickExample = (ev, data) => {
@@ -112,19 +112,11 @@ class App extends Component {
 						onChange={this.setVal('input')}
 					/>
 
-					<pre style={styles.output}>{this.props.output}</pre>
+					<pre style={styles.output}>{this.state.output}</pre>
 				</div>
 			</div>
 		)
 	}
 }
 
-export default connect(
-	(state) => ({
-		output: state.wdte.output,
-	}),
-
-	{
-		runWDTE,
-	},
-)(App)
+export default App
