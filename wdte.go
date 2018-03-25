@@ -2,6 +2,7 @@ package wdte
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"sort"
@@ -81,6 +82,7 @@ type Func interface {
 type Frame struct {
 	id    ID
 	scope *Scope
+	ctx   context.Context
 
 	p *Frame
 }
@@ -119,6 +121,12 @@ func (f Frame) WithScope(scope *Scope) Frame {
 	return f
 }
 
+// WithContext returns a copy of f with the given context.
+func (f Frame) WithContext(ctx context.Context) Frame {
+	f.ctx = ctx
+	return f
+}
+
 // ID returns the ID of the frame. This is generally the function that
 // created the frame.
 func (f Frame) ID() ID {
@@ -128,6 +136,14 @@ func (f Frame) ID() ID {
 // Scope returns the scope associated with the frame.
 func (f Frame) Scope() *Scope {
 	return f.scope
+}
+
+func (f Frame) Context() context.Context {
+	if f.ctx == nil {
+		return context.Background()
+	}
+
+	return f.ctx
 }
 
 // Parent returns the frame that this frame was created from, or a
@@ -462,6 +478,13 @@ type Expr struct {
 }
 
 func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
+	if err := frame.Context().Err(); err != nil {
+		return &Error{
+			Frame: frame,
+			Err:   err,
+		}
+	}
+
 	next := make([]Func, len(f.Args))
 	for i := range f.Args {
 		next[i] = frame.Scope().Freeze(f.Args[i])
