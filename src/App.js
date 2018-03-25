@@ -28,6 +28,7 @@ const styles = {
 		boxSizing: 'border-box',
 		padding: 8,
 		height: '100%',
+		position: 'absolute',
 	},
 
 	column: {
