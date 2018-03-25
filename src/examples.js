@@ -11,12 +11,12 @@ This example provides a memoized implementation of a recursive Fibonacci number 
 	input: `let memo fib n => switch n {
 	== 0 => 0;
 	== 1 => 1;
-	default => + (fib (- n 1)) (fib (- n 2));
+	true => + (fib (- n 1)) (fib (- n 2));
 };
 
 let ! n => switch n {
 	<= 1 => 1;
-	default => - n 1 -> ! -> * n;
+	true => - n 1 -> ! -> * n;
 };
 
 fib 30
