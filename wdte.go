@@ -522,15 +522,18 @@ func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
 	scope := frame.Scope()
 	for _, f := range sub[:len(sub)-1] {
 		next := f.Call(frame.WithScope(frame.Scope().Sub(scope)))
-		tmp, ok := next.(*Scope)
-		if !ok {
+
+		switch tmp := next.(type) {
+		case error:
+			return next
+		case *Scope:
+			scope = tmp
+		default:
 			return Error{
 				Err:   fmt.Errorf("Function called on non-scope %#v", next),
 				Frame: frame,
 			}
 		}
-
-		scope = tmp
 	}
 
 	return sub[len(sub)-1].Call(frame.WithScope(frame.Scope().Sub(scope)), args...)
@@ -548,25 +551,26 @@ func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
 // returned as a lambda if it has arugments.
 type Compound []Func
 
-func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) { // nolint
+// Collect executes the compound the same as Call, but also returns
+// the collected scope that has been modified by let expressions
+// alongside the usual return value. This is useful when dealing with
+// scopes as modules, as it allows you to evaluate specific functions
+// in a script.
+func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
 	frame = frame.WithScope(frame.Scope())
 
 	var last Func
 	for _, f := range c {
 		switch f := f.(type) {
 		case *Let:
+			last = frame.Scope().Freeze(f)
 			frame = frame.WithScope(frame.Scope().Add(f.ID, f.Expr))
-			last = f
 		default:
 			last = f.Call(frame)
 			if _, ok := last.(error); ok {
 				return frame.Scope(), last
 			}
 		}
-	}
-
-	if let, ok := last.(*Let); ok {
-		last = let.Call(frame)
 	}
 
 	if len(args) > 0 {
