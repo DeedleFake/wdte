@@ -485,12 +485,19 @@ func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	next := make([]Func, len(f.Args))
-	for i := range f.Args {
-		next[i] = frame.Scope().Freeze(f.Args[i])
-	}
+	// TODO: This can probably be handled in translation.
+	switch len(f.Args) {
+	case 0:
+		return f.Func.Call(frame)
 
-	return f.Func.Call(frame).Call(frame, next...)
+	default:
+		next := make([]Func, len(f.Args))
+		for i := range f.Args {
+			next[i] = frame.Scope().Freeze(f.Args[i])
+		}
+
+		return f.Func.Call(frame).Call(frame, next...)
+	}
 }
 
 // Chain is an unevaluated chain expression.
