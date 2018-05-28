@@ -345,14 +345,14 @@ func TestBasics(t *testing.T) {
 		},
 		{
 			name:   "Collect",
-			script: `let t => collect (let test => 3); t.test;`,
+			script: `let t => (let test => 3; collect); t.test;`,
 			ret:    wdte.Number(3),
 		},
 		{
 			// TODO: Move this and some others into a separate test, such as
 			// `TestStd` or something.
 			name:   "Sub",
-			script: `let t => collect (let test => 3); let t => sub t 'test2' 5; t.test2;`,
+			script: `let t => (let test => 3; collect); let t => sub t 'test2' 5; t.test2;`,
 			ret:    wdte.Number(5),
 		},
 	})

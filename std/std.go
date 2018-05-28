@@ -485,24 +485,25 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Collect is a WDTE function with the following signature:
 //
-//    collect compound
+//    collect
 //
-// Collect takes a compound as its argument and returns the scope
-// collected from executing that compound. The argument must be a
-// compound literal or the function will fail. Assigning a compound to
-// an ID and then passing that ID will not work.
+// Collect returns the current scope. Its primary purpose to allow for
+// the extraction of the scope built up by let expressions in a
+// compound. By calling collect at the end of the compound, the
+// compound will return that scope. For example,
 //
-// It surrounds the returned scope with a bound called "collect".
+//    let s => (
+//        let x => 3;
+//        collect;
+//    );
+//
+// will result in s.x returning 3.
+//
+// An oddity to note is that this scope will be the subscope of the
+// surrounding scope, meaning that it will be possible to access
+// variables that were not declared in the compound itself.
 func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	if len(args) == 0 {
-		return wdte.GoFunc(Collect)
-	}
-
-	frame = frame.Sub("collect")
-
-	sf := args[0].(*wdte.ScopedFunc)
-	s, _ := sf.Func.(wdte.Compound).Collect(frame.WithScope(sf.Scope.UpperBound()))
-	return s.LowerBound("collect")
+	return frame.Scope()
 }
 
 // Sub is a WDTE function with the following signatures:
