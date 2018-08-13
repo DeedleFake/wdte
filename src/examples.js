@@ -103,8 +103,9 @@ Quine
 This example is an implemenation of a quine. That's about it.
 `,
 
-	input: `let io => import 'io';let str => import 'strings';
-let q => "let io => import 'io';let str => import 'strings';\\nlet q => {q};\\nstr.format q q -- io.writeln io.stdout;";
+	input: `let io => import 'io';
+let str => import 'strings';
+let q => "let io => import 'io';\\nlet str => import 'strings';\\nlet q => {q};\\nstr.format q q -- io.writeln io.stdout;";
 str.format q q -- io.writeln io.stdout;`,
 }
 
