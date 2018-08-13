@@ -8,7 +8,9 @@ Fibonacci
 This example provides a memoized implementation of a recursive Fibonacci number generator. It also provides a recursive factorial function for the heck of it.
 `,
 
-	input: `let memo fib n => switch n {
+	input: `let io => import 'io';
+
+let memo fib n => switch n {
 	== 0 => 0;
 	== 1 => 1;
 	true => + (fib (- n 1)) (fib (- n 2));
@@ -20,9 +22,9 @@ let ! n => switch n {
 };
 
 fib 30
--- print
+-- io.writeln io.stdout
 -> / 5
--- print
+-- io.writeln io.stdout
 ;`,
 }
 
@@ -40,21 +42,22 @@ For a full list of functions, see [the godocs][godoc].
 [godoc]: https://www.godoc.org/github.com/DeedleFake/wdte/std/stream
 `,
 
-	input: `let m => import 'math';
+	input: `let io => import 'io';
+let m => import 'math';
 let s => import 'stream';
 
-print 'Map and filter:';
+io.writeln io.stdout 'Map and filter:';
 s.range 0 (* m.pi 2) (/ m.pi 2)
 -> s.map m.sin
 -> s.filter (>= 0)
--> s.map print
+-> s.map io.writeln io.stdout
 -> s.drain
 ;
 
-print 'Reduce:';
+io.writeln io.stdout 'Reduce:';
 s.range 1 5
 -> s.reduce 1 *
--- print
+-- io.writeln io.stdout
 ;`,
 }
 
@@ -72,18 +75,19 @@ For a full list of functions, including an explanation of the formatting system,
 [godoc]: https://www.godoc.org/github.com/DeedleFake/wdte/std/strings
 `,
 
-	input: `let s => import 'stream';
+	input: `let io => import 'io';
+let s => import 'stream';
 let str => import 'strings';
 
 s.new 'abc' 'bcd' 'cde'
 -> s.map (str.index 'cd')
 -> s.collect
--- print
+-- io.writeln io.stdout
 ;
 
 'This is the type of English up with which I will not put.'
 -> str.format '{q}'
--- print
+-- io.writeln io.stdout
 ;`,
 }
 
@@ -97,9 +101,9 @@ Quine
 This example is an implemenation of a quine. That's about it.
 `,
 
-	input: `let str => import 'strings';
-let q => "let str => import 'strings';\\nlet q => {q};\\nstr.format q q -- print;";
-str.format q q -- print;`,
+	input: `let io => import 'io';let str => import 'strings';
+let q => "let io => import 'io';let str => import 'strings';\\nlet q => {q};\\nstr.format q q -- io.writeln io.stdout;";
+str.format q q -- io.writeln io.stdout;`,
 }
 
 export const lambdas = {
@@ -112,7 +116,8 @@ Lambdas
 This example demonstrates lambdas by implementing an iterative Fibonacci number calculator using streams.
 `,
 
-	input: `let s => import 'stream';
+	input: `let io => import 'io';
+let s => import 'stream';
 let a => import 'arrays';
 
 let fib n => s.range 1 n
@@ -124,7 +129,7 @@ let fib n => s.range 1 n
 	;
 
 fib 30
--- print
+-- io.writeln io.stdout
 ;`,
 }
 
