@@ -105,7 +105,11 @@ class App extends Component {
 						<Dropdown item text="Examples">
 							<Dropdown.Menu>
 								{Object.entries(examples).map(([id, example]) => (
-									<Dropdown.Item value={id} onClick={this.onClickExample}>
+									<Dropdown.Item
+										key={id}
+										value={id}
+										onClick={this.onClickExample}
+									>
 										{example.name}
 									</Dropdown.Item>
 								))}
