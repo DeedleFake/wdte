@@ -13,7 +13,7 @@ import {
 import initialDesc from './initialDesc.txt'
 import * as examples from './examples'
 
-import * as wdte from './wdte.go'
+import wdte from './wdte'
 
 const styles = {
 	main: {
@@ -70,9 +70,9 @@ class App extends Component {
 		[k]: (f || ((v) => v))(val),
 	})
 
-	onRun = () => {
+	onRun = async () => {
 		this.setState({
-			output: wdte.eval(this.state.input),
+			output: await wdte.run(this.state.input),
 		})
 	}
 
