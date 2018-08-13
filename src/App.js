@@ -79,9 +79,15 @@ class App extends Component {
 		})
 
 	onRun = async () => {
-		this.setState({
-			output: await wdte.run(this.state.input),
-		})
+		try {
+			this.setState({
+				output: await wdte.run(this.state.input),
+			})
+		} catch (err) {
+			this.setState({
+				output: err.toString(),
+			})
+		}
 	}
 
 	onClickExample = (ev, data) => {
