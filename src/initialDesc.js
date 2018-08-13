@@ -8,14 +8,11 @@ If you have never seen WDTE before and are completely confused at the moment, tr
 Fun Fact
 --------
 
-The WDTE interpreter has been compiled to JavaScript using [GopherJS][gopherjs] for this playground, meaning that, by opening this page, you've downloaded the entire system. Congratulations.
+The WDTE interpreter has been compiled to WebAssembly for this playground, meaning that, by opening this page, you've downloaded the entire system. Congratulations.
 
 Documentation
 -------------
 
 For documentation on the standard function set, see https://godoc.org/github.com/DeedleFake/wdte/std
 
-The standard library is available for importing, with the exception of the \`io\` and \`io/file\` modules, pending [gopherjs/gopherjs#705][gopherjs-problem]. As a partial workaround for the lack of the \`io\` module, a \`print\` function is provided in the top-level scope which just passes its first argument through to \`fmt.Println()\` and then returns the argument.
-
-[gopherjs]: https://github.com/gopherjs/gopherjs
-[gopherjs-problem]: https://github.com/gopherjs/gopherjs/issues/705`
+The standard library is available for importing, with the exception of the \`io/file\` module.`
