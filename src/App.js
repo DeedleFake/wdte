@@ -17,6 +17,11 @@ import * as examples from './examples'
 import * as wdte from './wdte'
 
 const styles = {
+	'@font-face': {
+		fontFamily: 'Go Mono',
+		src: 'url(assets/Go-Mono.ttf)',
+	},
+
 	main: {
 		display: 'flex',
 		flexDirection: 'row',
