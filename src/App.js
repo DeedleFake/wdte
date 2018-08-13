@@ -7,9 +7,11 @@ import ReactMarkdown from 'react-markdown'
 import AceEditor from 'react-ace'
 import './brace'
 
+import injectSheet from 'react-jss'
+
 import { Menu, Dropdown } from 'semantic-ui-react'
 
-import initialDesc from './initialDesc.txt'
+import initialDesc from './initialDesc'
 import * as examples from './examples'
 
 import * as wdte from './wdte'
@@ -23,6 +25,7 @@ const styles = {
 		backgroundColor: '#EEEEEE',
 		boxSizing: 'border-box',
 		padding: 8,
+		width: '100%',
 		height: '100%',
 		position: 'absolute',
 	},
@@ -85,12 +88,12 @@ class App extends Component {
 
 	render() {
 		return (
-			<div style={styles.main}>
-				<div style={styles.column}>
+			<div className={this.props.classes.main}>
+				<div className={this.props.classes.column}>
 					<ReactMarkdown source={this.state.description} />
 				</div>
 
-				<div style={styles.column}>
+				<div className={this.props.classes.column}>
 					<Menu inverted>
 						<Menu.Item onClick={this.onRun}>Run</Menu.Item>
 
@@ -106,6 +109,7 @@ class App extends Component {
 						</Dropdown>
 					</Menu>
 
+					{/* TODO: Find a way to use this.props.classes instead. */}
 					<AceEditor
 						style={styles.input}
 						mode="wdte"
@@ -114,11 +118,11 @@ class App extends Component {
 						onChange={this.setVal('input')}
 					/>
 
-					<pre style={styles.output}>{this.state.output}</pre>
+					<pre className={this.props.classes.output}>{this.state.output}</pre>
 				</div>
 			</div>
 		)
 	}
 }
 
-export default App
+export default injectSheet(styles)(App)

@@ -1,4 +1,4 @@
-Introduction
+export default `Introduction
 ============
 
 Welcome to the WDTE playground, a browser based evaluation environment for WDTE. This playground's features includes the standard function set as well as a number of importable modules.
@@ -15,7 +15,7 @@ Documentation
 
 For documentation on the standard function set, see https://godoc.org/github.com/DeedleFake/wdte/std
 
-The standard library is available for importing, with the exception of the `io` and `io/file` modules, pending [gopherjs/gopherjs#705][gopherjs-problem]. As a partial workaround for the lack of the `io` module, a `print` function is provided in the top-level scope which just passes its first argument through to `fmt.Println()` and then returns the argument.
+The standard library is available for importing, with the exception of the \`io\` and \`io/file\` modules, pending [gopherjs/gopherjs#705][gopherjs-problem]. As a partial workaround for the lack of the \`io\` module, a \`print\` function is provided in the top-level scope which just passes its first argument through to \`fmt.Println()\` and then returns the argument.
 
 [gopherjs]: https://github.com/gopherjs/gopherjs
-[gopherjs-problem]: https://github.com/gopherjs/gopherjs/issues/705
+[gopherjs-problem]: https://github.com/gopherjs/gopherjs/issues/705`
