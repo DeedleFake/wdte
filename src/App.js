@@ -63,6 +63,7 @@ const styles = {
 		boxShadow: 'inset 4px 4px 4px #AAAAAA',
 		borderRadius: 8,
 		backgroundColor: '#CCCCCC',
+		whiteSpace: 'nowrap',
 	},
 }
 
