@@ -1,10 +1,13 @@
+// @format
+
 import brace from 'brace'
 import 'brace/theme/vibrant_ink'
 
 brace.define('ace/mode/wdte', (acequire, exports, module) => {
 	let oop = acequire('ace/lib/oop')
 	let TextMode = acequire('ace/mode/text').Mode
-	let TextHighlightRules = acequire('ace/mode/text_highlight_rules').TextHighlightRules
+	let TextHighlightRules = acequire('ace/mode/text_highlight_rules')
+		.TextHighlightRules
 
 	let HighlightRules = function() {
 		this.$rules = {
@@ -29,7 +32,7 @@ brace.define('ace/mode/wdte', (acequire, exports, module) => {
 					token: 'string',
 					regex: '((["\']).*\\2)',
 				},
-			]
+			],
 		}
 	}
 	oop.inherits(HighlightRules, TextHighlightRules)

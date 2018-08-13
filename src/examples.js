@@ -1,3 +1,5 @@
+// @format
+
 export const fib = {
 	name: 'Fibonacci',
 

@@ -1,3 +1,5 @@
+// @format
+
 import React, { Component } from 'react'
 
 import ReactMarkdown from 'react-markdown'
@@ -5,15 +7,12 @@ import ReactMarkdown from 'react-markdown'
 import AceEditor from 'react-ace'
 import './brace'
 
-import {
-	Menu,
-	Dropdown,
-} from 'semantic-ui-react'
+import { Menu, Dropdown } from 'semantic-ui-react'
 
 import initialDesc from './initialDesc.txt'
 import * as examples from './examples'
 
-import wdte from './wdte'
+import * as wdte from './wdte'
 
 const styles = {
 	main: {
@@ -56,7 +55,7 @@ const styles = {
 		boxShadow: 'inset 4px 4px 4px #AAAAAA',
 		borderRadius: 8,
 		backgroundColor: '#CCCCCC',
-	}
+	},
 }
 
 class App extends Component {
@@ -66,9 +65,10 @@ class App extends Component {
 		output: '',
 	}
 
-	setVal = (k, f) => (val) => this.setState({
-		[k]: (f || ((v) => v))(val),
-	})
+	setVal = (k, f) => (val) =>
+		this.setState({
+			[k]: (f || ((v) => v))(val),
+		})
 
 	onRun = async () => {
 		this.setState({
@@ -94,10 +94,12 @@ class App extends Component {
 					<Menu inverted>
 						<Menu.Item onClick={this.onRun}>Run</Menu.Item>
 
-						<Dropdown item text='Examples'>
+						<Dropdown item text="Examples">
 							<Dropdown.Menu>
 								{Object.entries(examples).map(([id, example]) => (
-									<Dropdown.Item value={id} onClick={this.onClickExample}>{example.name}</Dropdown.Item>
+									<Dropdown.Item value={id} onClick={this.onClickExample}>
+										{example.name}
+									</Dropdown.Item>
 								))}
 								{/*<Dropdown.Item onClick={this.onClickExample}>Canvas</Dropdown.Item>*/}
 							</Dropdown.Menu>
@@ -106,8 +108,8 @@ class App extends Component {
 
 					<AceEditor
 						style={styles.input}
-						mode='wdte'
-						theme='vibrant_ink'
+						mode="wdte"
+						theme="vibrant_ink"
 						value={this.state.input}
 						onChange={this.setVal('input')}
 					/>
