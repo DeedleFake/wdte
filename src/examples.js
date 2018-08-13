@@ -52,7 +52,7 @@ io.writeln io.stdout 'Map and filter:';
 s.range 0 (* m.pi 2) (/ m.pi 2)
 -> s.map m.sin
 -> s.filter (>= 0)
--> s.map io.writeln io.stdout
+-> s.map (io.writeln io.stdout)
 -> s.drain
 ;
 
