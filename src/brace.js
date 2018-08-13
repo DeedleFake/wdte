@@ -22,7 +22,7 @@ brace.define('ace/mode/wdte', (acequire, exports, module) => {
 				},
 				{
 					token: 'keyword',
-					regex: '(\\b(switch|default|memo|let|import)\\b)',
+					regex: '(\\b(switch|memo|let|import)\\b)',
 				},
 				{
 					token: 'keyword.operator',
