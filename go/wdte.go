@@ -33,14 +33,6 @@ func (err errorIO) Error() string {
 	return string(err)
 }
 
-func toObject(m map[string]interface{}) js.Value {
-	obj := js.Global().Get("Object").New()
-	for k, v := range m {
-		obj.Set(k, v)
-	}
-	return obj
-}
-
 func main() {
 	var (
 		bufPool = &sync.Pool{
@@ -50,7 +42,7 @@ func main() {
 		}
 	)
 
-	js.Global().Set("WDTE", toObject(map[string]interface{}{
+	js.Global().Set("WDTE", map[string]interface{}{
 		"run": js.NewCallback(func(args []js.Value) {
 			input := args[0].String()
 			output := args[1]
@@ -98,7 +90,7 @@ func main() {
 
 			output.Invoke(js.Null(), buf.String())
 		}),
-	}))
+	})
 
 	select {}
 }

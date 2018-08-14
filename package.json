@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"description": "WDTE Playground",
 	"scripts": {
-		"build-go": "GO111MODULE=off GOOS=js GOARCH=wasm go1.11beta3 build -v -o public/wdte.wasm ./go",
+		"build-go": "GO111MODULE=off GOOS=js GOARCH=wasm go1.11rc1 build -v -o public/wdte.wasm ./go",
 		"start": "BROWSER=none react-scripts start",
 		"prebuild": "npm run build-go",
 		"build": "react-scripts build",
