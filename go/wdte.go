@@ -53,22 +53,24 @@ func main() {
 				bufPool.Put(buf)
 			}()
 
+			iomod := wdteio.Scope.Map(map[wdte.ID]wdte.Func{
+				"stdin": wdteio.Reader{
+					Reader: errorIO("stdin is not supported in the playground"),
+				},
+
+				"stdout": wdteio.Writer{
+					Writer: buf,
+				},
+
+				"stderr": wdteio.Writer{
+					Writer: buf,
+				},
+			})
+
 			c, err := wdte.Parse(strings.NewReader(input), wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
 				switch from {
 				case "io":
-					return wdteio.Scope.Map(map[wdte.ID]wdte.Func{
-						"stdin": wdteio.Reader{
-							Reader: errorIO("stdin is not supported in the playground"),
-						},
-
-						"stdout": wdteio.Writer{
-							Writer: buf,
-						},
-
-						"stderr": wdteio.Writer{
-							Writer: buf,
-						},
-					}), nil
+					return iomod, nil
 				}
 
 				return std.Import(from)
@@ -79,6 +81,7 @@ func main() {
 			}
 
 			frame := std.F()
+			frame = frame.WithScope(frame.Scope().Add("io", iomod))
 
 			ctx, cancel := context.WithTimeout(frame.Context(), 5*time.Second)
 			defer cancel()

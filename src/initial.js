@@ -1,4 +1,5 @@
-export default `Introduction
+export default {
+	desc: `Introduction
 ============
 
 Welcome to the WDTE playground, a browser based evaluation environment for WDTE. This playground's features includes the standard function set as well as a number of importable modules.
@@ -15,4 +16,7 @@ Documentation
 
 For documentation on the standard function set, see https://godoc.org/github.com/DeedleFake/wdte/std
 
-The standard library is available for importing, with the exception of the \`io/file\` module.`
+The standard library is available for importing, with the exception of the \`io/file\` module. The \`io\` module is pre-inserted into the initial scope as \`io\`.`,
+
+	input: `io.stdout -> io.writeln 'Greetings, pocket universe.';`,
+}

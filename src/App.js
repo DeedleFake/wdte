@@ -11,7 +11,7 @@ import injectSheet from 'react-jss'
 
 import { Menu, Dropdown } from 'semantic-ui-react'
 
-import initialDesc from './initialDesc'
+import initial from './initial'
 import * as examples from './examples'
 
 import * as wdte from './wdte'
@@ -68,8 +68,8 @@ const styles = {
 
 class App extends Component {
 	state = {
-		description: initialDesc,
-		input: '',
+		description: initial.desc,
+		input: initial.input,
 		output: '',
 	}
 

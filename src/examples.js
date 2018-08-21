@@ -10,9 +10,7 @@ Fibonacci
 This example provides a memoized implementation of a recursive Fibonacci number generator. It also provides a recursive factorial function for the heck of it.
 `,
 
-	input: `let io => import 'io';
-
-let memo fib n => switch n {
+	input: `let memo fib n => switch n {
 	== 0 => 0;
 	== 1 => 1;
 	true => + (fib (- n 1)) (fib (- n 2));
@@ -44,8 +42,7 @@ For a full list of functions, see [the godocs][godoc].
 [godoc]: https://www.godoc.org/github.com/DeedleFake/wdte/std/stream
 `,
 
-	input: `let io => import 'io';
-let m => import 'math';
+	input: `let m => import 'math';
 let s => import 'stream';
 
 io.writeln io.stdout 'Map and filter:';
@@ -77,8 +74,7 @@ For a full list of functions, including an explanation of the formatting system,
 [godoc]: https://www.godoc.org/github.com/DeedleFake/wdte/std/strings
 `,
 
-	input: `let io => import 'io';
-let s => import 'stream';
+	input: `let s => import 'stream';
 let str => import 'strings';
 
 s.new 'abc' 'bcd' 'cde'
@@ -103,9 +99,8 @@ Quine
 This example is an implemenation of a quine. That's about it.
 `,
 
-	input: `let io => import 'io';
-let str => import 'strings';
-let q => "let io => import 'io';\\nlet str => import 'strings';\\nlet q => {q};\\nstr.format q q -- io.writeln io.stdout;";
+	input: `let str => import 'strings';
+let q => "let str => import 'strings';\\nlet q => {q};\\nstr.format q q -- io.writeln io.stdout;";
 str.format q q -- io.writeln io.stdout;`,
 }
 
@@ -119,8 +114,7 @@ Lambdas
 This example demonstrates lambdas by implementing an iterative Fibonacci number calculator using streams.
 `,
 
-	input: `let io => import 'io';
-let s => import 'stream';
+	input: `let s => import 'stream';
 let a => import 'arrays';
 
 let fib n => s.range 1 n
