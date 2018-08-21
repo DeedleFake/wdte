@@ -100,7 +100,10 @@ const styles = {
 class App extends Component {
 	state = {
 		description: initial.desc,
-		input: initial.input,
+		input:
+			window.location.hash !== ''
+				? decodeURIComponent(window.location.hash.substr(1))
+				: initial.input,
 		output: '',
 
 		messages: {},
