@@ -1,7 +1,7 @@
-<!DOCTYPE html><html><head><title>WDTE Playground</title><script type="application/javascript" src="go.js"></script><script type="application/javascript">(async () => {
+<!doctype html><html><head><title>WDTE Playground</title><script type="application/javascript" src="go.js"></script><script type="application/javascript">(async () => {
 				let buf = await fetch('./wdte.wasm').then((rsp) => rsp.arrayBuffer())
 
 				let go = new Go()
 				let wasm = await WebAssembly.instantiate(buf, go.importObject)
 				go.run(wasm.instance)
-			})()</script><link href="/wdte/static/css/main.cf48573c.css" rel="stylesheet"></head><body><div id="root"></div><script type="text/javascript" src="/wdte/static/js/main.d3176e8e.js"></script></body></html>
+			})()</script><link href="/wdte/static/css/main.cf48573c.css" rel="stylesheet"></head><body><div id="root"></div><script type="text/javascript" src="/wdte/static/js/main.a593c2a5.js"></script></body></html>
