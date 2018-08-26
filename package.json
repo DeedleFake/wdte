@@ -14,7 +14,7 @@
 
 		"prettier": "find src public -iname '*.js' -exec prettier --write {} +",
 
-		"predeploy": "npm run build"
+		"predeploy": "run-s build"
 	},
 	"repository": {
 		"type": "git",
