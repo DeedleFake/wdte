@@ -89,21 +89,6 @@ s.new 'abc' 'bcd' 'cde'
 ;`,
 }
 
-export const quine = {
-	name: 'Quine',
-
-	desc: `
-Quine
-=====
-
-This example is an implemenation of a quine. That's about it.
-`,
-
-	input: `let str => import 'strings';
-let q => "let str => import 'strings';\\nlet q => {q};\\nstr.format q q -- io.writeln io.stdout;";
-str.format q q -- io.writeln io.stdout;`,
-}
-
 export const lambdas = {
 	name: 'Lambdas',
 
@@ -127,6 +112,63 @@ let fib n => s.range 1 n
 
 fib 30
 -- io.writeln io.stdout
+;`,
+}
+
+export const quine = {
+	name: 'Quine',
+
+	desc: `
+Quine
+=====
+
+This example is an implemenation of a quine. That's about it.
+`,
+
+	input: `let str => import 'strings';
+let q => "let str => import 'strings';\\nlet q => {q};\\nstr.format q q -- io.writeln io.stdout;";
+str.format q q -- io.writeln io.stdout;`,
+}
+
+export const hundredDoors = {
+	name: '100 Doors',
+
+	desc: `
+100 Doors
+=========
+
+The [100 doors problem](https://www.rosettacode.org/wiki/100_doors), as presented by Rosetta Code, is as follows:
+
+There are 100 doors that are all closed. You walk past the doors in the same direction 100 times. On the first pass, you toggle the state of every door, opening closed doors and closing open doors. On the second pass, you toggle every second door. On the third you toggle every third door. Etc.
+
+This example simulates this scenario, printing out the final state of the doors.
+`,
+
+	input: `let a => import 'arrays';
+let s => import 'stream';
+
+let toggle doors m =>
+	a.stream doors
+	-> s.enumerate
+	-> s.map (@ s n => [+ (a.at n 0) 1; a.at n 1])
+	-> s.map (@ s n => switch n {
+			(@ s n => == (% (a.at n 0) m) 0) => ! (a.at n 1);
+			true => a.at n 1;
+		})
+	-> s.collect
+	;
+
+s.range 100
+-> s.map false
+-> s.collect : doors
+-> s.range 1 100
+-> s.reduce doors toggle
+-> a.stream
+-> s.map (@ s n => switch 0 {
+		n => 'Open';
+		true => 'Closed';
+	} -- io.writeln io.stdout)
+-> s.drain
 ;`,
 }
 
