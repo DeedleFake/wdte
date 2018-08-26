@@ -7,7 +7,7 @@
 		"deploy": "gh-pages -d build",
 		"clean": "rimraf build public/wdte.wasm",
 
-		"go:build": "GO111MODULE=off GOOS=js GOARCH=wasm go1.11rc1 build -v -o public/wdte.wasm ./go",
+		"go:build": "GO111MODULE=off GOOS=js GOARCH=wasm go build -v -o public/wdte.wasm ./go",
 
 		"react:start": "BROWSER=none react-scripts start",
 		"react:build": "react-scripts build",
