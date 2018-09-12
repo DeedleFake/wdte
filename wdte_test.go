@@ -165,10 +165,9 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(8),
 		},
 		{
-			disabled: true,
-			name:     "Simple/Memo",
-			script:   `let memo test n => + n 3; let main => (test 5; test 5); main;`,
-			ret:      wdte.Number(8),
+			name:   "Simple/Memo",
+			script: `let memo test n => + n 3; let main => (test 5; test 5); main;`,
+			ret:    wdte.Number(8),
 		},
 		{
 			name:   "Simple/VariableArgs",
@@ -198,10 +197,9 @@ func TestBasics(t *testing.T) {
 		{
 			// Wonder why memo exists? Try removing the keyword from this
 			// test script and see what happens.
-			disabled: true,
-			name:     "Fib/Memo",
-			script:   `let memo main n => switch n { <= 1 => n; true => + (main (- n 2)) (main (- n 1)); }; main 38;`,
-			ret:      wdte.Number(39088169),
+			name:   "Fib/Memo",
+			script: `let memo main n => switch n { <= 1 => n; true => + (main (- n 2)) (main (- n 1)); }; main 38;`,
+			ret:    wdte.Number(39088169),
 		},
 		{
 			name:   "PassModule",
@@ -256,10 +254,9 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(55),
 		},
 		{
-			disabled: true,
-			name:     "Lambda/Fib/Memo",
-			script:   `let test a => a 38; test (@ memo t n => switch n { <= 1 => n; true => + (t (- n 2)) (t (- n 1)); };);`,
-			ret:      wdte.Number(39088169),
+			name:   "Lambda/Fib/Memo",
+			script: `let test a => a 38; test (@ memo t n => switch n { <= 1 => n; true => + (t (- n 2)) (t (- n 1)); };);`,
+			ret:    wdte.Number(39088169),
 		},
 		{
 			name:   "True",

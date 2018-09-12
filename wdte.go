@@ -584,6 +584,7 @@ func (f ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
 // the same arguments.
 type Memo struct {
 	Func Func
+	Args []ID
 
 	cache memoCache
 }
@@ -591,9 +592,8 @@ type Memo struct {
 func (m *Memo) Call(frame Frame, args ...Func) Func { // nolint
 	s := frame.Scope()
 
-	known := s.Known()
-	check := make([]Func, 0, len(known))
-	for _, id := range known {
+	check := make([]Func, 0, len(m.Args))
+	for _, id := range m.Args {
 		check = append(check, s.Get(id).Call(frame))
 	}
 
