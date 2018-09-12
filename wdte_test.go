@@ -68,7 +68,7 @@ func runTests(t *testing.T, tests []test) {
 				t.Fatalf("Failed to parse script: %v", err)
 			}
 
-			ret := m.Call(std.F()).Call(std.F(), test.args...)
+			ret := m.Call(std.F(), test.args...)
 
 			switch test.ret {
 			case nil:
@@ -129,17 +129,6 @@ func TestBasics(t *testing.T) {
 				"q",
 				known,
 			)
-		}
-	})
-
-	t.Run("Scope/Latest", func(t *testing.T) {
-		scope := wdte.S()
-		scope = scope.Add("test1", nil)
-		scope = scope.UpperBound().Add("test2", nil).LowerBound("test")
-
-		known := scope.Latest("test").Known()
-		if !reflect.DeepEqual(known, []wdte.ID{"test2"}) {
-			t.Errorf("Expected [test2]\nGot %v", known)
 		}
 	})
 

@@ -92,6 +92,7 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 	if mods&funcModMemo != 0 {
 		inner = &Memo{
 			Func: inner,
+			Args: args,
 		}
 	}
 
@@ -233,6 +234,7 @@ func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 	if mods&funcModMemo != 0 {
 		expr = &Memo{
 			Func: expr,
+			Args: args,
 		}
 	}
 

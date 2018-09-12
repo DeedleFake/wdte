@@ -191,7 +191,6 @@ type Scope struct {
 	p       *Scope
 	known   func(m map[ID]struct{})
 	getFunc func(id ID) Func
-	bound   string
 }
 
 // S is a convenience function that returns a blank, top-level scope.
@@ -220,7 +219,7 @@ func (s *Scope) Sub(sub *Scope) *Scope {
 	return &Scope{
 		p: s,
 		known: func(m map[ID]struct{}) {
-			sub.knownSet(m, false)
+			sub.knownSet(m)
 		},
 		getFunc: func(g ID) Func {
 			if v := sub.Get(g); v != nil {
@@ -296,61 +295,6 @@ func (s *Scope) Custom(getFunc func(ID) Func, known func(map[ID]struct{})) *Scop
 	}
 }
 
-// UpperBound places an upper boundary in the scope hierarchy. A
-// boundary is useful for dilineating parts of the scope so that
-// certain variable IDs can be found later.
-//
-// For example:
-//
-//    scope = scope.UpperBound().Add("ex", 3).LowerBound("example")
-//    scope.Latest("example") // ([]ID{"ex"}, scope)
-//
-// If no upper bound is specified before a lower bound is, the
-// top-level of the hierarchy is used.
-func (s *Scope) UpperBound() *Scope {
-	return &Scope{
-		p: s,
-	}
-}
-
-// LowerBound is the complement to UpperBound. It places a named lower
-// bound into the hierarchy, allowing for the variables between the
-// lower bound and the previous upper bound to be found later.
-//
-// For example:
-//
-//    scope = scope.UpperBound().Add("ex", 3).LowerBound("example")
-//    scope.Latest("example") // ([]ID{"ex"}, scope)
-//
-// Calling Known on a lower bound will only return the known variables
-// declared between it and the next upper bound found.
-func (s *Scope) LowerBound(name string) *Scope {
-	if name == "" {
-		panic("Boundary name can't be empty")
-	}
-
-	return &Scope{
-		p:     s,
-		bound: name,
-	}
-}
-
-// Latest finds the lower bound with the given name in the hierarchy
-// and returns a scope that contains the variables defined between
-// there and the next upper bound, or the top of the scope hierarchy
-// if none exists.
-func (s *Scope) Latest(boundary string) *Scope {
-	if s == nil {
-		return nil
-	}
-
-	if s.bound != boundary {
-		return s.p.Latest(boundary)
-	}
-
-	return s
-}
-
 // Parent returns the parent of the current scope.
 func (s *Scope) Parent() *Scope {
 	if s == nil {
@@ -369,12 +313,8 @@ func (s *Scope) Freeze(f Func) Func {
 	}
 }
 
-func (s *Scope) knownSet(vars map[ID]struct{}, boundary bool) {
+func (s *Scope) knownSet(vars map[ID]struct{}) {
 	if s == nil {
-		return
-	}
-
-	if boundary && (s.getFunc == nil) && (s.bound == "") {
 		return
 	}
 
@@ -382,15 +322,13 @@ func (s *Scope) knownSet(vars map[ID]struct{}, boundary bool) {
 		s.known(vars)
 	}
 
-	s.p.knownSet(vars, boundary)
+	s.p.knownSet(vars)
 }
 
-// Known returns a sorted list of variables that are in scope. If the
-// scope it is called on is a lower bound, it will only return a list
-// of variables between it and the next upper bound found.
+// Known returns a sorted list of variables that are in scope.
 func (s *Scope) Known() []ID {
 	vars := make(map[ID]struct{})
-	s.knownSet(vars, s.bound != "")
+	s.knownSet(vars)
 	if len(vars) == 0 {
 		return nil
 	}
@@ -556,33 +494,29 @@ type Compound []Func
 // alongside the usual return value. This is useful when dealing with
 // scopes as modules, as it allows you to evaluate specific functions
 // in a script.
-func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
-	frame = frame.WithScope(frame.Scope())
+func (c Compound) Collect(frame Frame) (*Scope, Func) {
+	var letScope *Scope
 
 	var last Func
 	for _, f := range c {
 		switch f := f.(type) {
 		case *Let:
-			last = frame.Scope().Freeze(f)
-			frame = frame.WithScope(frame.Scope().Add(f.ID, f.Expr))
+			last = frame.Scope().Sub(letScope).Freeze(f.Expr)
+			letScope = letScope.Add(f.ID, last)
 		default:
-			last = f.Call(frame)
+			last = f.Call(frame.WithScope(frame.Scope().Sub(letScope)))
 			if _, ok := last.(error); ok {
-				return frame.Scope(), last
+				return letScope, last
 			}
 		}
 	}
 
-	if len(args) > 0 {
-		last = last.Call(frame, args...)
-	}
-
-	return frame.Scope(), last
+	return letScope, last
 }
 
 func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
-	_, f := c.Collect(frame, args...)
-	return f
+	s, f := c.Collect(frame)
+	return f.Call(frame.WithScope(frame.Scope().Sub(s)), args...)
 }
 
 // Switch represents a switch expression.
@@ -650,16 +584,16 @@ func (f ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
 // the same arguments.
 type Memo struct {
 	Func Func
+	Args []ID
 
 	cache memoCache
 }
 
 func (m *Memo) Call(frame Frame, args ...Func) Func { // nolint
-	s := frame.Scope().Latest("args")
+	s := frame.Scope()
 
-	known := s.Known()
-	check := make([]Func, 0, len(known))
-	for _, id := range known {
+	check := make([]Func, 0, len(m.Args))
+	for _, id := range m.Args {
 		check = append(check, s.Get(id).Call(frame))
 	}
 
@@ -767,8 +701,8 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		vars[lambda.Args[i]] = args[i]
 	}
 
-	scope = scope.UpperBound().Map(vars).LowerBound("args")
-	scope = scope.UpperBound().Add(original.ID, original).LowerBound("self")
+	scope = scope.Map(vars)
+	scope = scope.Add(original.ID, original)
 	return lambda.Expr.Call(frame.WithScope(scope))
 }
 

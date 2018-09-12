@@ -108,13 +108,14 @@ func (r *REPL) Next() (ret wdte.Func, err error) {
 		return nil, err
 	}
 
-	next, ret := m.Collect(wdte.F().WithScope(r.Scope))
+	frame := wdte.F().WithScope(r.Scope)
+	next, ret := m.Collect(frame)
 	if err, ok := ret.(error); ok {
 		return nil, err
 	}
 
-	r.Scope = next
-	return ret, nil
+	r.Scope = r.Scope.Sub(next)
+	return ret.Call(frame), nil
 }
 
 // Cancel cancels a partial expression. This is useful if, for
