@@ -501,8 +501,8 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("collect")
 
 	sf := args[0].(*wdte.ScopedFunc)
-	s, _ := sf.Func.(wdte.Compound).Collect(frame.WithScope(sf.Scope.UpperBound()))
-	return s.LowerBound("collect")
+	s, _ := sf.Func.(wdte.Compound).Collect(frame.WithScope(sf.Scope))
+	return s
 }
 
 // Sub is a WDTE function with the following signatures:
@@ -525,7 +525,7 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	id := wdte.ID(args[1].Call(frame).(wdte.String))
 	v := args[2]
 
-	return s.Add(id, v).LowerBound("collect")
+	return s.Add(id, v)
 }
 
 // Scope is a scope containing the functions in this package.
