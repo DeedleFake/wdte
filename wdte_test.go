@@ -132,17 +132,6 @@ func TestBasics(t *testing.T) {
 		}
 	})
 
-	//t.Run("Scope/Latest", func(t *testing.T) {
-	//	scope := wdte.S()
-	//	scope = scope.Add("test1", nil)
-	//	scope = scope.UpperBound().Add("test2", nil).LowerBound("test")
-
-	//	known := scope.Latest("test").Known()
-	//	if !reflect.DeepEqual(known, []wdte.ID{"test2"}) {
-	//		t.Errorf("Expected [test2]\nGot %v", known)
-	//	}
-	//})
-
 	runTests(t, []test{
 		{
 			name:   "Simple",
