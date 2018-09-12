@@ -1,8 +1,7 @@
 module github.com/DeedleFake/wdte
 
 require (
-	github.com/mattn/go-runewidth v0.0.2 // indirect
-	github.com/peterh/liner v0.0.0-20180619022028-8c1271fcf47f
-	golang.org/x/crypto v0.0.0-20180718160520-a2144134853f
-	golang.org/x/sys v0.0.0-20180715085529-ac767d655b30 // indirect
+	github.com/peterh/liner v1.1.0
+	golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b
+	golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e // indirect
 )
