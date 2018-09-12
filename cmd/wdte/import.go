@@ -23,8 +23,8 @@ func importScript(from string, im wdte.Importer) (*wdte.Scope, error) {
 		return nil, err
 	}
 
-	s, _ := c.Collect(wdte.F().WithScope(std.Scope.UpperBound()))
-	return s.LowerBound("module").Latest("module"), nil
+	s, _ := c.Collect(wdte.F().WithScope(std.Scope))
+	return s, nil
 }
 
 func importer(wd string, blacklist []string, args []string) wdte.Importer {
