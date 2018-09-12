@@ -2,6 +2,7 @@
 	"name": "wdte-playground",
 	"version": "0.1.0",
 	"description": "WDTE Playground",
+	"private": true,
 	"scripts": {
 		"build": "run-s -l go:build react:build",
 		"deploy": "gh-pages -d build",
