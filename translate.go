@@ -69,7 +69,7 @@ func (m *translator) fromExpr(expr *ast.NTerm) Func {
 	in := m.fromArgs(expr.Children()[1].(*ast.NTerm), nil)
 	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
 
-	r := &Expr{
+	r := &FuncCall{
 		Func: first,
 		Args: in,
 		Slot: slot,
@@ -299,7 +299,7 @@ func (m *translator) fromChain(chain *ast.NTerm, acc Chain) Chain {
 	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
 	ignored := chain.Children()[0].(*ast.Term).Tok().Val == "--"
 
-	return m.fromChain(expr.Children()[3].(*ast.NTerm), append(acc, &Expr{
+	return m.fromChain(expr.Children()[3].(*ast.NTerm), append(acc, &FuncCall{
 		Func:    first,
 		Args:    in,
 		Slot:    slot,

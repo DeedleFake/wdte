@@ -404,10 +404,10 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 	return f(frame, args...)
 }
 
-// An Expr is an unevaluated expression. This is usually the
+// A FuncCall is an unevaluated function call. This is usually the
 // right-hand side of a function declaration, but could also be any of
 // various pieces of switches, compounds, or arrays.
-type Expr struct {
+type FuncCall struct {
 	Func Func
 	Args []Func
 
@@ -415,7 +415,7 @@ type Expr struct {
 	Ignored bool
 }
 
-func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
+func (f FuncCall) Call(frame Frame, args ...Func) Func { // nolint
 	if err := frame.Context().Err(); err != nil {
 		return &Error{
 			Frame: frame,
@@ -432,7 +432,7 @@ func (f Expr) Call(frame Frame, args ...Func) Func { // nolint
 }
 
 // Chain is an unevaluated chain expression.
-type Chain []*Expr
+type Chain []*FuncCall
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	ret := f[0].Call(frame)
