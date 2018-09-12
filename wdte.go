@@ -556,33 +556,29 @@ type Compound []Func
 // alongside the usual return value. This is useful when dealing with
 // scopes as modules, as it allows you to evaluate specific functions
 // in a script.
-func (c Compound) Collect(frame Frame, args ...Func) (*Scope, Func) {
-	frame = frame.WithScope(frame.Scope())
+func (c Compound) Collect(frame Frame) (*Scope, Func) {
+	var letScope *Scope
 
 	var last Func
 	for _, f := range c {
 		switch f := f.(type) {
 		case *Let:
-			last = frame.Scope().Freeze(f)
-			frame = frame.WithScope(frame.Scope().Add(f.ID, f.Expr))
+			last = frame.Scope().Sub(letScope).Freeze(f.Expr)
+			letScope = letScope.Add(f.ID, last)
 		default:
-			last = f.Call(frame)
+			last = f.Call(frame.WithScope(frame.Scope().Sub(letScope)))
 			if _, ok := last.(error); ok {
-				return frame.Scope(), last
+				return letScope, last
 			}
 		}
 	}
 
-	if len(args) > 0 {
-		last = last.Call(frame, args...)
-	}
-
-	return frame.Scope(), last
+	return letScope, last
 }
 
 func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
-	_, f := c.Collect(frame, args...)
-	return f
+	s, f := c.Collect(frame)
+	return f.Call(frame.WithScope(frame.Scope().Sub(s)), args...)
 }
 
 // Switch represents a switch expression.

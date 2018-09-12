@@ -68,7 +68,7 @@ func runTests(t *testing.T, tests []test) {
 				t.Fatalf("Failed to parse script: %v", err)
 			}
 
-			ret := m.Call(std.F()).Call(std.F(), test.args...)
+			ret := m.Call(std.F(), test.args...)
 
 			switch test.ret {
 			case nil:
