@@ -114,7 +114,7 @@ func (r *REPL) Next() (ret wdte.Func, err error) {
 		return nil, err
 	}
 
-	r.Scope = next
+	r.Scope = r.Scope.Sub(next)
 	return ret.Call(frame), nil
 }
 
