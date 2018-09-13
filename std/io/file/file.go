@@ -23,8 +23,6 @@ func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 //
 // Opens the file at path and returns it.
 func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("open")
-
 	if len(args) == 0 {
 		return wdte.GoFunc(Open)
 	}
@@ -44,8 +42,6 @@ func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Creates the file at path, truncating it if it already exists, and
 // returns it.
 func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("create")
-
 	if len(args) == 0 {
 		return wdte.GoFunc(Create)
 	}
@@ -65,8 +61,6 @@ func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Opens the file at path for appending, creating it if it doesn't
 // already exist, and returns it.
 func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("append")
-
 	if len(args) == 0 {
 		return wdte.GoFunc(Append)
 	}

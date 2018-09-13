@@ -15,8 +15,6 @@ import (
 //
 // Returns true if inner is a substring of outer.
 func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("contains")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Contains)
@@ -39,8 +37,6 @@ func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // Returns true if p is a prefix of s.
 func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("prefix")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Prefix)
@@ -63,8 +59,6 @@ func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // Returns true if p is a suffix of s.
 func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("suffix")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Suffix)
@@ -89,8 +83,6 @@ func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // of inner in outer. If inner is not a substring of outer, it returns
 // -1.
 func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("index")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Index)
@@ -112,8 +104,6 @@ func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // It returns s converted to uppercase.
 func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("upper")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Upper)
@@ -128,8 +118,6 @@ func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // It returns s converted to lowercase.
 func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("lower")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Lower)

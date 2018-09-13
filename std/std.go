@@ -24,8 +24,6 @@ func Plus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Plus), args...)
 	}
 
-	frame = frame.Sub("+")
-
 	var sum wdte.Number
 	for _, arg := range args {
 		arg = arg.Call(frame)
@@ -47,8 +45,6 @@ func Minus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Minus), args...)
 	}
-
-	frame = frame.Sub("-")
 
 	a1 := args[0].Call(frame)
 	if _, ok := a1.(error); ok {
@@ -74,8 +70,6 @@ func Times(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return save(wdte.GoFunc(Times), args...)
 	}
 
-	frame = frame.Sub("*")
-
 	p := wdte.Number(1)
 	for _, arg := range args {
 		arg = arg.Call(frame)
@@ -97,8 +91,6 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Div), args...)
 	}
-
-	frame = frame.Sub("/")
 
 	a1 := args[0].Call(frame)
 	if _, ok := a1.(error); ok {
@@ -123,8 +115,6 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(Mod), args...)
 	}
-
-	frame = frame.Sub("%")
 
 	a1 := args[0].Call(frame)
 	if _, ok := a1.(error); ok {
@@ -379,8 +369,6 @@ const (
 //
 // Returns true if all of its arguments are true.
 func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("&&")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(And)
@@ -402,8 +390,6 @@ func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // Returns true if any of its arguments are true.
 func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("||")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Or)
@@ -425,8 +411,6 @@ func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // Returns true if a is not true or false if a is not true.
 func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("!")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Not)
@@ -442,8 +426,6 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Returns the length of a if a implements wdte.Lenner, or false if it
 // doesn't.
 func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("len")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Len)
@@ -466,8 +448,6 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
 		return save(wdte.GoFunc(At), args...)
 	}
-
-	frame = frame.Sub("at")
 
 	at := args[0].Call(frame).(wdte.Atter)
 	i := args[1].Call(frame)
@@ -498,8 +478,6 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Collect)
 	}
 
-	frame = frame.Sub("collect")
-
 	sf := args[0].(*wdte.ScopedFunc)
 	s, _ := sf.Func.(wdte.Compound).Collect(frame.WithScope(sf.Scope))
 	return s
@@ -518,8 +496,6 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 2 {
 		return save(wdte.GoFunc(Sub), args...)
 	}
-
-	frame = frame.Sub("sub")
 
 	s := args[0].Call(frame).(*wdte.Scope)
 	id := wdte.ID(args[1].Call(frame).(wdte.String))

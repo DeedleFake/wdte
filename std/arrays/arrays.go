@@ -17,8 +17,6 @@ type streamer struct {
 //
 // Returns a stream.Stream that iterates over the array a.
 func Stream(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("stream")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Stream)

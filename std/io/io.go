@@ -80,8 +80,6 @@ func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 //
 // If w is less than 0, it seeks relative to the end of s.
 func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("seek")
-
 	if len(args) < 3 {
 		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
 			return Seek(frame, append(more, args...)...)
@@ -115,8 +113,6 @@ func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // Returns c after closing it.
 func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("close")
-
 	if len(args) == 0 {
 		return wdte.GoFunc(Close)
 	}
@@ -142,8 +138,6 @@ func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // writes each write to all of them in turn, only returning when they
 // have all returned.
 func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("combine")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Combine)
@@ -192,8 +186,6 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //    stdout -> copy stdin -> ... # Later elements will be given stdout.
 //    stdin -> copy stdout -> ... # Later elements will be given stdin.
 func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("copy")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Copy)
@@ -239,8 +231,6 @@ func (r stringReader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // n
 //
 // Returns a reader which reads from the string s.
 func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("readString")
-
 	if len(args) == 0 {
 		return wdte.GoFunc(ReadString)
 	}
@@ -256,8 +246,6 @@ func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Reads the entirety of the reader r and returns the result as a
 // string.
 func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("string")
-
 	if len(args) == 0 {
 		return wdte.GoFunc(String)
 	}
@@ -302,8 +290,6 @@ func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 // Returns a stream.Stream that yields, as strings, successive lines
 // read from the reader r.
 func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("lines")
-
 	if len(args) == 0 {
 		return wdte.GoFunc(Lines)
 	}
@@ -319,8 +305,6 @@ func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Returns a stream.Stream that yields, as strings, successive words
 // read from the reader r.
 func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("words")
-
 	if len(args) == 0 {
 		return wdte.GoFunc(Words)
 	}
@@ -346,8 +330,6 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // will return a stream.Stream that will yield 'this', 'is', 'an', and
 // 'example'.
 func Scan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("scan")
-
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Scan)
@@ -419,8 +401,6 @@ func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 // TODO: Maybe it makes more sense for them to be yielded as strings
 // with a length of one.
 func Runes(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("runes")
-
 	if len(args) == 0 {
 		return wdte.GoFunc(Runes)
 	}
@@ -485,7 +465,6 @@ func write(f func(io.Writer, interface{}) error) wdte.Func {
 // If both arguments are writers, it will consider either the first
 // argument or the outer argument to be w.
 func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("write")
 	return write(func(w io.Writer, v interface{}) error {
 		_, err := fmt.Fprint(w, v)
 		return err
@@ -505,7 +484,6 @@ func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // If both arguments are writers, it will consider either the first
 // argument or the outer argument to be w.
 func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("writeln")
 	return write(func(w io.Writer, v interface{}) error {
 		_, err := fmt.Fprintln(w, v)
 		return err

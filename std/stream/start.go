@@ -21,8 +21,6 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(New)
 	}
 
-	frame = frame.Sub("new")
-
 	return &array{
 		a: wdte.Array(args),
 	}
@@ -78,8 +76,6 @@ func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Range)
 	}
-
-	frame = frame.Sub("range")
 
 	switch len(args) {
 	case 1:
@@ -144,8 +140,6 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			return Concat(frame, append(args, next...)...)
 		})
 	}
-
-	frame = frame.Sub("concat")
 
 	var i int
 	cur := args[0].Call(frame).(Stream)
