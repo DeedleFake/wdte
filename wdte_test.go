@@ -560,6 +560,11 @@ func TestStrings(t *testing.T) {
 func TestArrays(t *testing.T) {
 	runTests(t, []test{
 		{
+			name:   "Append",
+			script: `let a => import 'arrays'; a.append [2; 5] 3 6 7;`,
+			ret:    wdte.Array{wdte.Number(2), wdte.Number(5), wdte.Number(3), wdte.Number(6), wdte.Number(7)},
+		},
+		{
 			name:   "Stream",
 			script: `let a => import 'arrays'; let s => import 'stream'; let main => a.stream ['this'; 'is'; 'a'; 'test'] -> s.collect;`,
 			ret:    wdte.Array{wdte.String("this"), wdte.String("is"), wdte.String("a"), wdte.String("test")},

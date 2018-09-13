@@ -1,9 +1,32 @@
+// Package arrays contains functions for manipulating arrays.
 package arrays
 
 import (
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/std"
 )
+
+// Append is a WDTE function with the following signature:
+//
+//    append array val...
+//    (append array) val...
+//
+// Returns a copy of the given array with values appended to it.
+func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("append")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Append)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Append(frame, append(args, next...)...)
+		})
+	}
+
+	array := args[0].Call(frame).(wdte.Array)
+	return append(array[:len(array):len(array)], args[1:]...)
+}
 
 // A streamer is a stream that iterates over an array.
 type streamer struct {
@@ -43,6 +66,7 @@ func (a *streamer) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
+	"append": wdte.GoFunc(Append),
 	"stream": wdte.GoFunc(Stream),
 })
 
