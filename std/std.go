@@ -505,6 +505,30 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return s
 }
 
+// Known is a WDTE function with the following signature:
+//
+//    known scope
+//
+// Returns an array containing known identifiers in the given scope
+// sorted alphabetically.
+func Known(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) == 0 {
+		return wdte.GoFunc(Known)
+	}
+
+	frame = frame.Sub("known")
+
+	s := args[0].Call(frame).(*wdte.Scope)
+	k := s.Known()
+
+	ret := make(wdte.Array, 0, len(k))
+	for _, id := range k {
+		ret = append(ret, wdte.String(id))
+	}
+
+	return ret
+}
+
 // Sub is a WDTE function with the following signatures:
 //
 //    sub scope id val
@@ -555,6 +579,7 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"len":     wdte.GoFunc(Len),
 	"at":      wdte.GoFunc(At),
 	"collect": wdte.GoFunc(Collect),
+	"known":   wdte.GoFunc(Known),
 	"sub":     wdte.GoFunc(Sub),
 })
 

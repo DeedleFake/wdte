@@ -338,6 +338,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(3),
 		},
 		{
+			name:   "Known",
+			script: `let t => collect (let test => 3; let other => 5); known t;`,
+			ret:    wdte.Array{wdte.String("other"), wdte.String("test")},
+		},
+		{
 			// TODO: Move this and some others into a separate test, such as
 			// `TestStd` or something.
 			name:   "Sub",
