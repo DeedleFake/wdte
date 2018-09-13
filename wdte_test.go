@@ -338,6 +338,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(3),
 		},
 		{
+			name:   "Known",
+			script: `let t => collect (let test => 3; let other => 5); known t;`,
+			ret:    wdte.Array{wdte.String("other"), wdte.String("test")},
+		},
+		{
 			// TODO: Move this and some others into a separate test, such as
 			// `TestStd` or something.
 			name:   "Sub",
@@ -559,6 +564,45 @@ func TestStrings(t *testing.T) {
 
 func TestArrays(t *testing.T) {
 	runTests(t, []test{
+		{
+			name:   "Append",
+			script: `let a => import 'arrays'; a.append [2; 5] 3 6 7;`,
+			ret:    wdte.Array{wdte.Number(2), wdte.Number(5), wdte.Number(3), wdte.Number(6), wdte.Number(7)},
+		},
+		{
+			name:   "Sort",
+			script: `let a => import 'arrays'; a.sort [5; 3; 7] <;`,
+			ret:    wdte.Array{wdte.Number(3), wdte.Number(5), wdte.Number(7)},
+		},
+		{
+			name: "SortStable",
+			script: `
+				let a => import 'arrays';
+				let s => import 'stream';
+				let str => import 'strings';
+
+				a.sortStable [
+						collect (
+							let cat => 'two';
+							let val => 5;
+						);
+						collect (
+							let cat => 'one';
+							let val => 7;
+						);
+						collect (
+							let cat => 'two';
+							let val => 3;
+						);
+					]
+					(@ s e1 e2 => < e1.cat e2.cat)
+				-> a.stream
+				-> s.map (@ s e => str.format '{q} {}' e.cat e.val)
+				-> s.collect
+				;
+			`,
+			ret: wdte.Array{wdte.String(`"one" 7`), wdte.String(`"two" 5`), wdte.String(`"two" 3`)},
+		},
 		{
 			name:   "Stream",
 			script: `let a => import 'arrays'; let s => import 'stream'; let main => a.stream ['this'; 'is'; 'a'; 'test'] -> s.collect;`,
