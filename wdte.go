@@ -565,7 +565,7 @@ func (v Var) Call(frame Frame, args ...Func) Func { // nolint
 		}
 	}
 
-	return f.Call(frame, args...)
+	return f.Call(frame.Sub(ID(v)), args...)
 }
 
 // A ScopedFunc is an expression that uses a predefined scope instead
