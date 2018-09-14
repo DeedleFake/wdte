@@ -23,7 +23,9 @@
             | <compound> <sub>
      <sub> -> . <subbable>
             | ε
-   <array> -> [ <exprs> ]
+   <array> -> [ <aexprs> ]
+  <aexprs> -> <exprs>
+            | ;
   <switch> -> switch <expr> { <switches> }
 <compound> -> ( <cexprs> )
    <exprs> -> <expr> ; <exprs>
