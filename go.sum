@@ -1,5 +1,5 @@
-github.com/DeedleFake/wdte v0.2.3 h1:IHt/KEwei0IKlwNUzqYRNkklAmcvTg3RvbDz1qTCUFc=
-github.com/DeedleFake/wdte v0.2.3/go.mod h1:OCZvbgJTrZ7roEHTnoUd6Xp+dsN7mHQHq0DP/Az4vg4=
+github.com/DeedleFake/wdte v0.2.4 h1:SEGqnFlEBkpaVKNn9N5Rtdim0R7vj6ylec93l4p5MgE=
+github.com/DeedleFake/wdte v0.2.4/go.mod h1:OCZvbgJTrZ7roEHTnoUd6Xp+dsN7mHQHq0DP/Az4vg4=
 github.com/mattn/go-runewidth v0.0.3/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
 github.com/peterh/liner v1.1.0/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
 golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
