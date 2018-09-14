@@ -1,11 +1,11 @@
 package wdte
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 	"unsafe"
 
 	"github.com/DeedleFake/wdte/ast"
@@ -350,7 +350,25 @@ func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
 }
 
 func (s *Scope) String() string { // nolint
-	return fmt.Sprint(s.Known())
+	k := s.Known()
+	for i := range k {
+		k[i] = ID(fmt.Sprintf("%v: %v", k[i], s.Get(k[i])))
+	}
+
+	if len(k) <= 5 {
+		return "[" + strings.Join(*(*[]string)(unsafe.Pointer(&k)), "; ") + "]"
+	}
+
+	var buf strings.Builder
+	buf.WriteString("[\n")
+	for _, line := range k {
+		buf.WriteByte('\t')
+		buf.WriteString(string(line))
+		buf.WriteString(";\n")
+	}
+	buf.WriteByte(']')
+
+	return buf.String()
 }
 
 func (s *Scope) At(i Func) (Func, bool) { // nolint
@@ -402,6 +420,10 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 	}()
 
 	return f(frame, args...)
+}
+
+func (f GoFunc) String() string {
+	return "<go func>"
 }
 
 // A FuncCall is an unevaluated function call. This is usually the
@@ -580,6 +602,14 @@ func (f ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Func.Call(frame.WithScope(f.Scope), args...)
 }
 
+func (f ScopedFunc) String() string {
+	if inner, ok := f.Func.(fmt.Stringer); ok {
+		return inner.String()
+	}
+
+	return fmt.Sprint(f.Func)
+}
+
 // A Memo wraps another function, caching the results of calls with
 // the same arguments.
 type Memo struct {
@@ -707,9 +737,7 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 }
 
 func (lambda *Lambda) String() string { // nolint
-	// Could use strings.Builder, but then it'll only work on Go 10+...
-
-	var buf bytes.Buffer
+	var buf strings.Builder
 
 	fmt.Fprintf(&buf, "(@ %v", lambda.ID)
 	for _, arg := range lambda.Args {
@@ -718,8 +746,7 @@ func (lambda *Lambda) String() string { // nolint
 	}
 	buf.WriteString(" => ...)")
 
-	raw := buf.Bytes()
-	return *(*string)(unsafe.Pointer(&raw))
+	return buf.String()
 }
 
 // A Let is an expression that maps an expression to an ID. It's used
