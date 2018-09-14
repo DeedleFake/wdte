@@ -59,7 +59,12 @@ func (r Reader) String() string { // nolint
 		return inner.String()
 	}
 
-	return "<reader>"
+	switch r.Reader {
+	case Stdin:
+		return "<reader(stdin)>"
+	default:
+		return "<reader>"
+	}
 }
 
 type writer interface {
@@ -82,11 +87,18 @@ func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 }
 
 func (w Writer) String() string { // nolint
-	if inner, ok := r.Writer.(fmt.Stringer); ok {
+	if inner, ok := w.Writer.(fmt.Stringer); ok {
 		return inner.String()
 	}
 
-	return "<writer>"
+	switch w.Writer {
+	case Stdout:
+		return "<writer(stdout)>"
+	case Stderr:
+		return "<writer(stderr)>"
+	default:
+		return "<writer>"
+	}
 }
 
 // Seek is a WDTE function with the following signatures:
