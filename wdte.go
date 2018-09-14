@@ -356,7 +356,7 @@ func (s *Scope) At(i Func) (Func, bool) { // nolint
 func (s *Scope) String() string { // nolint
 	var buf strings.Builder
 
-	buf.WriteByte('[')
+	buf.WriteString("scope(")
 	var pre string
 	for _, id := range s.Known() {
 		buf.WriteString(pre)
@@ -366,7 +366,7 @@ func (s *Scope) String() string { // nolint
 
 		pre = "; "
 	}
-	buf.WriteByte(']')
+	buf.WriteByte(')')
 
 	return buf.String()
 }
