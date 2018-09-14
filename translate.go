@@ -191,7 +191,12 @@ func (m *translator) fromSub(sub *ast.NTerm, acc Sub) Sub {
 }
 
 func (m *translator) fromArray(array *ast.NTerm) Func {
-	return Array(m.fromExprs(array.Children()[1].(*ast.NTerm), nil))
+	aexprs := array.Children()[1].(*ast.NTerm)
+	if _, ok := aexprs.Children()[0].(*ast.Term); ok {
+		return Array{}
+	}
+
+	return Array(m.fromExprs(aexprs.Children()[0].(*ast.NTerm), nil))
 }
 
 func (m *translator) fromSwitch(s *ast.NTerm) Func {
