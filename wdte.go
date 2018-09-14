@@ -6,7 +6,6 @@ import (
 	"io"
 	"sort"
 	"strings"
-	"unsafe"
 
 	"github.com/DeedleFake/wdte/ast"
 )
@@ -349,31 +348,27 @@ func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
 	return s
 }
 
+func (s *Scope) At(i Func) (Func, bool) { // nolint
+	v := s.Get(ID(i.(String)))
+	return v, v != nil
+}
+
 func (s *Scope) String() string { // nolint
-	k := s.Known()
-	for i := range k {
-		k[i] = ID(fmt.Sprintf("%v: %v", k[i], s.Get(k[i])))
-	}
-
-	if len(k) <= 5 {
-		return "[" + strings.Join(*(*[]string)(unsafe.Pointer(&k)), "; ") + "]"
-	}
-
 	var buf strings.Builder
-	buf.WriteString("[\n")
-	for _, line := range k {
-		buf.WriteByte('\t')
-		buf.WriteString(string(line))
-		buf.WriteString(";\n")
+
+	buf.WriteByte('[')
+	var pre string
+	for _, id := range s.Known() {
+		buf.WriteString(pre)
+		buf.WriteString(string(id))
+		buf.WriteString(": ")
+		fmt.Fprint(&buf, s.Get(id))
+
+		pre = "; "
 	}
 	buf.WriteByte(']')
 
 	return buf.String()
-}
-
-func (s *Scope) At(i Func) (Func, bool) { // nolint
-	v := s.Get(ID(i.(String)))
-	return v, v != nil
 }
 
 // A GoFunc is an implementation of Func that calls a Go function.
@@ -422,7 +417,7 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 	return f(frame, args...)
 }
 
-func (f GoFunc) String() string {
+func (f GoFunc) String() string { // nolint
 	return "<go func>"
 }
 
