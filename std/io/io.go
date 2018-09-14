@@ -16,7 +16,7 @@ import (
 
 // These variables are what are returned by the corresponding
 // functions in this package. If a client wants to globally redirect
-// input or output, them may simply change these variables.
+// input or output, they may simply change these variables.
 var (
 	Stdin  io.Reader = os.Stdin
 	Stdout io.Writer = os.Stdout
