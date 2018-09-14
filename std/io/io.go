@@ -42,12 +42,24 @@ type reader interface {
 
 // Reader wraps an io.Reader, allowing it to be used as a WDTE
 // function.
+//
+// Note that using this specific type is not necessary. Any wdte.Func
+// that implements io.Reader is also accepted by the functions in this
+// module.
 type Reader struct {
 	io.Reader
 }
 
 func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return r
+}
+
+func (r Reader) String() string { // nolint
+	if inner, ok := r.Reader.(fmt.Stringer); ok {
+		return inner.String()
+	}
+
+	return "<reader>"
 }
 
 type writer interface {
@@ -57,12 +69,24 @@ type writer interface {
 
 // Writer wraps an io.Writer, allowing it to be used as a WDTE
 // function.
+//
+// Note that using this specific type is not necessary. Any wdte.Func
+// that implements io.Writer is also accepted by the functions in this
+// module.
 type Writer struct {
 	io.Writer
 }
 
 func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return w
+}
+
+func (w Writer) String() string { // nolint
+	if inner, ok := r.Writer.(fmt.Stringer); ok {
+		return inner.String()
+	}
+
+	return "<writer>"
 }
 
 // Seek is a WDTE function with the following signatures:
