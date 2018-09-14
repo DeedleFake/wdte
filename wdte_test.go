@@ -223,6 +223,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(math.Cos(3)),
 		},
 		{
+			name:   "Array/Empty",
+			script: `[];`,
+			ret:    wdte.Array{},
+		},
+		{
 			name:   "Array/Args",
 			script: `let io => import 'io'; let a => import 'arrays'; let s => import 'stream'; let test a => [a]; a.stream (test 3) -> s.map (io.writeln io.stdout) -> s.drain;`,
 			out:    "3\n",
