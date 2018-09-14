@@ -42,6 +42,10 @@ func (a *array) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return r, true
 }
 
+func (a *array) String() string { // nolint
+	return "<stream>"
+}
+
 // An rng (range) is a stream that yields successive numbers.
 type rng struct {
 	// i is the next number to return.
@@ -126,6 +130,10 @@ func (r *rng) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	n := r.i
 	r.i += r.s
 	return n, true
+}
+
+func (r *rng) String() string { // nolint
+	return "<stream>"
 }
 
 // Concat is a WDTE function with the following signatures:
