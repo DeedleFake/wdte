@@ -43,6 +43,10 @@ func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return m
 }
 
+func (m *mapper) String() string { // nolint
+	return "<stream>"
+}
+
 type filter struct {
 	f wdte.Func
 }
@@ -83,6 +87,10 @@ func (f filter) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	}
 
 	return f
+}
+
+func (f filter) String() string { // nolint
+	return "<stream>"
 }
 
 type flatMapper struct {
@@ -147,6 +155,10 @@ func (m *flatMapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // no
 	}
 
 	return m
+}
+
+func (m *flatMapper) String() string { // nolint
+	return "<stream>"
 }
 
 // Enumerate is a WDTE function with the following signature:

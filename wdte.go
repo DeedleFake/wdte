@@ -1,12 +1,11 @@
 package wdte
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"sort"
-	"unsafe"
+	"strings"
 
 	"github.com/DeedleFake/wdte/ast"
 )
@@ -349,13 +348,27 @@ func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
 	return s
 }
 
-func (s *Scope) String() string { // nolint
-	return fmt.Sprint(s.Known())
-}
-
 func (s *Scope) At(i Func) (Func, bool) { // nolint
 	v := s.Get(ID(i.(String)))
 	return v, v != nil
+}
+
+func (s *Scope) String() string { // nolint
+	var buf strings.Builder
+
+	buf.WriteByte('[')
+	var pre string
+	for _, id := range s.Known() {
+		buf.WriteString(pre)
+		buf.WriteString(string(id))
+		buf.WriteString(": ")
+		fmt.Fprint(&buf, s.Get(id))
+
+		pre = "; "
+	}
+	buf.WriteByte(']')
+
+	return buf.String()
 }
 
 // A GoFunc is an implementation of Func that calls a Go function.
@@ -402,6 +415,10 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 	}()
 
 	return f(frame, args...)
+}
+
+func (f GoFunc) String() string { // nolint
+	return "<go func>"
 }
 
 // A FuncCall is an unevaluated function call. This is usually the
@@ -580,6 +597,14 @@ func (f ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Func.Call(frame.WithScope(f.Scope), args...)
 }
 
+func (f ScopedFunc) String() string {
+	if inner, ok := f.Func.(fmt.Stringer); ok {
+		return inner.String()
+	}
+
+	return fmt.Sprint(f.Func)
+}
+
 // A Memo wraps another function, caching the results of calls with
 // the same arguments.
 type Memo struct {
@@ -707,9 +732,7 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 }
 
 func (lambda *Lambda) String() string { // nolint
-	// Could use strings.Builder, but then it'll only work on Go 10+...
-
-	var buf bytes.Buffer
+	var buf strings.Builder
 
 	fmt.Fprintf(&buf, "(@ %v", lambda.ID)
 	for _, arg := range lambda.Args {
@@ -718,8 +741,7 @@ func (lambda *Lambda) String() string { // nolint
 	}
 	buf.WriteString(" => ...)")
 
-	raw := buf.Bytes()
-	return *(*string)(unsafe.Pointer(&raw))
+	return buf.String()
 }
 
 // A Let is an expression that maps an expression to an ID. It's used

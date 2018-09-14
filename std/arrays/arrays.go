@@ -152,6 +152,10 @@ func (a *streamer) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return r, true
 }
 
+func (a *streamer) String() string { // nolint
+	return "<stream>"
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"append":     wdte.GoFunc(Append),

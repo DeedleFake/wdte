@@ -2,6 +2,7 @@
 package file
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/DeedleFake/wdte"
@@ -15,6 +16,10 @@ type File struct {
 
 func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return f
+}
+
+func (f File) String() string { // nolint
+	return fmt.Sprintf("<file %q>", f.Name())
 }
 
 // Open is a WDTE function with the following signature:

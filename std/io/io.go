@@ -16,23 +16,53 @@ import (
 
 // These variables are what are returned by the corresponding
 // functions in this package. If a client wants to globally redirect
-// input or output, them may simply change these variables.
+// input or output, they may simply change these variables.
 var (
 	Stdin  io.Reader = os.Stdin
 	Stdout io.Writer = os.Stdout
 	Stderr io.Writer = os.Stderr
 )
 
-func stdin(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return Reader{Stdin}
+type stdin struct{}
+
+func (r stdin) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return r
 }
 
-func stdout(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return Writer{Stderr}
+func (stdin) Read(buf []byte) (int, error) {
+	return Stdin.Read(buf)
 }
 
-func stderr(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return Writer{Stderr}
+func (stdin) String() string {
+	return "<reader(stdin)>"
+}
+
+type stdout struct{}
+
+func (w stdout) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return w
+}
+
+func (stdout) Write(data []byte) (int, error) {
+	return Stdout.Write(data)
+}
+
+func (stdout) String() string {
+	return "<writer(stdout)>"
+}
+
+type stderr struct{}
+
+func (w stderr) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return w
+}
+
+func (stderr) Write(data []byte) (int, error) {
+	return Stderr.Write(data)
+}
+
+func (stderr) String() string {
+	return "<writer(stderr)>"
 }
 
 type reader interface {
@@ -42,12 +72,24 @@ type reader interface {
 
 // Reader wraps an io.Reader, allowing it to be used as a WDTE
 // function.
+//
+// Note that using this specific type is not necessary. Any wdte.Func
+// that implements io.Reader is also accepted by the functions in this
+// module.
 type Reader struct {
 	io.Reader
 }
 
 func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return r
+}
+
+func (r Reader) String() string { // nolint
+	if inner, ok := r.Reader.(fmt.Stringer); ok {
+		return inner.String()
+	}
+
+	return "<reader>"
 }
 
 type writer interface {
@@ -57,12 +99,24 @@ type writer interface {
 
 // Writer wraps an io.Writer, allowing it to be used as a WDTE
 // function.
+//
+// Note that using this specific type is not necessary. Any wdte.Func
+// that implements io.Writer is also accepted by the functions in this
+// module.
 type Writer struct {
 	io.Writer
 }
 
 func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 	return w
+}
+
+func (w Writer) String() string { // nolint
+	if inner, ok := w.Writer.(fmt.Stringer); ok {
+		return inner.String()
+	}
+
+	return "<writer>"
 }
 
 // Seek is a WDTE function with the following signatures:
@@ -514,9 +568,9 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
-	"stdin":  wdte.GoFunc(stdin),
-	"stdout": wdte.GoFunc(stdout),
-	"stderr": wdte.GoFunc(stderr),
+	"stdin":  stdin{},
+	"stdout": stdout{},
+	"stderr": stderr{},
 
 	"seek":  wdte.GoFunc(Seek),
 	"close": wdte.GoFunc(Close),

@@ -3,6 +3,7 @@ package wdte
 import (
 	"bytes"
 	"fmt"
+	"strings"
 )
 
 // A Comparer is a Func that is able to be compared to other
@@ -118,6 +119,21 @@ func (a Array) At(i Func) (Func, bool) { // nolint
 	}
 
 	return nil, false
+}
+
+func (a Array) String() string { // nolint
+	var buf strings.Builder
+
+	buf.WriteByte('[')
+	var pre string
+	for _, f := range a {
+		buf.WriteString(pre)
+		fmt.Fprint(&buf, f)
+		pre = "; "
+	}
+	buf.WriteByte(']')
+
+	return buf.String()
 }
 
 //func (a Array)Compare(other Func) (int, bool) {

@@ -29,6 +29,10 @@ func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return n(frame)
 }
 
+func (NextFunc) String() string { // nolint
+	return "<stream>"
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"new":    wdte.GoFunc(New),
