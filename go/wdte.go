@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"sync"
 	"syscall/js"
@@ -33,6 +34,30 @@ func (err errorIO) Error() string {
 	return string(err)
 }
 
+type stdout struct {
+	io.Writer
+}
+
+func (w stdout) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return w
+}
+
+func (stdout) String() string {
+	return "<writer(stdout)>"
+}
+
+type stderr struct {
+	io.Writer
+}
+
+func (w stderr) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return w
+}
+
+func (stderr) String() string {
+	return "<writer(stderr)>"
+}
+
 func main() {
 	var (
 		bufPool = &sync.Pool{
@@ -58,13 +83,9 @@ func main() {
 					Reader: errorIO("stdin is not supported in the playground"),
 				},
 
-				"stdout": wdteio.Writer{
-					Writer: buf,
-				},
+				"stdout": stdout{buf},
 
-				"stderr": wdteio.Writer{
-					Writer: buf,
-				},
+				"stderr": stderr{buf},
 			})
 
 			c, err := wdte.Parse(strings.NewReader(input), wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
