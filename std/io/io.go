@@ -23,16 +23,46 @@ var (
 	Stderr io.Writer = os.Stderr
 )
 
-func stdin(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return Reader{Stdin}
+type stdin struct{}
+
+func (r stdin) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return r
 }
 
-func stdout(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return Writer{Stdout}
+func (stdin) Read(buf []byte) (int, error) {
+	return Stdin.Read(buf)
 }
 
-func stderr(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return Writer{Stderr}
+func (stdin) String() string {
+	return "<reader(stdin)>"
+}
+
+type stdout struct{}
+
+func (w stdout) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return w
+}
+
+func (stdout) Write(data []byte) (int, error) {
+	return Stdout.Write(data)
+}
+
+func (stdout) String() string {
+	return "<writer(stdout)>"
+}
+
+type stderr struct{}
+
+func (w stderr) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return w
+}
+
+func (stderr) Write(data []byte) (int, error) {
+	return Stderr.Write(data)
+}
+
+func (stderr) String() string {
+	return "<writer(stderr)>"
 }
 
 type reader interface {
@@ -59,12 +89,7 @@ func (r Reader) String() string { // nolint
 		return inner.String()
 	}
 
-	switch r.Reader {
-	case Stdin:
-		return "<reader(stdin)>"
-	default:
-		return "<reader>"
-	}
+	return "<reader>"
 }
 
 type writer interface {
@@ -91,14 +116,7 @@ func (w Writer) String() string { // nolint
 		return inner.String()
 	}
 
-	switch w.Writer {
-	case Stdout:
-		return "<writer(stdout)>"
-	case Stderr:
-		return "<writer(stderr)>"
-	default:
-		return "<writer>"
-	}
+	return "<writer>"
 }
 
 // Seek is a WDTE function with the following signatures:
@@ -550,9 +568,9 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
-	"stdin":  wdte.GoFunc(stdin),
-	"stdout": wdte.GoFunc(stdout),
-	"stderr": wdte.GoFunc(stderr),
+	"stdin":  stdin{},
+	"stdout": stdout{},
+	"stderr": stderr{},
 
 	"seek":  wdte.GoFunc(Seek),
 	"close": wdte.GoFunc(Close),
