@@ -52,10 +52,29 @@ func sorter(sortFunc func(interface{}, func(int, int) bool)) (f wdte.GoFunc) {
 			array = args[1].Call(frame).(wdte.Array)
 		}
 
+		type errorFunc interface {
+			wdte.Func
+			error
+		}
+
+		var err errorFunc
 		array = append(wdte.Array{}, array...)
 		sortFunc(array, func(i1, i2 int) bool {
-			return less.Call(frame, array[i1], array[i2]) == wdte.Bool(true)
+			if err != nil {
+				return false
+			}
+
+			r := less.Call(frame, array[i1], array[i2])
+			if e, ok := r.(errorFunc); ok {
+				err = e
+				return false
+			}
+
+			return r == wdte.Bool(true)
 		})
+		if err != nil {
+			return err
+		}
 
 		return array
 	}
