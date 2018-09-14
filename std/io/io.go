@@ -28,7 +28,7 @@ func stdin(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 }
 
 func stdout(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	return Writer{Stderr}
+	return Writer{Stdout}
 }
 
 func stderr(frame wdte.Frame, args ...wdte.Func) wdte.Func {
