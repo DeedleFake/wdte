@@ -10,13 +10,13 @@ Fibonacci
 This example provides a memoized implementation of a recursive Fibonacci number generator. It also provides a recursive factorial function for the heck of it.
 `,
 
-	input: `let memo fib n => switch n {
+	input: `let memo fib n => n {
 	== 0 => 0;
 	== 1 => 1;
 	true => + (fib (- n 1)) (fib (- n 2));
 };
 
-let ! n => switch n {
+let ! n => n {
 	<= 1 => 1;
 	true => - n 1 -> ! -> * n;
 };
@@ -151,7 +151,7 @@ let toggle doors m =>
 	a.stream doors
 	-> s.enumerate
 	-> s.map (@ s n => [+ (a.at n 0) 1; a.at n 1])
-	-> s.map (@ s n => switch n {
+	-> s.map (@ s n => n {
 			(@ s n => == (% (a.at n 0) m) 0) => ! (a.at n 1);
 			true => a.at n 1;
 		})
@@ -164,7 +164,7 @@ s.range 100
 -> s.range 1 100
 -> s.reduce doors toggle
 -> a.stream
--> s.map (@ s n => switch 0 {
+-> s.map (@ s n => 0 {
 		n => 'Open';
 		true => 'Closed';
 	} -- io.writeln io.stdout)
