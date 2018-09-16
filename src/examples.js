@@ -146,10 +146,10 @@ let s => import 'stream';
 let toggle doors m =>
 	a.stream doors
 	-> s.enumerate
-	-> s.map (@ s n => [+ (a.at n 0) 1; a.at n 1])
+	-> s.map (@ s n => [+ (at n 0) 1; at n 1])
 	-> s.map (@ s n => n {
-			(@ s n => == (% (a.at n 0) m) 0) => ! (a.at n 1);
-			true => a.at n 1;
+			(@ s n => == (% (at n 0) m) 0) => ! (at n 1);
+			true => at n 1;
 		})
 	-> s.collect
 	;
