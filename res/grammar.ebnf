@@ -18,10 +18,10 @@
             | <lambda>
             | <array>
             | <subbable>
-            | { <single> <single> <single> }
 <subbable> -> id <sub>
             | <switch> <sub>
             | <compound> <sub>
+            | { <single> <single> <single> } <sub>
      <sub> -> . <subbable>
             | ε
    <array> -> [ <aexprs> ]
@@ -38,6 +38,6 @@
             | ε
   <lambda> -> (@ <funcmods> id <argdecls> => <cexprs> )
  <letexpr> -> let <funcmods> id <argdecls> => <expr>
-   <import> -> import string
+  <import> -> import string
 
 # vim: ts=2 sw=2 et
