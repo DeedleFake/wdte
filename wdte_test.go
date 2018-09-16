@@ -253,6 +253,12 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(39088169),
 		},
 		{
+			name:   "Lambda/Compound",
+			script: `let io => import 'io'; let test a => a 3; test (@ t n => io.write io.stdout 'Test'; + n 2);`,
+			ret:    wdte.Number(5),
+			out:    "Test",
+		},
+		{
 			name:   "True",
 			script: `true;`,
 			ret:    wdte.Bool(true),

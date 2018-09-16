@@ -227,25 +227,39 @@ func (m *translator) fromSwitches(switches *ast.NTerm, cases [][2]Func) [][2]Fun
 }
 
 func (m *translator) fromCompound(compound *ast.NTerm) Func {
-	return Compound(m.fromExprs(compound.Children()[1].(*ast.NTerm), nil))
+	c := Compound(m.fromExprs(compound.Children()[1].(*ast.NTerm), nil))
+	if len(c) == 0 {
+		if _, ok := c[0].(*Let); !ok {
+			return c[0]
+		}
+	}
+
+	return c
 }
 
 func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm))
 	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(string))
 	args := m.fromArgDecls(lambda.Children()[3].(*ast.NTerm), nil)
-	expr := m.fromExpr(lambda.Children()[5].(*ast.NTerm))
+	expr := Compound(m.fromExprs(lambda.Children()[5].(*ast.NTerm), nil))
+
+	inner := Func(expr)
+	if len(expr) == 1 {
+		if _, ok := expr[0].(*Let); !ok {
+			inner = expr[0]
+		}
+	}
 
 	if mods&funcModMemo != 0 {
-		expr = &Memo{
-			Func: expr,
+		inner = &Memo{
+			Func: inner,
 			Args: args,
 		}
 	}
 
 	return &Lambda{
 		ID:   id,
-		Expr: expr,
+		Expr: inner,
 		Args: args,
 	}
 }
