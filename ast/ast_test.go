@@ -32,14 +32,14 @@ func TestParse(t *testing.T) {
 	//const test = `"test" => t; + x y => nil;`
 
 	const test = `
-'test' => test;
+let test => import 'test';
 
-fib n => switch n {
+let fib n => n {
 	0 => 0;
 	default => + (fib (- n 1)) (fib (- n 2));
 };
 
-memo main => (
+let memo main => (
 	print (fib 5);
 	print 3;
 	3 : a -> + 2 -- * 3 a;
