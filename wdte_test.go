@@ -576,8 +576,8 @@ func TestStrings(t *testing.T) {
 func TestArrays(t *testing.T) {
 	runTests(t, []test{
 		{
-			name:   "Append",
-			script: `let a => import 'arrays'; a.append [2; 5] 3 6 7;`,
+			name:   "Concat",
+			script: `let a => import 'arrays'; a.concat [2; 5] [3; 6] [7];`,
 			ret:    wdte.Array{wdte.Number(2), wdte.Number(5), wdte.Number(3), wdte.Number(6), wdte.Number(7)},
 		},
 		{

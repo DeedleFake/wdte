@@ -8,26 +8,35 @@ import (
 	"github.com/DeedleFake/wdte/std"
 )
 
-// Append is a WDTE function with the following signatures:
+// Concat is a WDTE function with the following signatures:
 //
-//    append array val...
-//    (append array) val...
+//    concat array ...
+//    (concat array) ...
 //
-// Returns a copy of the given array with values appended to it.
-func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("append")
+// Returns an array containing the concatonation of all of its arguments, all of which should be arrays, in the order that they were passed to it. For example,
+//
+//    concat [3; 6] [2; 5]
+//
+// returns
+//
+//    [3; 6; 2; 5]
+func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("concat")
 
 	switch len(args) {
 	case 0:
-		return wdte.GoFunc(Append)
+		return wdte.GoFunc(Concat)
 	case 1:
 		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Append(frame, append(args, next...)...)
+			return Concat(frame, append(args, next...)...)
 		})
 	}
 
 	array := args[0].Call(frame).(wdte.Array)
-	return append(array[:len(array):len(array)], args[1:]...)
+	for _, arg := range args[1:] {
+		array = append(array[:len(array):len(array)], arg.Call(frame).(wdte.Array)...)
+	}
+	return array
 }
 
 func sorter(sortFunc func(interface{}, func(int, int) bool)) (f wdte.GoFunc) {
@@ -158,7 +167,7 @@ func (a *streamer) String() string { // nolint
 
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
-	"append":     wdte.GoFunc(Append),
+	"concat":     wdte.GoFunc(Concat),
 	"sort":       wdte.GoFunc(Sort),
 	"sortStable": wdte.GoFunc(SortStable),
 	"stream":     wdte.GoFunc(Stream),
