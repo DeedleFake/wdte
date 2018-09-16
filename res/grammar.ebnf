@@ -18,6 +18,7 @@
             | <lambda>
             | <array>
             | <subbable>
+            | { <single> <single> <single> }
 <subbable> -> id <sub>
             | <switch> <sub>
             | <compound> <sub>
