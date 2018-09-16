@@ -133,16 +133,6 @@ func (m *translator) fromSingle(single *ast.NTerm) Func {
 			return String(s.Tok().Val.(string))
 		}
 
-		if s.Tok().Val == "{" {
-			return &FuncCall{
-				Func: m.fromSingle(single.Children()[2].(*ast.NTerm)),
-				Args: []Func{
-					m.fromSingle(single.Children()[1].(*ast.NTerm)),
-					m.fromSingle(single.Children()[3].(*ast.NTerm)),
-				},
-			}
-		}
-
 	case *ast.NTerm:
 		switch s.Name() {
 		case "array":
@@ -165,28 +155,39 @@ func (m *translator) fromSingle(single *ast.NTerm) Func {
 }
 
 func (m *translator) fromSubbable(subbable *ast.NTerm, acc Sub) Sub {
-	var found bool
+	found := -1
 	switch s := subbable.Children()[0].(type) {
 	case *ast.Term:
 		switch s.Tok().Type {
 		case scanner.ID:
 			acc = append(acc, Var(s.Tok().Val.(string)))
-			found = true
+			found = 1
+		case scanner.Keyword:
+			if s.Tok().Val == "{" {
+				acc = append(acc, &FuncCall{
+					Func: m.fromSingle(subbable.Children()[2].(*ast.NTerm)),
+					Args: []Func{
+						m.fromSingle(subbable.Children()[1].(*ast.NTerm)),
+						m.fromSingle(subbable.Children()[3].(*ast.NTerm)),
+					},
+				})
+				found = 5
+			}
 		}
 
 	case *ast.NTerm:
 		switch s.Name() {
 		case "switch":
 			acc = append(acc, m.fromSwitch(s))
-			found = true
+			found = 1
 		case "compound":
 			acc = append(acc, m.fromCompound(s))
-			found = true
+			found = 1
 		}
 	}
 
-	if found {
-		return m.fromSub(subbable.Children()[1].(*ast.NTerm), acc)
+	if found >= 0 {
+		return m.fromSub(subbable.Children()[found].(*ast.NTerm), acc)
 	}
 
 	panic(fmt.Errorf("Malformed AST with bad <subbable>: %#v", subbable))
