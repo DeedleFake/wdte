@@ -4,7 +4,7 @@
  <funcmod> -> memo
 <argdecls> -> id <argdecls>
             | ε
-    <expr> -> <single> <args> <slot> <chain>
+    <expr> -> <single> <args> <slot> <switch> <chain>
     <args> -> <single> <args>
             | ε
    <chain> -> -> <expr>
@@ -19,14 +19,14 @@
             | <array>
             | <subbable>
 <subbable> -> id <sub>
-            | <switch> <sub>
             | <compound> <sub>
      <sub> -> . <subbable>
             | ε
    <array> -> [ <aexprs> ]
   <aexprs> -> <exprs>
             | ;
-  <switch> -> switch <expr> { <switches> }
+  <switch> -> { <switches> }
+            | ε
 <compound> -> ( <cexprs> )
    <exprs> -> <expr> ; <exprs>
             | ε

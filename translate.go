@@ -2,6 +2,7 @@ package wdte
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/DeedleFake/wdte/ast"
 	"github.com/DeedleFake/wdte/scanner"
@@ -14,6 +15,9 @@ type translator struct {
 func (m *translator) fromScript(script *ast.NTerm) (c Compound, err error) {
 	defer func() {
 		switch e := recover().(type) {
+		case runtime.Error:
+			panic(e)
+
 		case error:
 			err = e
 
@@ -72,10 +76,11 @@ func (m *translator) fromExpr(expr *ast.NTerm) Func {
 	r := &FuncCall{
 		Func: first,
 		Args: in,
-		Slot: slot,
 	}
+	r = m.fromSwitch(expr.Children()[3].(*ast.NTerm), r)
+	r.Slot = slot
 
-	chain := m.fromChain(expr.Children()[3].(*ast.NTerm), Chain{r})
+	chain := m.fromChain(expr.Children()[4].(*ast.NTerm), Chain{r})
 	if len(chain) == 1 {
 		return r
 	}
@@ -166,9 +171,6 @@ func (m *translator) fromSubbable(subbable *ast.NTerm, acc Sub) Sub {
 
 	case *ast.NTerm:
 		switch s.Name() {
-		case "switch":
-			acc = append(acc, m.fromSwitch(s))
-			found = true
 		case "compound":
 			acc = append(acc, m.fromCompound(s))
 			found = true
@@ -199,13 +201,18 @@ func (m *translator) fromArray(array *ast.NTerm) Func {
 	return Array(m.fromExprs(aexprs.Children()[0].(*ast.NTerm), nil))
 }
 
-func (m *translator) fromSwitch(s *ast.NTerm) Func {
-	check := m.fromExpr(s.Children()[1].(*ast.NTerm))
-	switches := m.fromSwitches(s.Children()[3].(*ast.NTerm), nil)
+func (m *translator) fromSwitch(s *ast.NTerm, check *FuncCall) *FuncCall {
+	if _, ok := s.Children()[0].(*ast.Epsilon); ok {
+		return check
+	}
 
-	return &Switch{
-		Check: check,
-		Cases: switches,
+	switches := m.fromSwitches(s.Children()[1].(*ast.NTerm), nil)
+
+	return &FuncCall{
+		Func: &Switch{
+			Check: check,
+			Cases: switches,
+		},
 	}
 }
 
@@ -318,12 +325,18 @@ func (m *translator) fromChain(chain *ast.NTerm, acc Chain) Chain {
 	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
 	ignored := chain.Children()[0].(*ast.Term).Tok().Val == "--"
 
-	return m.fromChain(expr.Children()[3].(*ast.NTerm), append(acc, &FuncCall{
-		Func:    first,
-		Args:    in,
-		Slot:    slot,
-		Ignored: ignored,
-	}))
+	r := &FuncCall{
+		Func: first,
+		Args: in,
+	}
+	r = m.fromSwitch(
+		expr.Children()[3].(*ast.NTerm),
+		r,
+	)
+	r.Slot = slot
+	r.Ignored = ignored
+
+	return m.fromChain(expr.Children()[4].(*ast.NTerm), append(acc, r))
 }
 
 type funcMod uint

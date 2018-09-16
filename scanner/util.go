@@ -20,7 +20,6 @@ var (
 	}
 
 	keywords = map[string]struct{}{
-		"switch": {},
 		"memo":   {},
 		"let":    {},
 		"import": {},
