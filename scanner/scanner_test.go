@@ -45,11 +45,10 @@ o => print "double\n" 'single\\';`,
 		},
 		{
 			name: "Switch",
-			in:   `test => switch n {case => r;};`,
+			in:   `test => n {case => r;};`,
 			out: []scanner.Token{
 				{Type: scanner.ID, Val: "test"},
 				{Type: scanner.Keyword, Val: "=>"},
-				{Type: scanner.Keyword, Val: "switch"},
 				{Type: scanner.ID, Val: "n"},
 				{Type: scanner.Keyword, Val: "{"},
 				{Type: scanner.ID, Val: "case"},
