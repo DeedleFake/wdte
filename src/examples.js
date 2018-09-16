@@ -10,11 +10,7 @@ Fibonacci
 This example provides a memoized implementation of a recursive Fibonacci number generator. It also provides a recursive factorial function for the heck of it.
 `,
 
-	input: `let memo fib n => n {
-	== 0 => 0;
-	== 1 => 1;
-	true => + (fib (- n 1)) (fib (- n 2));
-};
+	input: `let memo fib n => n {>= 2 => + (fib (- n 1)) (fib (- n 2))};
 
 let ! n => n {
 	<= 1 => 1;
