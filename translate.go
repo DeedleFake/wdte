@@ -133,6 +133,16 @@ func (m *translator) fromSingle(single *ast.NTerm) Func {
 			return String(s.Tok().Val.(string))
 		}
 
+		if s.Tok().Val == "{" {
+			return &FuncCall{
+				Func: m.fromSingle(single.Children()[2].(*ast.NTerm)),
+				Args: []Func{
+					m.fromSingle(single.Children()[1].(*ast.NTerm)),
+					m.fromSingle(single.Children()[3].(*ast.NTerm)),
+				},
+			}
+		}
+
 	case *ast.NTerm:
 		switch s.Name() {
 		case "array":
