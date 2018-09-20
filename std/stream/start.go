@@ -4,17 +4,12 @@ import (
 	"github.com/DeedleFake/wdte"
 )
 
-// An array is a stream that iterates over an array.
-type array struct {
-	a wdte.Array
-	i int
-}
-
 // New is a WDTE function with the following signature:
 //
-//    new ...
+//    new next
 //
-// It returns a Stream that iterates over its arguments.
+// It returns a new Stream that calls next in order to get the next
+// element in the stream. The Stream ends when next returns end.
 func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	switch len(args) {
 	case 0:
@@ -23,27 +18,14 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.Sub("new")
 
-	return &array{
-		a: wdte.Array(args),
-	}
-}
+	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+		r := args[0].Call(frame)
+		if _, ok := r.(end); ok {
+			return nil, false
+		}
 
-func (a *array) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
-	return a
-}
-
-func (a *array) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
-	if a.i >= len(a.a) {
-		return nil, false
-	}
-
-	r := a.a[a.i]
-	a.i++
-	return r, true
-}
-
-func (a *array) String() string { // nolint
-	return "<stream>"
+		return r, true
+	})
 }
 
 // An rng (range) is a stream that yields successive numbers.

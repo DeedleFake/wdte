@@ -407,9 +407,9 @@ func TestStream(t *testing.T) {
 	runTests(t, []test{
 		{
 			name:   "New",
-			script: `let s => import 'stream'; let main a b c => s.new a b c -> s.collect;`,
-			args:   []wdte.Func{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
-			ret:    wdte.Array{wdte.Number(3), wdte.Number(6), wdte.Number(9)},
+			script: `let io => import 'io'; let s => import 'stream'; s.new (@ s => io.lines io.stdin -> s.any (== 'done') {false => 3; true => s.end}) -> s.collect;`,
+			in:     "This\nis\na\ntest.\ndone",
+			ret:    wdte.Array{wdte.Number(3), wdte.Number(3), wdte.Number(3), wdte.Number(3)},
 		},
 		{
 			name:   "Range/1",
