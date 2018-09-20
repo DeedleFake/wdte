@@ -3,6 +3,7 @@ package wdte
 import (
 	"bytes"
 	"fmt"
+	"math/big"
 	"strings"
 )
 
@@ -89,6 +90,15 @@ func (n Number) Compare(other Func) (int, bool) { // nolint
 	}
 
 	return int(n - o), true
+}
+
+func (n Number) String() string { // nolint
+	bn := big.NewFloat(float64(n))
+	if bn.IsInt() {
+		return bn.Text('f', -1)
+	}
+
+	return bn.Text('g', 10)
 }
 
 // An Array represents a WDTE array type. It's similar to a Compound,
