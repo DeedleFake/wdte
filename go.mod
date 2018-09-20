@@ -1,3 +1,3 @@
 module github.com/DeedleFake/wdte/playground
 
-require github.com/DeedleFake/wdte v0.3.0
+require github.com/DeedleFake/wdte v0.3.1
