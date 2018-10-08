@@ -4,12 +4,6 @@ import (
 	"github.com/DeedleFake/wdte"
 )
 
-// An array is a stream that iterates over an array.
-type array struct {
-	a wdte.Array
-	i int
-}
-
 // New is a WDTE function with the following signature:
 //
 //    new ...
@@ -23,39 +17,18 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.Sub("new")
 
-	return &array{
-		a: wdte.Array(args),
-	}
-}
+	a := wdte.Array(args)
+	var i int
 
-func (a *array) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
-	return a
-}
+	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+		if i >= len(a) {
+			return nil, false
+		}
 
-func (a *array) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
-	if a.i >= len(a.a) {
-		return nil, false
-	}
-
-	r := a.a[a.i]
-	a.i++
-	return r, true
-}
-
-func (a *array) String() string { // nolint
-	return "<stream>"
-}
-
-// An rng (range) is a stream that yields successive numbers.
-type rng struct {
-	// i is the next number to return.
-	i wdte.Number
-
-	// m is the number to stop at, exclusive.
-	m wdte.Number
-
-	// s is the amount to increment every time Next() is called.
-	s wdte.Number
+		r := a[i]
+		i++
+		return r, true
+	})
 }
 
 // Range is a WDTE function with the following signatures:
@@ -85,55 +58,40 @@ func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.Sub("range")
 
+	// Current index, minimum/maximum value, and step.
+	var i, m wdte.Number
+	s := wdte.Number(1)
+
 	switch len(args) {
 	case 1:
-		return &rng{
-			m: args[0].Call(frame).(wdte.Number),
-			s: 1,
-		}
+		m = args[0].Call(frame).(wdte.Number)
 
 	case 2:
-		start := args[0].Call(frame).(wdte.Number)
-		end := args[1].Call(frame).(wdte.Number)
+		i = args[0].Call(frame).(wdte.Number)
+		m = args[1].Call(frame).(wdte.Number)
 
-		s := wdte.Number(1)
-		if start > end {
+		if i > m {
 			s = -1
 		}
 
-		return &rng{
-			i: start,
-			m: end,
-			s: s,
+	default:
+		i = args[0].Call(frame).(wdte.Number)
+		m = args[1].Call(frame).(wdte.Number)
+		s = args[2].Call(frame).(wdte.Number)
+	}
+
+	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+		if (s >= 0) && (i >= m) {
+			return nil, false
 		}
-	}
+		if (s < 0) && (i <= m) {
+			return nil, false
+		}
 
-	return &rng{
-		i: args[0].Call(frame).(wdte.Number),
-		m: args[1].Call(frame).(wdte.Number),
-		s: args[2].Call(frame).(wdte.Number),
-	}
-}
-
-func (r *rng) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
-	return r
-}
-
-func (r *rng) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
-	if (r.s >= 0) && (r.i >= r.m) {
-		return nil, false
-	}
-	if (r.s < 0) && (r.i <= r.m) {
-		return nil, false
-	}
-
-	n := r.i
-	r.i += r.s
-	return n, true
-}
-
-func (r *rng) String() string { // nolint
-	return "<stream>"
+		n := i
+		i += s
+		return n, true
+	})
 }
 
 // Concat is a WDTE function with the following signatures:
