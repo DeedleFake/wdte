@@ -3,6 +3,7 @@ wdte
 
 [![GoDoc](https://godoc.org/github.com/DeedleFake/wdte?status.svg)](https://godoc.org/github.com/DeedleFake/wdte)
 [![Go Report Card](https://goreportcard.com/badge/github.com/DeedleFake/wdte)](https://goreportcard.com/report/github.com/DeedleFake/wdte)
+[![cover.run](https://cover.run/go/github.com/DeedleFake/wdte.svg?style=flat&tag=golang-1.10)](https://cover.run/go?tag=golang-1.10&repo=github.com/DeedleFake/wdte)
 
 WDTE is a simple, functional-ish, embedded scripting language.
 
