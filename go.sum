@@ -1,6 +1,6 @@
-github.com/DeedleFake/wdte v0.3.3 h1:P7HdJu0b8L63mzz3RcVYZLQVVxL7dcPcv3nXz4SdZ40=
-github.com/DeedleFake/wdte v0.3.3/go.mod h1:13DMfR2hwy/g8RLy7Ye101xloTejC7kogzgMd793krg=
+github.com/DeedleFake/wdte v0.3.4 h1:Jiu9WDj1owmdBlq8AFJ/xvr52sLI0KWL9nEr+vf54pY=
+github.com/DeedleFake/wdte v0.3.4/go.mod h1:am6GZTXCVmjTxu4ui3x8QzJ4qGM8pao0P3dohIjsk9I=
 github.com/mattn/go-runewidth v0.0.3/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
 github.com/peterh/liner v1.1.0/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
-golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
-golang.org/x/sys v0.0.0-20180920110915-d641721ec2de/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/crypto v0.0.0-20181024171144-74cb1d3d52f4/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
+golang.org/x/sys v0.0.0-20181024145615-5cd93ef61a7c/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
