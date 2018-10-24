@@ -14,6 +14,7 @@ func main() {
 		flag.PrintDefaults()
 	}
 	output := flag.String("out", "", "File to output to, or stdout if blank.")
+	detectAmbiguity := flag.Bool("detectAmbiguity", true, "Give warnings for grammar ambiguities.")
 	flag.Parse()
 
 	if flag.NArg() != 1 {
@@ -28,7 +29,7 @@ func main() {
 	}
 	defer file.Close()
 
-	g, err := LoadGrammar(file)
+	g, err := LoadGrammar(file, *detectAmbiguity)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading grammar: %v", err)
 		os.Exit(1)

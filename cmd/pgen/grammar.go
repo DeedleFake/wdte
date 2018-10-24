@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -11,7 +12,7 @@ import (
 type Grammar map[NTerm][]Rule
 
 // LoadGrammar loads a grammar from an io.Reader.
-func LoadGrammar(r io.Reader) (g Grammar, err error) {
+func LoadGrammar(r io.Reader, detectAmbiguity bool) (g Grammar, err error) {
 	var cur NTerm
 	g = make(map[NTerm][]Rule)
 
@@ -37,7 +38,50 @@ func LoadGrammar(r io.Reader) (g Grammar, err error) {
 		}
 		g[cur] = append(g[cur], rule)
 	}
+
+	if detectAmbiguity {
+		g.detectAmbiguities()
+	}
+
 	return g, s.Err()
+}
+
+func (g Grammar) detectAmbiguities() {
+	type lookup struct {
+		NTerm Token
+		Term  Token
+	}
+	known := make(map[lookup]struct{}, len(g))
+
+	for nterm, _ := range g {
+		for term, rule := range g.First(nterm) {
+			if isEpsilon(term) {
+				continue
+			}
+
+			_, ambiguous := known[lookup{nterm, term}]
+			if ambiguous {
+				fmt.Fprintf(os.Stderr, "Ambiguity for (%v, %v) from %v\n", nterm, term, rule)
+			}
+
+			known[lookup{nterm, term}] = struct{}{}
+		}
+
+		if g.Nullable(nterm) {
+			for term, rule := range g.Follow(nterm) {
+				if isEpsilon(term) {
+					continue
+				}
+
+				_, ambiguous := known[lookup{nterm, term}]
+				if ambiguous {
+					fmt.Fprintf(os.Stderr, "Ambiguity for (%v, %v) from %v\n", nterm, term, rule)
+				}
+
+				known[lookup{nterm, term}] = struct{}{}
+			}
+		}
+	}
 }
 
 // Nullable returns true if the given token is nullable according to
