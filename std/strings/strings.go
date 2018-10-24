@@ -138,6 +138,42 @@ func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(strings.ToLower(string(args[0].Call(frame).(wdte.String))))
 }
 
+// Repeat is a WDTE function with the following signatures:
+//
+//    repeat string times
+//    (repeat string) times
+//    repeat times string
+//    (repeat times) string
+//
+// It returns a new string containing the given string repeated the
+// number of times specified.
+func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("repeat")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Repeat)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Repeat(frame, append(args, next...)...)
+		})
+	}
+
+	var str wdte.String
+	var times wdte.Number
+	switch a0 := args[0].Call(frame).(type) {
+	case wdte.String:
+		str = a0
+		times = args[1].Call(frame).(wdte.Number)
+
+	case wdte.Number:
+		times = a0
+		str = args[1].Call(frame).(wdte.String)
+	}
+
+	return wdte.String(strings.Repeat(string(str), int(times)))
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"contains": wdte.GoFunc(Contains),
@@ -145,8 +181,9 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"suffix":   wdte.GoFunc(Suffix),
 	"index":    wdte.GoFunc(Index),
 
-	"upper": wdte.GoFunc(Upper),
-	"lower": wdte.GoFunc(Lower),
+	"upper":  wdte.GoFunc(Upper),
+	"lower":  wdte.GoFunc(Lower),
+	"repeat": wdte.GoFunc(Repeat),
 
 	"format": wdte.GoFunc(Format),
 })
