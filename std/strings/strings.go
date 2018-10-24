@@ -174,6 +174,34 @@ func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(strings.Repeat(string(str), int(times)))
 }
 
+// Join is a WDTE function with the following signatures:
+//
+//    join strings sep
+//    (join sep) strings
+//
+// It returns a new string containing the strings in the provided
+// array with sep inserted between each.
+func Join(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("join")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Join)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Join(frame, append(next, args...)...)
+		})
+	}
+
+	a := args[0].Call(frame).(wdte.Array)
+	s := make([]string, 0, len(a))
+	for _, str := range a {
+		s = append(s, string(str.(wdte.String)))
+	}
+
+	return wdte.String(strings.Join(s, string(args[1].Call(frame).(wdte.String))))
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"contains": wdte.GoFunc(Contains),
@@ -184,6 +212,7 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"upper":  wdte.GoFunc(Upper),
 	"lower":  wdte.GoFunc(Lower),
 	"repeat": wdte.GoFunc(Repeat),
+	"join":   wdte.GoFunc(Join),
 
 	"format": wdte.GoFunc(Format),
 })

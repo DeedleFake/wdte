@@ -576,6 +576,11 @@ func TestStrings(t *testing.T) {
 			ret:    wdte.String("testtesttest"),
 		},
 		{
+			name:   "Join",
+			script: `let str => import 'strings'; str.join ['this'; 'is'; 'a'; 'test'] ' ';`,
+			ret:    wdte.String("this is a test"),
+		},
+		{
 			name:   "Format",
 			script: `let str => import 'strings'; let main => str.format '{#2}{#0}{}' 3 6 9;`,
 			ret:    wdte.String("936"),
