@@ -669,5 +669,10 @@ func TestArrays(t *testing.T) {
 			script: `let a => import 'arrays'; let s => import 'stream'; let main => a.stream ['this'; 'is'; 'a'; 'test'] -> s.collect;`,
 			ret:    wdte.Array{wdte.String("this"), wdte.String("is"), wdte.String("a"), wdte.String("test")},
 		},
+		{
+			name:   "Run",
+			script: `let a => import 'arrays'; let io => import 'io'; a.run [io.writeln io.stdout 3; + 5 2 -> io.writeln io.stdout];`,
+			out:    "3\n7\n",
+		},
 	})
 }

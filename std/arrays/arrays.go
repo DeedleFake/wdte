@@ -165,12 +165,24 @@ func (a *streamer) String() string { // nolint
 	return "<stream>"
 }
 
+func Run(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("run")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Run)
+	}
+
+	return wdte.Compound(args[0].Call(frame).(wdte.Array)).Call(frame)
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"concat":     wdte.GoFunc(Concat),
 	"sort":       wdte.GoFunc(Sort),
 	"sortStable": wdte.GoFunc(SortStable),
 	"stream":     wdte.GoFunc(Stream),
+	"run":        wdte.GoFunc(Run),
 })
 
 func init() {
