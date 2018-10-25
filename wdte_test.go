@@ -577,11 +577,12 @@ func TestStrings(t *testing.T) {
 		},
 		{
 			name:   "Split",
-			script: `let str => import 'strings'; [str.split 'a test' ' '; str.split 'this is a test' ' ' 2; (str.split ' ') 'this is also a test' 3];`,
+			script: `let str => import 'strings'; [str.split 'a test' ' '; str.split 'this is a test' ' ' 2; (str.split ' ') 'this is also a test' 3; (str.split ' ' 2) 'or is it'];`,
 			ret: wdte.Array{
 				wdte.Array{wdte.String("a"), wdte.String("test")},
 				wdte.Array{wdte.String("this"), wdte.String("is a test")},
 				wdte.Array{wdte.String("this"), wdte.String("is"), wdte.String("also a test")},
+				wdte.Array{wdte.String("or"), wdte.String("is it")},
 			},
 		},
 		{

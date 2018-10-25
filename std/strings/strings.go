@@ -212,6 +212,12 @@ func Split(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		}
 
 	case wdte.Number:
+		if len(args) < 3 {
+			return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+				return Split(frame, append(next, args...)...)
+			})
+		}
+
 		sep = args[2].Call(frame).(wdte.String)
 		n = arg
 	}
