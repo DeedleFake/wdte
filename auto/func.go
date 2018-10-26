@@ -15,25 +15,25 @@ import (
 // function.
 //
 // Note that currently this is limited to functions that have a single
-// return value, and not all types are supported. Currently supported
-// types are as follows:
+// return value.
+//
+// Unrecognized types are passed through with an attempted conversion,
+// allowing a function to, for example, take a stream.Stream as an
+// argument. Similarly, if an expected type of an argument is the
+// exact type of the value passed, the value is passed through
+// directly. If a return value's type implements wdte.Func, it is also
+// passed directly. Types with special handling are as follows:
 //
 // Arguments:
-// * Any number type, including uintptrs.
-// * Arrays and slices of supported types. Note that the passed WDTE
-//   array's length must match the expected length of the array in the
-//   Go function's arguments.
-// * Booleans.
-// * Strings.
+//    * Arrays and slices. Note that the passed WDTE array's length
+//      must match the expected length of the array in the Go
+//      function's arguments.
 //
 // Return types:
-// * Any number type, including uintptrs.
-// * Arrays and slices of supported types.
-// * Booleans.
-// * Strings.
-// * Pointers to supported types.
-// * Functions that are supported by this function. The functions will
-//   use a frame with the name "<auto>".
+//    * Arrays and slices.
+//    * Pointers.
+//    * Functions that are supported by this function. The functions
+//      will use a frame with the name "<auto>".
 func Func(name string, f interface{}) wdte.Func {
 	v := reflect.ValueOf(f)
 

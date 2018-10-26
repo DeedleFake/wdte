@@ -16,11 +16,11 @@ var (
 
 func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 	v := reflect.ValueOf(w)
+	if v.Type() == expected {
+		return v
+	}
 
 	switch expected.Kind() {
-	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.String:
-		return v.Convert(expected)
-
 	case reflect.Array:
 		v := v.Convert(arrayType).Interface().(wdte.Array)
 		if len(v) != expected.Len() {
@@ -49,15 +49,16 @@ func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 			r = reflect.Append(r, fromWDTE(e, expected.Elem()))
 		}
 		return r
-
-	case reflect.Struct:
-		panic(errors.New("struct arguments are not yet supported"))
 	}
 
-	panic(fmt.Errorf("unsupported type: %v", expected))
+	return v.Convert(expected)
 }
 
 func toWDTE(v reflect.Value) wdte.Func {
+	if v, ok := v.Interface().(wdte.Func); ok {
+		return v
+	}
+
 	switch v.Kind() {
 	case reflect.Bool:
 		return wdte.Bool(v.Bool())

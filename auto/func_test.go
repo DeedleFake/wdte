@@ -58,6 +58,22 @@ func TestFunc(t *testing.T) {
 			args:  []wdte.Func{wdte.Number(0)},
 			calls: []wdte.Func{wdte.Number(0), wdte.Number(1), wdte.Number(2)},
 		},
+		{
+			name: "Direct",
+			f: func(a wdte.Array) wdte.String {
+				return wdte.String(fmt.Sprint(a))
+			},
+			args: []wdte.Func{wdte.Array{wdte.String("a"), wdte.String("test")}},
+			ret:  wdte.String("[a; test]"),
+		},
+		{
+			name: "Bool",
+			f: func(v bool) bool {
+				return !v
+			},
+			args: []wdte.Func{wdte.Bool(false)},
+			ret:  wdte.Bool(true),
+		},
 	}
 
 	for _, test := range tests {
