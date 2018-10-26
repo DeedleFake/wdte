@@ -24,7 +24,7 @@ func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 	case reflect.Array:
 		v := v.Convert(arrayType).Interface().(wdte.Array)
 		if len(v) != expected.Len() {
-			panic(errors.New("array length does not match"))
+			panic(fmt.Errorf("array lengths (%v, %v) do not match", len(v), expected.Len()))
 		}
 
 		t := reflect.ArrayOf(expected.Len(), expected.Elem())
