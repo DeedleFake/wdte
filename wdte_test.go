@@ -422,9 +422,8 @@ func TestStream(t *testing.T) {
 	runTests(t, []test{
 		{
 			name:   "New",
-			script: `let io => import 'io'; let s => import 'stream'; s.new (@ s => io.lines io.stdin -> s.any (== 'done') {false => 3; true => s.end}) -> s.collect;`,
-			in:     "This\nis\na\ntest.\ndone",
-			ret:    wdte.Array{wdte.Number(3), wdte.Number(3), wdte.Number(3), wdte.Number(3)},
+			script: `let s => import 'stream'; s.new 0 (@ f n => + n 1 {> 5 => s.end}) -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(1), wdte.Number(2), wdte.Number(3), wdte.Number(4), wdte.Number(5)},
 		},
 		{
 			name:   "Range/1",
@@ -459,7 +458,7 @@ func TestStream(t *testing.T) {
 		},
 		{
 			name:   "FlatMap",
-			script: `let s => import 'stream'; let test a => s.new a (+ a 1); let main => s.range 3 -> s.flatMap test -> s.collect;`,
+			script: `let a => import 'arrays'; let s => import 'stream'; let test n => a.stream [n; + n 1]; let main => s.range 3 -> s.flatMap test -> s.collect;`,
 			ret: wdte.Array{
 				wdte.Number(0),
 				wdte.Number(1),
@@ -471,7 +470,7 @@ func TestStream(t *testing.T) {
 		},
 		{
 			name:   "Enumerate",
-			script: `let s => import 'stream'; let main => s.new 'a' 'b' 'c' -> s.enumerate -> s.collect;`,
+			script: `let a => import 'arrays'; let s => import 'stream'; let main => a.stream ['a'; 'b'; 'c'] -> s.enumerate -> s.collect;`,
 			ret: wdte.Array{
 				wdte.Array{wdte.Number(0), wdte.String("a")},
 				wdte.Array{wdte.Number(1), wdte.String("b")},
@@ -542,22 +541,22 @@ func TestStrings(t *testing.T) {
 	runTests(t, []test{
 		{
 			name:   "Contains",
-			script: `let s => import 'stream'; let str => import 'strings'; let main => s.new "this" "is" "a" "test" -> s.filter (str.contains "t") -> s.collect;`,
+			script: `let a => import 'arrays'; let s => import 'stream'; let str => import 'strings'; let main => a.stream ["this"; "is"; "a"; "test"] -> s.filter (str.contains "t") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("this"), wdte.String("test")},
 		},
 		{
 			name:   "Prefix",
-			script: `let s => import 'stream'; let str => import 'strings'; let main => s.new "this" "is" "a" "test" -> s.filter (str.prefix "i") -> s.collect;`,
+			script: `let a => import 'arrays'; let s => import 'stream'; let str => import 'strings'; let main => a.stream ["this"; "is"; "a"; "test"] -> s.filter (str.prefix "i") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("is")},
 		},
 		{
 			name:   "Suffix",
-			script: `let s => import 'stream'; let str => import 'strings'; let main => s.new "this" "is" "a" "test" -> s.filter (str.suffix "t") -> s.collect;`,
+			script: `let a => import 'arrays'; let s => import 'stream'; let str => import 'strings'; let main => a.stream ["this"; "is"; "a"; "test"] -> s.filter (str.suffix "t") -> s.collect;`,
 			ret:    wdte.Array{wdte.String("test")},
 		},
 		{
 			name:   "Index",
-			script: `let s => import 'stream'; let str => import 'strings'; let main => s.new 'abcde' 'bcdef' 'cdefg' 'defgh' 'efghi' -> s.map (str.index 'cd') -> s.collect;`,
+			script: `let a => import 'arrays'; let s => import 'stream'; let str => import 'strings'; let main => a.stream ['abcde'; 'bcdef'; 'cdefg'; 'defgh'; 'efghi'] -> s.map (str.index 'cd') -> s.collect;`,
 			ret:    wdte.Array{wdte.Number(2), wdte.Number(1), wdte.Number(0), wdte.Number(-1), wdte.Number(-1)},
 		},
 		{

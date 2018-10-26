@@ -13,20 +13,31 @@ import (
 // element in the stream, passing it first initial and then the
 // previous value on each call. The Stream ends when next returns end.
 func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("new")
+
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(New)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return New(frame, append(next, args...)...)
+		})
 	}
 
-	frame = frame.Sub("new")
+	prev := args[0]
+	next := args[1].Call(frame)
 
 	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
-		r := args[0].Call(frame)
-		if _, ok := r.(end); ok {
+		if _, ok := prev.(end); ok {
 			return nil, false
 		}
 
-		return r, true
+		prev = next.Call(frame, prev)
+		if _, ok := prev.(end); ok {
+			return nil, false
+		}
+
+		return prev, true
 	})
 }
 
