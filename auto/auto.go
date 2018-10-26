@@ -1,6 +1,7 @@
 package auto
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -8,7 +9,9 @@ import (
 )
 
 var (
-	arrayType = reflect.TypeOf(wdte.Array(nil))
+	arrayType  = reflect.TypeOf(wdte.Array(nil))
+	numberType = reflect.TypeOf(wdte.Number(0))
+	stringType = reflect.TypeOf(wdte.String(""))
 )
 
 func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
@@ -21,7 +24,7 @@ func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 	case reflect.Array:
 		v := v.Convert(arrayType).Interface().(wdte.Array)
 		if len(v) != expected.Len() {
-			panic("array length does not match")
+			panic(errors.New("array length does not match"))
 		}
 
 		t := reflect.ArrayOf(expected.Len(), expected.Elem())
@@ -32,10 +35,10 @@ func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 		return r
 
 	case reflect.Func:
-		panic("func arguments are not yet supported")
+		panic(errors.New("func arguments are not yet supported"))
 
 	case reflect.Map:
-		panic("map arguments are not yet supported")
+		panic(errors.New("map arguments are not yet supported"))
 
 	case reflect.Slice:
 		v := v.Convert(arrayType).Interface().(wdte.Array)
@@ -48,12 +51,42 @@ func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 		return r
 
 	case reflect.Struct:
-		panic("struct arguments are not yet supported")
+		panic(errors.New("struct arguments are not yet supported"))
 	}
 
-	panic(fmt.Errorf("unexpected kind: %v", expected.Kind()))
+	panic(fmt.Errorf("unsupported type: %v", expected))
 }
 
 func toWDTE(v reflect.Value) wdte.Func {
-	panic("Not implemented.")
+	switch v.Kind() {
+	case reflect.Bool:
+		return wdte.Bool(v.Bool())
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128:
+		return v.Convert(numberType).Interface().(wdte.Number)
+
+	case reflect.Array, reflect.Slice:
+		r := make(wdte.Array, v.Len())
+		for i := range r {
+			r[i] = toWDTE(v.Index(i))
+		}
+		return r
+
+	case reflect.Func:
+		return Func("<auto>", v.Interface())
+
+	case reflect.Map:
+		panic(errors.New("maps are not yet supported"))
+
+	case reflect.Ptr:
+		return toWDTE(v.Elem())
+
+	case reflect.String:
+		return v.Convert(stringType).Interface().(wdte.String)
+
+	case reflect.Struct:
+		panic(errors.New("structs are not yet supported"))
+	}
+
+	panic(fmt.Errorf("unsupported type: %T", v))
 }
