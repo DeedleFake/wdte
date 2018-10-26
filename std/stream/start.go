@@ -6,28 +6,38 @@ import (
 
 // New is a WDTE function with the following signature:
 //
-//    new ...
+//    new initial next
+//    (new next) initial
 //
-// It returns a Stream that iterates over its arguments.
+// It returns a new Stream that calls next in order to get the next
+// element in the stream, passing it first initial and then the
+// previous value on each call. The Stream ends when next returns end.
 func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("new")
+
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(New)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return New(frame, append(next, args...)...)
+		})
 	}
 
-	frame = frame.Sub("new")
-
-	a := wdte.Array(args)
-	var i int
+	prev := args[0]
+	next := args[1].Call(frame)
 
 	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
-		if i >= len(a) {
+		if _, ok := prev.(end); ok {
 			return nil, false
 		}
 
-		r := a[i]
-		i++
-		return r, true
+		prev = next.Call(frame, prev)
+		if _, ok := prev.(end); ok {
+			return nil, false
+		}
+
+		return prev, true
 	})
 }
 
