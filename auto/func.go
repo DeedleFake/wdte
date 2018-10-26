@@ -67,7 +67,16 @@ func Func(name string, f interface{}) wdte.Func {
 	return r
 }
 
-func fromFunc(frame wdte.Frame, w wdte.Func, expected reflect.Type) reflect.Value {
+// FromFunc does the opposite of Func, returning a Go function with
+// the signature given by expected that, when called, calls w with
+// frame. Type conversions are handled the same as in Func, but in
+// reverse, such that the return type stipulations in Func apply to
+// the arguments to w, and vice versa for the return value of w. The
+// requested function type must return exactly zero or one values.
+func FromFunc(frame wdte.Frame, w wdte.Func, expected reflect.Type) reflect.Value {
+	if expected.Kind() != reflect.Func {
+		panic(errors.New("expected is not a function type"))
+	}
 	if expected.NumOut() > 1 {
 		panic(fmt.Errorf("invalid number of returns: %v", expected.NumOut()))
 	}

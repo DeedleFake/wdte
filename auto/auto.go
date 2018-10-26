@@ -35,7 +35,7 @@ func fromWDTE(frame wdte.Frame, w wdte.Func, expected reflect.Type) reflect.Valu
 		return r
 
 	case reflect.Func:
-		return fromFunc(frame, w, expected)
+		return FromFunc(frame, w, expected)
 
 	case reflect.Map:
 		panic(errors.New("map arguments are not yet supported"))
