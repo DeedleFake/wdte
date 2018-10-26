@@ -7,6 +7,7 @@ import (
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/auto"
+	"github.com/DeedleFake/wdte/std/stream"
 )
 
 func testFunc(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -83,6 +84,16 @@ func TestFunc(t *testing.T) {
 			},
 			args: []wdte.Func{wdte.Bool(false)},
 			ret:  wdte.Bool(true),
+		},
+		{
+			name: "Stream",
+			f: func(s stream.Stream) int {
+				s.Next(wdte.F())
+				v, _ := s.Next(wdte.F())
+				return int(v.(wdte.Number))
+			},
+			args: []wdte.Func{stream.Range(wdte.F(), wdte.Number(10))},
+			ret:  wdte.Number(1),
 		},
 	}
 
