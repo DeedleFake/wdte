@@ -3,6 +3,7 @@ package auto_test
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/DeedleFake/wdte"
@@ -135,4 +136,21 @@ func TestFuncPartial(t *testing.T) {
 		t.Errorf("Got %#v", r)
 		t.Errorf("Expected %q", wdte.String("(2, 1)"))
 	}
+}
+
+func ExampleFunc() {
+	c, err := wdte.Parse(strings.NewReader(`add 3 2;`), nil)
+	if err != nil {
+		panic(err)
+	}
+
+	scope := wdte.S().Add("add",
+		auto.Func("add", func(n1, n2 int) int {
+			return n1 + n2
+		}),
+	)
+
+	fmt.Println(c.Call(wdte.F().WithScope(scope)))
+
+	// Output: 5
 }

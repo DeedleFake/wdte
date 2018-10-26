@@ -1,3 +1,4 @@
+// Package wdte implements the WDTE scripting language.
 package wdte
 
 import (
