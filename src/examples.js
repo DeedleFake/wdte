@@ -70,10 +70,11 @@ For a full list of functions, including an explanation of the formatting system,
 [godoc]: https://www.godoc.org/github.com/DeedleFake/wdte/std/strings
 `,
 
-	input: `let s => import 'stream';
+	input: `let a => import 'arrays';
+let s => import 'stream';
 let str => import 'strings';
 
-s.new 'abc' 'bcd' 'cde'
+a.stream ['abc'; 'bcd'; 'cde']
 -> s.map (str.index 'cd')
 -> s.collect
 -- io.writeln io.stdout
