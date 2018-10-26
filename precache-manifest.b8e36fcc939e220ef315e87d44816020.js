@@ -4,8 +4,8 @@ self.__precacheManifest = [
     "url": "/wdte/static/media/icons.faff9214.woff"
   },
   {
-    "revision": "6aaf5edfae96580dc83d",
-    "url": "/wdte/static/js/main.6aaf5edf.chunk.js"
+    "revision": "8782c1c38208c2990604",
+    "url": "/wdte/static/js/main.8782c1c3.chunk.js"
   },
   {
     "revision": "a1a749e89f578a49306ec2b055c073da",
@@ -60,27 +60,27 @@ self.__precacheManifest = [
     "url": "/wdte/static/media/icons.b87b9ba5.ttf"
   },
   {
-    "revision": "c5ebe0b32dc1b5cc449a76c4204d13bb",
-    "url": "/wdte/static/media/brand-icons.c5ebe0b3.ttf"
-  },
-  {
     "revision": "13db00b7a34fee4d819ab7f9838cc428",
     "url": "/wdte/static/media/brand-icons.13db00b7.eot"
+  },
+  {
+    "revision": "c5ebe0b32dc1b5cc449a76c4204d13bb",
+    "url": "/wdte/static/media/brand-icons.c5ebe0b3.ttf"
   },
   {
     "revision": "82f60bd0b94a1ed68b1e6e309ce2e8c3",
     "url": "/wdte/static/media/outline-icons.82f60bd0.svg"
   },
   {
-    "revision": "260db8e435564efa6aea",
-    "url": "/wdte/static/js/1.260db8e4.chunk.js"
+    "revision": "32e4b2a9b79471173a80",
+    "url": "/wdte/static/js/1.32e4b2a9.chunk.js"
   },
   {
-    "revision": "260db8e435564efa6aea",
-    "url": "/wdte/static/css/1.f46a152c.chunk.css"
+    "revision": "32e4b2a9b79471173a80",
+    "url": "/wdte/static/css/1.92d2719c.chunk.css"
   },
   {
-    "revision": "80da3a72ef968a16ea83962ed3b1edbd",
+    "revision": "eecffcf5d65089cd7f6b732780b79925",
     "url": "/wdte/index.html"
   }
 ];
