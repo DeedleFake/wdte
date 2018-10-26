@@ -9,6 +9,12 @@ func (end) Call(wdte.Frame, ...wdte.Func) wdte.Func {
 	return end{}
 }
 
+// End returns a special value that is returned by the next function
+// provided to new when it wants to end the stream.
+func End() wdte.Func {
+	return end{}
+}
+
 // Collect is a WDTE function with the following signature:
 //
 //    collect s
