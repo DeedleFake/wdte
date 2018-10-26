@@ -7,7 +7,16 @@ import (
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/auto"
+	"github.com/DeedleFake/wdte/std/stream"
 )
+
+func testFunc(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) == 0 {
+		return wdte.GoFunc(testFunc)
+	}
+
+	return args[0].(wdte.Number) + 1
+}
 
 func TestFunc(t *testing.T) {
 	tests := []struct {
@@ -49,14 +58,42 @@ func TestFunc(t *testing.T) {
 		},
 		{
 			name: "Func",
-			f: func(v int) func() int {
+			f: func(f func(v int) int) func() int {
+				var v int
 				return func() int {
-					v++
-					return v - 1
+					p := v
+					v = f(v)
+					return p
 				}
 			},
-			args:  []wdte.Func{wdte.Number(0)},
+			args:  []wdte.Func{wdte.GoFunc(testFunc)},
 			calls: []wdte.Func{wdte.Number(0), wdte.Number(1), wdte.Number(2)},
+		},
+		{
+			name: "Direct",
+			f: func(a wdte.Array) wdte.String {
+				return wdte.String(fmt.Sprint(a))
+			},
+			args: []wdte.Func{wdte.Array{wdte.String("a"), wdte.String("test")}},
+			ret:  wdte.String("[a; test]"),
+		},
+		{
+			name: "Bool",
+			f: func(v bool) bool {
+				return !v
+			},
+			args: []wdte.Func{wdte.Bool(false)},
+			ret:  wdte.Bool(true),
+		},
+		{
+			name: "Stream",
+			f: func(s stream.Stream) int {
+				s.Next(wdte.F())
+				v, _ := s.Next(wdte.F())
+				return int(v.(wdte.Number))
+			},
+			args: []wdte.Func{stream.Range(wdte.F(), wdte.Number(10))},
+			ret:  wdte.Number(1),
 		},
 	}
 

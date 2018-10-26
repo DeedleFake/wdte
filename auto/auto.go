@@ -14,13 +14,13 @@ var (
 	stringType = reflect.TypeOf(wdte.String(""))
 )
 
-func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
+func fromWDTE(frame wdte.Frame, w wdte.Func, expected reflect.Type) reflect.Value {
 	v := reflect.ValueOf(w)
+	if v.Type() == expected {
+		return v
+	}
 
 	switch expected.Kind() {
-	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.String:
-		return v.Convert(expected)
-
 	case reflect.Array:
 		v := v.Convert(arrayType).Interface().(wdte.Array)
 		if len(v) != expected.Len() {
@@ -30,12 +30,12 @@ func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 		t := reflect.ArrayOf(expected.Len(), expected.Elem())
 		r := reflect.New(t).Elem()
 		for i := 0; i < r.Len(); i++ {
-			r.Index(i).Set(fromWDTE(v[i], expected.Elem()))
+			r.Index(i).Set(fromWDTE(frame, v[i], expected.Elem()))
 		}
 		return r
 
 	case reflect.Func:
-		panic(errors.New("func arguments are not yet supported"))
+		return FromFunc(frame, w, expected)
 
 	case reflect.Map:
 		panic(errors.New("map arguments are not yet supported"))
@@ -46,18 +46,19 @@ func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 		t := reflect.SliceOf(expected.Elem())
 		r := reflect.MakeSlice(t, 0, len(v))
 		for _, e := range v {
-			r = reflect.Append(r, fromWDTE(e, expected.Elem()))
+			r = reflect.Append(r, fromWDTE(frame, e, expected.Elem()))
 		}
 		return r
-
-	case reflect.Struct:
-		panic(errors.New("struct arguments are not yet supported"))
 	}
 
-	panic(fmt.Errorf("unsupported type: %v", expected))
+	return v.Convert(expected)
 }
 
 func toWDTE(v reflect.Value) wdte.Func {
+	if v, ok := v.Interface().(wdte.Func); ok {
+		return v
+	}
+
 	switch v.Kind() {
 	case reflect.Bool:
 		return wdte.Bool(v.Bool())

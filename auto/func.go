@@ -15,25 +15,25 @@ import (
 // function.
 //
 // Note that currently this is limited to functions that have a single
-// return value, and not all types are supported. Currently supported
-// types are as follows:
+// return value.
+//
+// Unrecognized types are passed through with an attempted conversion,
+// allowing a function to, for example, take a stream.Stream as an
+// argument. Similarly, if an expected type of an argument is the
+// exact type of the value passed, the value is passed through
+// directly. If a return value's type implements wdte.Func, it is also
+// passed directly. Types with special handling are as follows:
 //
 // Arguments:
-// * Any number type, including uintptrs.
-// * Arrays and slices of supported types. Note that the passed WDTE
-//   array's length must match the expected length of the array in the
-//   Go function's arguments.
-// * Booleans.
-// * Strings.
+//    * Arrays and slices. Note that the passed WDTE array's length
+//      must match the expected length of the array in the Go
+//      function's arguments.
 //
 // Return types:
-// * Any number type, including uintptrs.
-// * Arrays and slices of supported types.
-// * Booleans.
-// * Strings.
-// * Pointers to supported types.
-// * Functions that are supported by this function. The functions will
-//   use a frame with the name "<auto>".
+//    * Arrays and slices.
+//    * Pointers.
+//    * Functions that are supported by this function. The functions
+//      will use a frame with the name "<auto>".
 func Func(name string, f interface{}) wdte.Func {
 	v := reflect.ValueOf(f)
 
@@ -57,7 +57,7 @@ func Func(name string, f interface{}) wdte.Func {
 
 		in := make([]reflect.Value, t.NumIn())
 		for i := range in {
-			in[i] = fromWDTE(args[i].Call(frame), t.In(i))
+			in[i] = fromWDTE(frame, args[i].Call(frame), t.In(i))
 		}
 
 		out := v.Call(in)
@@ -65,4 +65,34 @@ func Func(name string, f interface{}) wdte.Func {
 		return toWDTE(out[0])
 	})
 	return r
+}
+
+// FromFunc does the opposite of Func, returning a Go function with
+// the signature given by expected that, when called, calls w with
+// frame. Type conversions are handled the same as in Func, but in
+// reverse, such that the return type stipulations in Func apply to
+// the arguments to w, and vice versa for the return value of w. The
+// requested function type must return exactly zero or one values.
+func FromFunc(frame wdte.Frame, w wdte.Func, expected reflect.Type) reflect.Value {
+	if expected.Kind() != reflect.Func {
+		panic(errors.New("expected is not a function type"))
+	}
+	if expected.NumOut() > 1 {
+		panic(fmt.Errorf("invalid number of returns: %v", expected.NumOut()))
+	}
+
+	return reflect.MakeFunc(expected, func(args []reflect.Value) []reflect.Value {
+		wargs := make([]wdte.Func, 0, len(args))
+		for _, arg := range args {
+			wargs = append(wargs, toWDTE(arg))
+		}
+
+		fmt.Println(w)
+		r := w.Call(frame, wargs...)
+		if expected.NumOut() == 0 {
+			// TODO: Should zero return values be allowed?
+			return nil
+		}
+		return []reflect.Value{fromWDTE(frame, r, expected.Out(0))}
+	})
 }
