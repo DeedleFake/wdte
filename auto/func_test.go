@@ -9,6 +9,14 @@ import (
 	"github.com/DeedleFake/wdte/auto"
 )
 
+func testFunc(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	if len(args) == 0 {
+		return wdte.GoFunc(testFunc)
+	}
+
+	return args[0].(wdte.Number) + 1
+}
+
 func TestFunc(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -49,13 +57,15 @@ func TestFunc(t *testing.T) {
 		},
 		{
 			name: "Func",
-			f: func(v int) func() int {
+			f: func(f func(v int) int) func() int {
+				var v int
 				return func() int {
-					v++
-					return v - 1
+					p := v
+					v = f(v)
+					return p
 				}
 			},
-			args:  []wdte.Func{wdte.Number(0)},
+			args:  []wdte.Func{wdte.GoFunc(testFunc)},
 			calls: []wdte.Func{wdte.Number(0), wdte.Number(1), wdte.Number(2)},
 		},
 		{

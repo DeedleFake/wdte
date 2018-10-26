@@ -57,7 +57,7 @@ func Func(name string, f interface{}) wdte.Func {
 
 		in := make([]reflect.Value, t.NumIn())
 		for i := range in {
-			in[i] = fromWDTE(args[i].Call(frame), t.In(i))
+			in[i] = fromWDTE(frame, args[i].Call(frame), t.In(i))
 		}
 
 		out := v.Call(in)
@@ -65,4 +65,25 @@ func Func(name string, f interface{}) wdte.Func {
 		return toWDTE(out[0])
 	})
 	return r
+}
+
+func fromFunc(frame wdte.Frame, w wdte.Func, expected reflect.Type) reflect.Value {
+	if expected.NumOut() > 1 {
+		panic(fmt.Errorf("invalid number of returns: %v", expected.NumOut()))
+	}
+
+	return reflect.MakeFunc(expected, func(args []reflect.Value) []reflect.Value {
+		wargs := make([]wdte.Func, 0, len(args))
+		for _, arg := range args {
+			wargs = append(wargs, toWDTE(arg))
+		}
+
+		fmt.Println(w)
+		r := w.Call(frame, wargs...)
+		if expected.NumOut() == 0 {
+			// TODO: Should zero return values be allowed?
+			return nil
+		}
+		return []reflect.Value{fromWDTE(frame, r, expected.Out(0))}
+	})
 }

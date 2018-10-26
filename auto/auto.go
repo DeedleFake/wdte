@@ -14,7 +14,7 @@ var (
 	stringType = reflect.TypeOf(wdte.String(""))
 )
 
-func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
+func fromWDTE(frame wdte.Frame, w wdte.Func, expected reflect.Type) reflect.Value {
 	v := reflect.ValueOf(w)
 	if v.Type() == expected {
 		return v
@@ -30,12 +30,12 @@ func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 		t := reflect.ArrayOf(expected.Len(), expected.Elem())
 		r := reflect.New(t).Elem()
 		for i := 0; i < r.Len(); i++ {
-			r.Index(i).Set(fromWDTE(v[i], expected.Elem()))
+			r.Index(i).Set(fromWDTE(frame, v[i], expected.Elem()))
 		}
 		return r
 
 	case reflect.Func:
-		panic(errors.New("func arguments are not yet supported"))
+		return fromFunc(frame, w, expected)
 
 	case reflect.Map:
 		panic(errors.New("map arguments are not yet supported"))
@@ -46,7 +46,7 @@ func fromWDTE(w wdte.Func, expected reflect.Type) reflect.Value {
 		t := reflect.SliceOf(expected.Elem())
 		r := reflect.MakeSlice(t, 0, len(v))
 		for _, e := range v {
-			r = reflect.Append(r, fromWDTE(e, expected.Elem()))
+			r = reflect.Append(r, fromWDTE(frame, e, expected.Elem()))
 		}
 		return r
 	}
