@@ -448,6 +448,14 @@ func (f FuncCall) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Func.Call(frame).Call(frame, next...)
 }
 
+func (f FuncCall) String() string { // nolint
+	if inner, ok := f.Func.(fmt.Stringer); ok {
+		return inner.String()
+	}
+
+	return fmt.Sprint(f.Func)
+}
+
 // Chain is an unevaluated chain expression.
 type Chain []*FuncCall
 
@@ -597,7 +605,7 @@ func (f ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Func.Call(frame.WithScope(f.Scope), args...)
 }
 
-func (f ScopedFunc) String() string {
+func (f ScopedFunc) String() string { // nolint
 	if inner, ok := f.Func.(fmt.Stringer); ok {
 		return inner.String()
 	}

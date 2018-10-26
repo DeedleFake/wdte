@@ -109,24 +109,34 @@ func TestBasics(t *testing.T) {
 			"q":    wdte.String("Other"),
 			"test": wdte.String("Or is it?"),
 		})
+		scope = scope.Custom(func(id wdte.ID) wdte.Func {
+			if id == "a" {
+				return wdte.Bool(true)
+			}
+
+			return nil
+		}, func(known map[wdte.ID]struct{}) {
+			known["a"] = struct{}{}
+		})
 
 		known := scope.Known()
-		if len(known) != 3 {
-			t.Errorf("Expected to find 3 variables in scope. Found %v", len(known))
+		if len(known) != 4 {
+			t.Errorf("Expected to find 4 variables in scope. Found %v", len(known))
 		}
 
 		var found int
 		for _, id := range known {
 			switch id {
-			case "x", "test", "q":
+			case "x", "test", "q", "a":
 				found++
 			}
 		}
-		if found != 3 {
-			t.Errorf("Expected to find %q, %q, and %q in scope.\nFound %v",
+		if found != 4 {
+			t.Errorf("Expected to find %q, %q, %q, and %q in scope.\nFound %v",
 				"x",
 				"test",
 				"q",
+				"a",
 				known,
 			)
 		}
@@ -162,6 +172,11 @@ func TestBasics(t *testing.T) {
 			name:   "Simple/VariableArgs",
 			script: `let test => +; test 3 5;`,
 			ret:    wdte.Number(8),
+		},
+		{
+			name:   "Simple/String/Compare",
+			script: `[< 'a' 'b'; > 'a' 'b'];`,
+			ret:    wdte.Array{wdte.Bool(true), wdte.Bool(false)},
 		},
 		{
 			name:   "Chain",
@@ -556,6 +571,26 @@ func TestStrings(t *testing.T) {
 			ret:    wdte.String("qwerty"),
 		},
 		{
+			name:   "Repeat",
+			script: `let str => import 'strings'; str.repeat 'test' 3;`,
+			ret:    wdte.String("testtesttest"),
+		},
+		{
+			name:   "Split",
+			script: `let str => import 'strings'; [str.split 'a test' ' '; str.split 'this is a test' ' ' 2; (str.split ' ') 'this is also a test' 3; (str.split ' ' 2) 'or is it'];`,
+			ret: wdte.Array{
+				wdte.Array{wdte.String("a"), wdte.String("test")},
+				wdte.Array{wdte.String("this"), wdte.String("is a test")},
+				wdte.Array{wdte.String("this"), wdte.String("is"), wdte.String("also a test")},
+				wdte.Array{wdte.String("or"), wdte.String("is it")},
+			},
+		},
+		{
+			name:   "Join",
+			script: `let str => import 'strings'; str.join ['this'; 'is'; 'a'; 'test'] ' ';`,
+			ret:    wdte.String("this is a test"),
+		},
+		{
 			name:   "Format",
 			script: `let str => import 'strings'; let main => str.format '{#2}{#0}{}' 3 6 9;`,
 			ret:    wdte.String("936"),
@@ -569,6 +604,21 @@ func TestStrings(t *testing.T) {
 			name:   "Format/Quote",
 			script: `let str => import 'strings'; let main => str.format '{q}' 'It is as if the socialists were to accuse us of not wanting persons to eat because we do not want the state to raise grain.';`,
 			ret:    wdte.String(`"It is as if the socialists were to accuse us of not wanting persons to eat because we do not want the state to raise grain."`),
+		},
+		{
+			name:   "Format/Array",
+			script: `let str => import 'strings'; str.format '{}' [3; 5; 2];`,
+			ret:    wdte.String(`[3; 5; 2]`),
+		},
+		{
+			name:   "Format/Scope",
+			script: `let str => import 'strings'; let test => collect (let x => 3; let a => 2); str.format '{}' test;`,
+			ret:    wdte.String(`scope(a: 2; x: 3)`),
+		},
+		{
+			name:   "Format/Lambda",
+			script: `let str => import 'strings'; str.format '{}' (@ s n => + n 2);`,
+			ret:    wdte.String(`(@ s n => ...)`),
 		},
 	})
 }

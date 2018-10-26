@@ -3,6 +3,7 @@ wdte
 
 [![GoDoc](https://godoc.org/github.com/DeedleFake/wdte?status.svg)](https://godoc.org/github.com/DeedleFake/wdte)
 [![Go Report Card](https://goreportcard.com/badge/github.com/DeedleFake/wdte)](https://goreportcard.com/report/github.com/DeedleFake/wdte)
+[![cover.run](https://cover.run/go/github.com/DeedleFake/wdte.svg?style=flat&tag=golang-1.10)](https://cover.run/go?tag=golang-1.10&repo=github.com/DeedleFake/wdte)
 
 WDTE is a simple, functional-ish, embedded scripting language.
 
@@ -19,12 +20,12 @@ I had a number of design goals in mind when I started working on this project:
 * Designed primarily for embedding. No command-line interpreter by default.
 * Extremely easy to use from the binding side. In this case, that's primarily Go.
 
-If you want to try the language yourself, feel free to take a look at [the playground][playground]. It shows not only some of the features of the language in terms of actually writing code in it, but also how embeddable it is. The playground runs entirely in the browser *on the client's end* thanks to [GopherJS][gopherjs].
+If you want to try the language yourself, feel free to take a look at [the playground][playground]. It shows not only some of the features of the language in terms of actually writing code in it, but also how embeddable it is. The playground runs entirely in the browser *on the client's end* thanks to WebAssembly.
 
 Example
 -------
 
-```
+```go
 package main
 
 import (
@@ -96,5 +97,4 @@ Status
 WDTE is in a pre-alpha state. It is filled with bugs and large amounts of stuff are subject to change without warning. That being said, if you're interested in anything, feel free to submit a pull request and get things fixed and/or implemented faster.
 
 [playground]: https://deedlefake.github.io/wdte
-[gopherjs]: https://github.com/gopherjs/gopherjs
 [wiki]: https://github.com/DeedleFake/wdte/wiki

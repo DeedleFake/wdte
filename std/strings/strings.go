@@ -138,6 +138,130 @@ func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(strings.ToLower(string(args[0].Call(frame).(wdte.String))))
 }
 
+// Repeat is a WDTE function with the following signatures:
+//
+//    repeat string times
+//    (repeat string) times
+//    repeat times string
+//    (repeat times) string
+//
+// It returns a new string containing the given string repeated the
+// number of times specified.
+func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("repeat")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Repeat)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Repeat(frame, append(args, next...)...)
+		})
+	}
+
+	var str wdte.String
+	var times wdte.Number
+	switch a0 := args[0].Call(frame).(type) {
+	case wdte.String:
+		str = a0
+		times = args[1].Call(frame).(wdte.Number)
+
+	case wdte.Number:
+		times = a0
+		str = args[1].Call(frame).(wdte.String)
+	}
+
+	return wdte.String(strings.Repeat(string(str), int(times)))
+}
+
+// Split is a WDTE function with the following signatures:
+//
+//    split string sep
+//    (split sep) string
+//    split string sep n
+//    (split sep n) string
+//    (split sep) string n
+//
+// It splits the given string around instances of the given seperator
+// string. If n is provided and is positive, the returned array of
+// strings will have at most n elements. Note that this behavior
+// differs from the Go standard library's string splitting function in
+// that a zero value for n does not cause the function to return an
+// empty array.
+func Split(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("split")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Split)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Split(frame, append(next, args...)...)
+		})
+	}
+
+	str := args[0].Call(frame).(wdte.String)
+
+	var sep wdte.String
+	n := wdte.Number(-1)
+	switch arg := args[1].Call(frame).(type) {
+	case wdte.String:
+		sep = arg
+		if len(args) > 2 {
+			n = args[2].Call(frame).(wdte.Number)
+		}
+
+	case wdte.Number:
+		if len(args) < 3 {
+			return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+				return Split(frame, append(next, args...)...)
+			})
+		}
+
+		sep = args[2].Call(frame).(wdte.String)
+		n = arg
+	}
+	if n == 0 {
+		n = -1
+	}
+
+	split := strings.SplitN(string(str), string(sep), int(n))
+
+	out := make(wdte.Array, 0, len(split))
+	for _, part := range split {
+		out = append(out, wdte.String(part))
+	}
+	return out
+}
+
+// Join is a WDTE function with the following signatures:
+//
+//    join strings sep
+//    (join sep) strings
+//
+// It returns a new string containing the strings in the provided
+// array with sep inserted between each.
+func Join(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("join")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Join)
+	case 1:
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Join(frame, append(next, args...)...)
+		})
+	}
+
+	a := args[0].Call(frame).(wdte.Array)
+	s := make([]string, 0, len(a))
+	for _, str := range a {
+		s = append(s, string(str.(wdte.String)))
+	}
+
+	return wdte.String(strings.Join(s, string(args[1].Call(frame).(wdte.String))))
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"contains": wdte.GoFunc(Contains),
@@ -145,8 +269,11 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"suffix":   wdte.GoFunc(Suffix),
 	"index":    wdte.GoFunc(Index),
 
-	"upper": wdte.GoFunc(Upper),
-	"lower": wdte.GoFunc(Lower),
+	"upper":  wdte.GoFunc(Upper),
+	"lower":  wdte.GoFunc(Lower),
+	"repeat": wdte.GoFunc(Repeat),
+	"split":  wdte.GoFunc(Split),
+	"join":   wdte.GoFunc(Join),
 
 	"format": wdte.GoFunc(Format),
 })

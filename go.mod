@@ -2,6 +2,6 @@ module github.com/DeedleFake/wdte
 
 require (
 	github.com/peterh/liner v1.1.0
-	golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b
-	golang.org/x/sys v0.0.0-20180920110915-d641721ec2de // indirect
+	golang.org/x/crypto v0.0.0-20181025213731-e84da0312774
+	golang.org/x/sys v0.0.0-20181026144532-2772b66316d2 // indirect
 )

@@ -2,13 +2,6 @@ package stream
 
 import "github.com/DeedleFake/wdte"
 
-// A mapper is a function that creates stream wrappers that call a
-// function on each value yielded by the underlying stream, returning
-// the result.
-type mapper struct {
-	m wdte.Func
-}
-
 // Map is a WDTE function with the following signature:
 //
 //    (map f) s
@@ -21,34 +14,27 @@ func Map(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Map)
 	}
 
-	return &mapper{m: args[0].Call(frame)}
-}
+	f := args[0].Call(frame)
 
-func (m *mapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
-	switch len(args) {
-	case 1:
-		if a, ok := args[0].Call(frame).(Stream); ok {
-			return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
-				n, ok := a.Next(frame)
-				if !ok {
-					return nil, false
-				}
-
-				frame = frame.Sub("map")
-				return m.m.Call(frame, n), true
-			})
+	var mapper wdte.Func
+	mapper = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		switch len(args) {
+		case 0:
+			return mapper
 		}
-	}
 
-	return m
-}
+		s := args[0].Call(frame).(Stream)
 
-func (m *mapper) String() string { // nolint
-	return "<stream>"
-}
+		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+			n, ok := s.Next(frame)
+			if !ok {
+				return nil, false
+			}
 
-type filter struct {
-	f wdte.Func
+			return f.Call(frame.Sub("map"), n), true
+		})
+	})
+	return mapper
 }
 
 // Filter is a WDTE function with the following signature:
@@ -63,38 +49,31 @@ func Filter(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Filter)
 	}
 
-	return filter{f: args[0].Call(frame)}
-}
+	f := args[0].Call(frame)
 
-func (f filter) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
-	switch len(args) {
-	case 1:
-		if a, ok := args[0].Call(frame).(Stream); ok {
-			return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
-				for {
-					n, ok := a.Next(frame)
-					if !ok {
-						return nil, false
-					}
-
-					frame = frame.Sub("filter")
-					if f.f.Call(frame, n) == wdte.Bool(true) {
-						return n, true
-					}
-				}
-			})
+	var filter wdte.Func
+	filter = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		switch len(args) {
+		case 0:
+			return filter
 		}
-	}
 
-	return f
-}
+		s := args[0].Call(frame).(Stream)
 
-func (f filter) String() string { // nolint
-	return "<stream>"
-}
+		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+			for {
+				n, ok := s.Next(frame)
+				if !ok {
+					return nil, false
+				}
 
-type flatMapper struct {
-	m wdte.Func
+				if f.Call(frame.Sub("filter"), n) == wdte.Bool(true) {
+					return n, true
+				}
+			}
+		})
+	})
+	return filter
 }
 
 // FlatMap is a WDTE function with the following signature:
@@ -116,49 +95,45 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(FlatMap)
 	}
 
-	return &flatMapper{m: args[0].Call(frame)}
-}
+	f := args[0].Call(frame)
 
-func (m *flatMapper) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
-	switch len(args) {
-	case 1:
-		if a, ok := args[0].Call(frame).(Stream); ok {
-			var cur Stream
-			return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
-				frame = frame.Sub("flatMap")
-
-				for {
-					if cur != nil {
-						n, ok := cur.Next(frame)
-						if ok {
-							return n, true
-						}
-
-						cur = nil
-					}
-
-					n, ok := a.Next(frame)
-					if !ok {
-						return nil, false
-					}
-
-					r := m.m.Call(frame, n).Call(frame)
-					if r, ok := r.(Stream); ok {
-						cur = r
-						continue
-					}
-
-					return r, true
-				}
-			})
+	var mapper wdte.Func
+	mapper = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		switch len(args) {
+		case 0:
+			return mapper
 		}
-	}
 
-	return m
-}
+		s := args[0].Call(frame).(Stream)
 
-func (m *flatMapper) String() string { // nolint
-	return "<stream>"
+		var cur Stream
+		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+			for {
+				if cur != nil {
+					n, ok := cur.Next(frame)
+					if ok {
+						return n, true
+					}
+
+					cur = nil
+				}
+
+				n, ok := s.Next(frame)
+				if !ok {
+					return nil, false
+				}
+
+				r := f.Call(frame, n).Call(frame)
+				if r, ok := r.(Stream); ok {
+					cur = r
+					continue
+				}
+
+				return r, true
+			}
+		})
+	})
+	return mapper
 }
 
 // Enumerate is a WDTE function with the following signature:
