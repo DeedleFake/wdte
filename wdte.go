@@ -372,6 +372,10 @@ func (s *Scope) String() string { // nolint
 	return buf.String()
 }
 
+func (s *Scope) Reflect(name string) bool { // nolint
+	return name == "Scope"
+}
+
 // A GoFunc is an implementation of Func that calls a Go function.
 // This is the easiest way to implement lower-level systems for WDTE
 // scripts to make use of.

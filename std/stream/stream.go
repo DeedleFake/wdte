@@ -33,6 +33,10 @@ func (NextFunc) String() string { // nolint
 	return "<stream>"
 }
 
+func (NextFunc) Reflect(name string) bool { // nolint
+	return name == "Stream"
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"new":    wdte.GoFunc(New),

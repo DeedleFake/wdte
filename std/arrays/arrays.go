@@ -165,6 +165,10 @@ func (a *streamer) String() string { // nolint
 	return "<stream>"
 }
 
+func (a *streamer) Reflect(name string) bool { // nolint
+	return name == "Stream"
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"concat":     wdte.GoFunc(Concat),
