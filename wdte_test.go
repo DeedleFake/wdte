@@ -274,6 +274,26 @@ func TestBasics(t *testing.T) {
 			out:    "Test",
 		},
 		{
+			name:   "Let/Inner",
+			script: `let x => 3; (let x => 5); x;`,
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "Let/Return",
+			script: `let x => 3;`,
+			ret:    wdte.Number(3),
+		},
+		{
+			name:   "Let/NoArgs",
+			script: `let x => 3; let x => + x 5; x;`,
+			ret:    wdte.Number(8),
+		},
+	})
+}
+
+func TestStd(t *testing.T) {
+	runTests(t, []test{
+		{
 			name:   "True",
 			script: `true;`,
 			ret:    wdte.Bool(true),
@@ -312,21 +332,6 @@ func TestBasics(t *testing.T) {
 			name:   "Not/False",
 			script: `! true;`,
 			ret:    wdte.Bool(false),
-		},
-		{
-			name:   "Let/Inner",
-			script: `let x => 3; (let x => 5); x;`,
-			ret:    wdte.Number(3),
-		},
-		{
-			name:   "Let/Return",
-			script: `let x => 3;`,
-			ret:    wdte.Number(3),
-		},
-		{
-			name:   "Let/NoArgs",
-			script: `let x => 3; let x => + x 5; x;`,
-			ret:    wdte.Number(8),
 		},
 		{
 			name:   "Len/String",
@@ -369,8 +374,6 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Array{wdte.String("other"), wdte.String("test")},
 		},
 		{
-			// TODO: Move this and some others into a separate test, such as
-			// `TestStd` or something.
 			name:   "Sub",
 			script: `let t => collect (let test => 3); let t => sub t 'test2' 5; t.test2;`,
 			ret:    wdte.Number(5),
