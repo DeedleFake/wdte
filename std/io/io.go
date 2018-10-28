@@ -37,6 +37,10 @@ func (stdin) String() string {
 	return "<reader(stdin)>"
 }
 
+func (stdin) Reflect(name string) { // nolint
+	return name == "Reader"
+}
+
 type stdout struct{}
 
 func (w stdout) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -51,6 +55,10 @@ func (stdout) String() string {
 	return "<writer(stdout)>"
 }
 
+func (stdout) Reflect(name string) { // nolint
+	return name == "Writer"
+}
+
 type stderr struct{}
 
 func (w stderr) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -63,6 +71,10 @@ func (stderr) Write(data []byte) (int, error) {
 
 func (stderr) String() string {
 	return "<writer(stderr)>"
+}
+
+func (stderr) Reflect(name string) { // nolint
+	return name == "Writer"
 }
 
 type reader interface {
@@ -92,6 +104,10 @@ func (r Reader) String() string { // nolint
 	return "<reader>"
 }
 
+func (r Reader) Reflect(name string) { // nolint
+	return name == "Reader"
+}
+
 type writer interface {
 	wdte.Func
 	io.Writer
@@ -117,6 +133,10 @@ func (w Writer) String() string { // nolint
 	}
 
 	return "<writer>"
+}
+
+func (w Writer) Reflect(name string) { // nolint
+	return name == "Writer"
 }
 
 // Seek is a WDTE function with the following signatures:
@@ -287,6 +307,10 @@ func (r stringReader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // n
 	return r
 }
 
+func (r stringReader) Reflect(name string) { // nolint
+	return name == "Reader"
+}
+
 // ReadString is a WDTE function with the following signature:
 //
 //    readString s
@@ -305,7 +329,7 @@ func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // String is a WDTE function with the following signature:
 //
-//    strings r
+//    string r
 //
 // Reads the entirety of the reader r and returns the result as a
 // string.
@@ -347,6 +371,10 @@ func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	}
 
 	return wdte.String(s.s.Text()), true
+}
+
+func (s scanner) Reflect(name string) { // nolint
+	return name == "Stream"
 }
 
 // Lines is a WDTE function with the following signature:
@@ -461,6 +489,10 @@ func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 		return wdte.Error{Frame: frame, Err: err}, true
 	}
 	return wdte.Number(c), true
+}
+
+func (r runeStream) Reflect(name string) { // nolint
+	return name == "Stream"
 }
 
 // Runes is a WDTE function with the following signature:
