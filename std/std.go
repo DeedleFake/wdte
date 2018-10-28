@@ -4,6 +4,7 @@ package std
 import (
 	"fmt"
 	"math"
+	"reflect"
 
 	"github.com/DeedleFake/wdte"
 )
@@ -553,6 +554,29 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return s.Add(id, v)
 }
 
+// Reflect is a WDTE function with the following signature:
+//
+//    reflect v
+//
+// It returns a string that identifies the type of the value given. If
+// the value's type implements wdte.Reflector, v.Reflect() is
+// returned. If not, a name is generated using Go's reflect package.
+func Reflect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("reflect")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Reflect)
+	}
+
+	a := args[0].Call(frame)
+	if r, ok := a.(wdte.Reflector); ok {
+		return wdte.String(r.Reflect())
+	}
+
+	return wdte.String(reflect.TypeOf(a).Name())
+}
+
 // Scope is a scope containing the functions in this package.
 //
 // This scope is primarily useful for bootstrapping an environment for
@@ -582,6 +606,7 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"collect": wdte.GoFunc(Collect),
 	"known":   wdte.GoFunc(Known),
 	"sub":     wdte.GoFunc(Sub),
+	"reflect": wdte.GoFunc(Reflect),
 })
 
 // F returns a top-level frame that has S as its scope.
