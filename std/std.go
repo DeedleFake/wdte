@@ -580,7 +580,7 @@ func Reflect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.Bool(r.Reflect(string(t)))
 	}
 
-	return reflect.TypeOf(v).Name() == t
+	return wdte.Bool(reflect.TypeOf(v).Name() == string(t))
 }
 
 // Scope is a scope containing the functions in this package.
