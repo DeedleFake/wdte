@@ -165,7 +165,7 @@ func (a *streamer) String() string { // nolint
 	return "<stream>"
 }
 
-func (a *streamer) Reflect(name string) { // nolint
+func (a *streamer) Reflect(name string) bool { // nolint
 	return name == "Stream"
 }
 
