@@ -9,9 +9,22 @@ import (
 	"github.com/DeedleFake/wdte/std"
 )
 
+const (
+	modeReader = 1 << iota
+	modeWriter
+)
+
 // File wraps an os.File, allowing it to be used as a WDTE function.
+// While it contains unexproted fields, it is safe for a client to
+// simply wrap an *os.File in it manually.
+//
+// A file is considered a "File" by reflection, as well as a "Reader"
+// if it is opened for reading and a "Writer" if it is opened for
+// writing. If the file was created manually, it will be considered
+// both a reader and a writer.
 type File struct {
 	*os.File
+	mode int
 }
 
 func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
@@ -20,6 +33,12 @@ func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
 
 func (f File) String() string { // nolint
 	return fmt.Sprintf("<file %q>", f.Name())
+}
+
+func (f File) Reflect(name string) bool { // nolint
+	return name == "File" ||
+		(((f.mode == 0) || (f.mode&modeReader != 0)) && (name == "Reader")) ||
+		(((f.mode == 0) || (f.mode&modeWriter != 0)) && (name == "Writer"))
 }
 
 // Open is a WDTE function with the following signature:
@@ -39,7 +58,7 @@ func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if err != nil {
 		return wdte.Error{Err: err, Frame: frame}
 	}
-	return File{File: file}
+	return File{File: file, mode: modeReader}
 }
 
 // Create is a WDTE function with the following signature:
@@ -60,7 +79,7 @@ func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if err != nil {
 		return wdte.Error{Err: err, Frame: frame}
 	}
-	return File{File: file}
+	return File{File: file, mode: modeWriter}
 }
 
 // Append is a WDTE function with the following signature:
@@ -81,7 +100,7 @@ func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if err != nil {
 		return wdte.Error{Err: err, Frame: frame}
 	}
-	return File{File: file}
+	return File{File: file, mode: modeWriter}
 }
 
 // Scope is a scope containing the functions in this package.
