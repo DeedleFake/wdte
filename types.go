@@ -84,7 +84,7 @@ func (s String) At(i Func) (Func, bool) { // nolint
 	return nil, false
 }
 
-func (s String) Reflect(name string) { // nolint
+func (s String) Reflect(name string) bool { // nolint
 	return name == "String"
 }
 
@@ -165,7 +165,7 @@ func (a Array) String() string { // nolint
 	return buf.String()
 }
 
-func (a Array) Reflect(name string) { // nolint
+func (a Array) Reflect(name string) bool { // nolint
 	return name == "Array"
 }
 
@@ -198,7 +198,7 @@ func (e Error) Error() string {
 	return fmt.Sprintf("WDTE Error: %v\n%s", e.Err, buf.Bytes())
 }
 
-func (e Error) Reflect(name string) { // nolint
+func (e Error) Reflect(name string) bool { // nolint
 	return name == "Error"
 }
 
@@ -217,6 +217,6 @@ func (b Bool) Compare(other Func) (int, bool) { // nolint
 	return -1, false
 }
 
-func (b Bool) Reflect(name string) { // nolint
+func (b Bool) Reflect(name string) bool { // nolint
 	return name == "Bool"
 }

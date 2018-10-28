@@ -372,7 +372,7 @@ func (s *Scope) String() string { // nolint
 	return buf.String()
 }
 
-func (s *Scope) Reflect(name string) { // nolint
+func (s *Scope) Reflect(name string) bool { // nolint
 	return name == "Scope"
 }
 
