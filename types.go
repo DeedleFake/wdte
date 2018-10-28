@@ -31,6 +31,17 @@ type Atter interface {
 	At(i Func) (Func, bool)
 }
 
+// A Reflector is a Func that can determine if it can be treated as
+// the named type or not. For example,
+//
+//    s := wdte.String("example")
+//    return s.Reflect("string")
+//
+// returns true.
+type Reflector interface {
+	Reflect(name string) bool
+}
+
 // A String is a string, as parsed from a string literal. That's about
 // it. Like everything else, it's a function. It simply returns itself
 // when called.
@@ -73,6 +84,10 @@ func (s String) At(i Func) (Func, bool) { // nolint
 	return nil, false
 }
 
+func (s String) Reflect(name string) { // nolint
+	return name == "String"
+}
+
 // A Number is a number, as parsed from a number literal. That's about
 // it. Like everything else, it's a function. It simply returns itself
 // when called.
@@ -99,6 +114,10 @@ func (n Number) String() string { // nolint
 	}
 
 	return bn.Text('g', 10)
+}
+
+func (n Number) Reflect(name string) bool { // nolint
+	return name == "Number"
 }
 
 // An Array represents a WDTE array type. It's similar to a Compound,
@@ -146,6 +165,10 @@ func (a Array) String() string { // nolint
 	return buf.String()
 }
 
+func (a Array) Reflect(name string) { // nolint
+	return name == "Array"
+}
+
 //func (a Array)Compare(other Func) (int, bool) {
 //	TODO: Implement this. I'm not sure if it should support ordering
 //	or not. I'm also not sure if it should call its elements in order
@@ -175,6 +198,10 @@ func (e Error) Error() string {
 	return fmt.Sprintf("WDTE Error: %v\n%s", e.Err, buf.Bytes())
 }
 
+func (e Error) Reflect(name string) { // nolint
+	return name == "Error"
+}
+
 // Bool is a boolean. Like other primitive types, it simply returns
 // itself when called.
 type Bool bool
@@ -188,4 +215,8 @@ func (b Bool) Compare(other Func) (int, bool) { // nolint
 		return 0, false
 	}
 	return -1, false
+}
+
+func (b Bool) Reflect(name string) { // nolint
+	return name == "Bool"
 }
