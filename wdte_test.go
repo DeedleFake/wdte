@@ -378,6 +378,11 @@ func TestStd(t *testing.T) {
 			script: `let t => collect (let test => 3); let t => sub t 'test2' 5; t.test2;`,
 			ret:    wdte.Number(5),
 		},
+		{
+			name:   "Reflect",
+			script: `[reflect 'string' 'String'; 'string' {reflect 'String' => 'test'}];`,
+			ret:    wdte.Array{wdte.Bool(true), wdte.String("test")},
+		},
 	})
 }
 
