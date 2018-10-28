@@ -556,25 +556,31 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Reflect is a WDTE function with the following signature:
 //
-//    reflect v
+//    reflect v type
+//    (reflect type) v
 //
-// It returns a string that identifies the type of the value given. If
-// the value's type implements wdte.Reflector, v.Reflect() is
-// returned. If not, a name is generated using Go's reflect package.
+// It returns true if v can be considered to be of the given type. If
+// v implementes wdte.Reflector, v.Reflect() is used to check for
+// compatability. If not, a simple string comparison is done against
+// whatever Go's reflect package claims the short name of the type of
+// v to be.
 func Reflect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("reflect")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Reflect)
+	if len(args) < 2 {
+		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
+			return Reflect(frame, append(next, args...)...)
+		})
 	}
 
-	a := args[0].Call(frame)
-	if r, ok := a.(wdte.Reflector); ok {
-		return wdte.String(r.Reflect())
+	v := args[0].Call(frame)
+	t := args[1].Call(frame).(wdte.String)
+
+	if r, ok := v.(wdte.Reflector); ok {
+		return wdte.Bool(r.Reflect(string(t)))
 	}
 
-	return wdte.String(reflect.TypeOf(a).Name())
+	return reflect.TypeOf(v).Name() == t
 }
 
 // Scope is a scope containing the functions in this package.
