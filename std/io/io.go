@@ -37,7 +37,7 @@ func (stdin) String() string {
 	return "<reader(stdin)>"
 }
 
-func (stdin) Reflect(name string) { // nolint
+func (stdin) Reflect(name string) bool { // nolint
 	return name == "Reader"
 }
 
@@ -55,7 +55,7 @@ func (stdout) String() string {
 	return "<writer(stdout)>"
 }
 
-func (stdout) Reflect(name string) { // nolint
+func (stdout) Reflect(name string) bool { // nolint
 	return name == "Writer"
 }
 
@@ -73,7 +73,7 @@ func (stderr) String() string {
 	return "<writer(stderr)>"
 }
 
-func (stderr) Reflect(name string) { // nolint
+func (stderr) Reflect(name string) bool { // nolint
 	return name == "Writer"
 }
 
@@ -104,7 +104,7 @@ func (r Reader) String() string { // nolint
 	return "<reader>"
 }
 
-func (r Reader) Reflect(name string) { // nolint
+func (r Reader) Reflect(name string) bool { // nolint
 	return name == "Reader"
 }
 
@@ -135,7 +135,7 @@ func (w Writer) String() string { // nolint
 	return "<writer>"
 }
 
-func (w Writer) Reflect(name string) { // nolint
+func (w Writer) Reflect(name string) bool { // nolint
 	return name == "Writer"
 }
 
@@ -307,7 +307,7 @@ func (r stringReader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // n
 	return r
 }
 
-func (r stringReader) Reflect(name string) { // nolint
+func (r stringReader) Reflect(name string) bool { // nolint
 	return name == "Reader"
 }
 
@@ -373,7 +373,7 @@ func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return wdte.String(s.s.Text()), true
 }
 
-func (s scanner) Reflect(name string) { // nolint
+func (s scanner) Reflect(name string) bool { // nolint
 	return name == "Stream"
 }
 
@@ -491,7 +491,7 @@ func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return wdte.Number(c), true
 }
 
-func (r runeStream) Reflect(name string) { // nolint
+func (r runeStream) Reflect(name string) bool { // nolint
 	return name == "Stream"
 }
 
