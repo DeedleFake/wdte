@@ -193,4 +193,23 @@
 //    }
 //
 // This will print "This is an example." to stdout.
+//
+// For convenience, a simple function wrapper around the single method
+// required by Func is provided in the form of GoFunc. GoFunc provides
+// a number of extra features, such as automatically converting panics
+// into errors, but for the most part is just a simple wrapper around
+// manual implementations of Func. If more automatic behavior is
+// required, possibly at the cost of some runtime performance,
+// functions for automatically wrapping Go functions are provided in
+// the auto package.
+//
+// One final note: WDTE is lazily-evaluated. Very, very
+// lazily-evaluated. Until Go code manually calls a Func
+// implementation, most WDTE code is never evaluated at all past the
+// initial parsing. In some cases some code may get called more times
+// than expected as well. Because of this, it is highly recommended
+// that any Go code that is expected to be directly called by WDTE
+// provide a purely functional interface, deterministically returning
+// the same thing for the same arguments. If code does not follow this
+// guideline, expect occasional odd behavior for seemingly no reason.
 package wdte
