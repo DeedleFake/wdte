@@ -101,7 +101,7 @@
 //
 // The aforementioned switch expression is the only conditional
 // provided by WDTE. It looks like an expression followed by a
-// semicolon separated series of cases in squigly braces. A case is
+// semicolon separated series of cases in squiggly braces. A case is
 // two expressions separated by the assignment operator, "=>". The
 // original expression is first evaluated, following which each case's
 // left-hand side is evaluated and the result of the original
@@ -124,9 +124,73 @@
 //    }
 //    return check
 //
-// A few more minor points exist as well. Array literals are a
-// semicolon list of expression surrounded by square brackets.
-// Identifier parsing rules are very loose; essentially, anything that
-// isn't ambiguous with an existing keyword, operator, or other
-// syntactic construct is allowed.
+// A few more minor points exist as well:
+//    Array literals are a semicolon list of expression surrounded by
+//    square brackets. Like in compounds and switches, the last
+//    semicolon is optional.
+//
+//    Identifier parsing rules are very loose; essentially, anything
+//    that isn't ambiguous with an existing keyword, operator, or
+//    other syntactic construct is allowed.
+//
+//    All strings are essentially heredocs, allowing newlines like
+//    they're any other character. There's no difference between
+//    single-quoted and double-quoted strings.
+//
+//    There are no boolean literals, but the standard library provides
+//    true and false functions that are essentially the same thing.
+//
+// Embedding
+//
+// As previously mentioned, everything in WDTE is a function. In Go
+// terms, everything in WDTE implements the Func type defined in this
+// package. This includes syntactic constructs as well, such as
+// compounds, switches, and chains.
+//
+// When a script is parsed by one of the parsing functions in this
+// package, it is translated into a recursive series of Func
+// implementations. The specific types that it is translated to are
+// all defined in and exported by this package. For example, the
+// top-level of a script, being itself a compound, results in the
+// instantiation of a Compound.
+//
+// What this means in terms of embedding is that the only thing
+// required for interaction between Go and WDTE is an interoperative
+// layer of Func implementations. As a functional language, WDTE is
+// stateless; there is no global interpreter state to keep track of at
+// all. Systems for tracking interpreter state, should they be
+// required, are provided by the repl package.
+//
+// When a Func is called, it is passed a Frame. A Frame keeps track of
+// anything the function needs that isn't directly an argument to the
+// function. This includes the scope in which the Func call should be
+// evaluated. For example, the expression
+//
+//    func arg1 arg2
+//
+// translates to an instance of the FuncCall implementation of Func.
+// When the FuncCall is "called", it must be given a scope which
+// contains, at a minimum, "func", "arg1", and "arg2", or the call
+// will fail with an error. It is through this mechanism that new
+// functions can be provided to WDTE. A custom scope can be created
+// with new implementations of Func inserted into it. If this scope is
+// inserted into a Frame which is then passed to a call of, for
+// example, the top-level compound created by parsing a script, they
+// will be available during the evaluation.
+//
+// Example:
+//    const src = `
+//      let io => import 'io';
+//      io.writeln io.stdout example;
+//    `
+//
+//    c, _ := wdte.Parse(strings.NewReader(src), std.Import)
+//
+//    scope := std.Scope.Add("example", wdte.String("This is an example."))
+//    r := c.Call(std.F().WithScope(scope))
+//    if err, ok := r.(error); ok {
+//      log.Fatalln(err)
+//    }
+//
+// This will print "This is an example." to stdout.
 package wdte
