@@ -1,4 +1,3 @@
-// Package std provides a number of basic WDTE functions.
 package std
 
 import (
