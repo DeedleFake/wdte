@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/auto"
 	"github.com/DeedleFake/wdte/std"
 )
 
@@ -17,13 +18,8 @@ import (
 func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("contains")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Contains)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Contains(frame, append(next, args...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Contains), args...)
 	}
 
 	haystack := args[0].Call(frame).(wdte.String)
@@ -41,13 +37,8 @@ func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("prefix")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Prefix)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Prefix(frame, append(next, args...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Prefix), args...)
 	}
 
 	haystack := args[0].Call(frame).(wdte.String)
@@ -65,13 +56,8 @@ func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("suffix")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Suffix)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Suffix(frame, append(next, args...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Suffix), args...)
 	}
 
 	haystack := args[0].Call(frame).(wdte.String)
@@ -91,13 +77,8 @@ func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("index")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Index)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Index(frame, append(next, args...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Index), args...)
 	}
 
 	haystack := args[0].Call(frame).(wdte.String)
@@ -150,13 +131,8 @@ func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("repeat")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Repeat)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Repeat(frame, append(args, next...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Repeat), args...)
 	}
 
 	var str wdte.String
@@ -191,13 +167,8 @@ func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Split(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("split")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Split)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Split(frame, append(next, args...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Split), args...)
 	}
 
 	str := args[0].Call(frame).(wdte.String)
@@ -244,13 +215,8 @@ func Split(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Join(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("join")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Join)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Join(frame, append(next, args...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Join), args...)
 	}
 
 	a := args[0].Call(frame).(wdte.Array)
