@@ -50,9 +50,7 @@ func Func(name string, f interface{}) wdte.Func {
 		frame = frame.Sub(wdte.ID(name))
 
 		if len(args) < t.NumIn() {
-			return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-				return r(frame, append(args, next...)...)
-			})
+			return SaveArgs(r, args...)
 		}
 
 		in := make([]reflect.Value, t.NumIn())
