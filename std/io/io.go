@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/auto"
 	"github.com/DeedleFake/wdte/std"
 )
 
@@ -157,9 +158,7 @@ func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("seek")
 
 	if len(args) < 3 {
-		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
-			return Seek(frame, append(more, args...)...)
-		})
+		return auto.SaveArgsReverse(wdte.GoFunc(Seek), args...)
 	}
 
 	s := args[0].Call(frame).(io.Seeker)
@@ -218,13 +217,8 @@ func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("combine")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Combine)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
-			return Combine(frame, append(args, more...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgs(wdte.GoFunc(Combine), args...)
 	}
 
 	switch a0 := args[0].Call(frame).(type) {
@@ -268,13 +262,8 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("copy")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Copy)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
-			return Copy(frame, append(args, more...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgs(wdte.GoFunc(Copy), args...)
 	}
 
 	var w writer
@@ -430,13 +419,8 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Scan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("scan")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Scan)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Scan(frame, append(args, next...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgs(wdte.GoFunc(Scan), args...)
 	}
 
 	var r reader
@@ -526,16 +510,10 @@ func Runes(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return runeStream{r: r}
 }
 
-func write(f func(io.Writer, interface{}) error) wdte.Func {
-	var gf wdte.GoFunc
-	gf = func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		switch len(args) {
-		case 0:
-			return gf
-		case 1:
-			return wdte.GoFunc(func(frame wdte.Frame, more ...wdte.Func) wdte.Func {
-				return gf(frame, append(more, args...)...)
-			})
+func write(f func(io.Writer, interface{}) error) (gf wdte.Func) {
+	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		if len(args) < 2 {
+			return auto.SaveArgsReverse(gf, args...)
 		}
 
 		var w writer
@@ -554,8 +532,7 @@ func write(f func(io.Writer, interface{}) error) wdte.Func {
 			return wdte.Error{Err: err, Frame: frame}
 		}
 		return w
-	}
-	return gf
+	})
 }
 
 // Write is a WDTE function with the following signatures:
