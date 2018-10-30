@@ -8,7 +8,7 @@ import "github.com/DeedleFake/wdte"
 //
 // It returns a Stream which calls f on each element yielded by the
 // Stream s, yielding the return values of f in their place.
-func Map(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func Map(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Map)
@@ -16,8 +16,7 @@ func Map(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	f := args[0].Call(frame)
 
-	var mapper wdte.Func
-	mapper = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		switch len(args) {
 		case 0:
 			return mapper
@@ -34,7 +33,6 @@ func Map(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			return f.Call(frame.Sub("map"), n), true
 		})
 	})
-	return mapper
 }
 
 // Filter is a WDTE function with the following signature:
@@ -43,7 +41,7 @@ func Map(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 // It returns a Stream which yields only those values yielded by the
 // Stream s that (f value) results in true for.
-func Filter(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func Filter(frame wdte.Frame, args ...wdte.Func) (filter wdte.Func) {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Filter)
@@ -51,8 +49,7 @@ func Filter(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	f := args[0].Call(frame)
 
-	var filter wdte.Func
-	filter = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		switch len(args) {
 		case 0:
 			return filter
@@ -73,7 +70,6 @@ func Filter(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			}
 		})
 	})
-	return filter
 }
 
 // FlatMap is a WDTE function with the following signature:
@@ -89,7 +85,7 @@ func Filter(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // returns
 //
 //    [0; 1; 0; 1; 0; 1]
-func FlatMap(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+func FlatMap(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(FlatMap)
@@ -97,8 +93,7 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	f := args[0].Call(frame)
 
-	var mapper wdte.Func
-	mapper = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		switch len(args) {
 		case 0:
 			return mapper
@@ -133,7 +128,6 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			}
 		})
 	})
-	return mapper
 }
 
 // Enumerate is a WDTE function with the following signature:
@@ -144,6 +138,8 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // is the zero-based index of the element v that was yielded by the
 // Stream s.
 func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("enumerate")
+
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Enumerate)
