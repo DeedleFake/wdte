@@ -1,6 +1,9 @@
 package stream
 
-import "github.com/DeedleFake/wdte"
+import (
+	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/auto"
+)
 
 // end is a special value returned by the function provided to new.
 type end struct{}
@@ -26,12 +29,12 @@ func End() wdte.Func {
 // Iterates through the Stream s, collecting the yielded elements into
 // an array. When the Stream ends, it returns the collected array.
 func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("collect")
+
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Collect)
 	}
-
-	frame = frame.Sub("collect")
 
 	a, ok := args[0].Call(frame).(Stream)
 	if !ok {
@@ -64,12 +67,12 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // used as a foreach-style loop without the allocation that Collect
 // performs.
 func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("drain")
+
 	switch len(args) {
 	case 0:
 		return wdte.GoFunc(Drain)
 	}
-
-	frame = frame.Sub("drain")
 
 	s := args[0].Call(frame).(Stream)
 	for {
@@ -107,13 +110,8 @@ func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("reduce")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Reduce)
-	case 1, 2:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Reduce(frame, append(next, args...)...)
-		})
+	if len(args) < 3 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Reduce), args...)
 	}
 
 	s := args[0].Call(frame).(Stream)
@@ -178,16 +176,11 @@ func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // turn. If any of those calls returns true, then the entire function
 // returns true. Otherwise it returns false. It is short-circuiting.
 func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Any)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Any(frame, append(next, args...)...)
-		})
-	}
-
 	frame = frame.Sub("any")
+
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Any), args...)
+	}
 
 	s := args[0].Call(frame).(Stream)
 	f := args[1].Call(frame)
@@ -213,16 +206,11 @@ func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // turn. If all of those calls return true, then the entire function
 // returns true. Otherwise it returns false. It is short-circuiting.
 func All(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(All)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return All(frame, append(next, args...)...)
-		})
-	}
-
 	frame = frame.Sub("all")
+
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(All), args...)
+	}
 
 	s := args[0].Call(frame).(Stream)
 	f := args[1].Call(frame)

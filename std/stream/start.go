@@ -2,6 +2,7 @@ package stream
 
 import (
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/auto"
 )
 
 // New is a WDTE function with the following signature:
@@ -15,13 +16,8 @@ import (
 func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("new")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(New)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return New(frame, append(next, args...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(New), args...)
 	}
 
 	prev := args[0]
@@ -62,11 +58,11 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // specified it is assumed to be 1 if start is greater than or equal
 // to end, and -1 if start is less then end.
 func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("range")
+
 	if len(args) == 0 {
 		return wdte.GoFunc(Range)
 	}
-
-	frame = frame.Sub("range")
 
 	// Current index, minimum/maximum value, and step.
 	var i, m wdte.Number
@@ -112,16 +108,11 @@ func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // It returns a new Stream that yields the values of all of its
 // argument Streams in the order that they were given.
 func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Concat)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Concat(frame, append(args, next...)...)
-		})
-	}
-
 	frame = frame.Sub("concat")
+
+	if len(args) < 2 {
+		return auto.SaveArgs(wdte.GoFunc(Concat), args...)
+	}
 
 	var i int
 	cur := args[0].Call(frame).(Stream)
