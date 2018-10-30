@@ -5,13 +5,8 @@ import (
 	"math"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/auto"
 )
-
-func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
-	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		return f.Call(frame, append(args, saved...)...)
-	})
-}
 
 // Plus is a WDTE function with the following signatures:
 //
@@ -21,7 +16,7 @@ func save(f wdte.Func, saved ...wdte.Func) wdte.Func {
 // Returns the sum of a and the rest of its arguments.
 func Plus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Plus), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(Plus), args...)
 	}
 
 	frame = frame.Sub("+")
@@ -45,7 +40,7 @@ func Plus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Returns a minus b.
 func Minus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Minus), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(Minus), args...)
 	}
 
 	frame = frame.Sub("-")
@@ -71,7 +66,7 @@ func Minus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Returns the product of a and its other arguments.
 func Times(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Times), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(Times), args...)
 	}
 
 	frame = frame.Sub("*")
@@ -95,7 +90,7 @@ func Times(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Returns a divided by b.
 func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Div), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(Div), args...)
 	}
 
 	frame = frame.Sub("/")
@@ -121,7 +116,7 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Returns a mod b.
 func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Mod), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(Mod), args...)
 	}
 
 	frame = frame.Sub("%")
@@ -153,7 +148,7 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // equality check is used.
 func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Equals), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(Equals), args...)
 	}
 
 	a1 := args[0].Call(frame)
@@ -190,7 +185,7 @@ func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // must support ordering.
 func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Less), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(Less), args...)
 	}
 
 	a1 := args[0].Call(frame)
@@ -234,7 +229,7 @@ func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // must support ordering.
 func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(Greater), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(Greater), args...)
 	}
 
 	a1 := args[0].Call(frame)
@@ -278,7 +273,7 @@ func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // implementation must support ordering.
 func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(LessEqual), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(LessEqual), args...)
 	}
 
 	a1 := args[0].Call(frame)
@@ -322,7 +317,7 @@ func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // implementation must support ordering.
 func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(GreaterEqual), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(GreaterEqual), args...)
 	}
 
 	a1 := args[0].Call(frame)
@@ -464,7 +459,7 @@ func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Returns the ith index of a. a is assumed to implement wdte.Atter.
 func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 1 {
-		return save(wdte.GoFunc(At), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(At), args...)
 	}
 
 	frame = frame.Sub("at")
@@ -540,7 +535,7 @@ func Known(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // any upper bounds.
 func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 2 {
-		return save(wdte.GoFunc(Sub), args...)
+		return auto.SaveArgsReverse(wdte.GoFunc(Sub), args...)
 	}
 
 	frame = frame.Sub("sub")
@@ -563,9 +558,7 @@ func Reflect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("reflect")
 
 	if len(args) < 2 {
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Reflect(frame, append(next, args...)...)
-		})
+		return auto.SaveArgsReverse(wdte.GoFunc(Reflect), args...)
 	}
 
 	v := args[0].Call(frame)
