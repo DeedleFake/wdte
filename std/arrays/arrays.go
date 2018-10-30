@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/auto"
 	"github.com/DeedleFake/wdte/std"
 )
 
@@ -23,13 +24,8 @@ import (
 func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("concat")
 
-	switch len(args) {
-	case 0:
-		return wdte.GoFunc(Concat)
-	case 1:
-		return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-			return Concat(frame, append(args, next...)...)
-		})
+	if len(args) < 2 {
+		return auto.SaveArgs(wdte.GoFunc(Concat), args...)
 	}
 
 	array := args[0].Call(frame).(wdte.Array)
@@ -41,13 +37,8 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 func sorter(sortFunc func(interface{}, func(int, int) bool)) (f wdte.GoFunc) {
 	return func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		switch len(args) {
-		case 0:
-			return f
-		case 1:
-			return wdte.GoFunc(func(frame wdte.Frame, next ...wdte.Func) wdte.Func {
-				return f(frame, append(args, next...)...)
-			})
+		if len(args) < 2 {
+			return auto.SaveArgs(f, args...)
 		}
 
 		var array wdte.Array
@@ -139,8 +130,7 @@ type streamer struct {
 func Stream(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("stream")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Stream)
 	}
 
