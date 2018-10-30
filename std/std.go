@@ -3,7 +3,6 @@ package std
 import (
 	"fmt"
 	"math"
-	"reflect"
 
 	"github.com/DeedleFake/wdte"
 )
@@ -558,11 +557,8 @@ func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //    reflect v type
 //    (reflect type) v
 //
-// It returns true if v can be considered to be of the given type. If
-// v implementes wdte.Reflector, v.Reflect() is used to check for
-// compatability. If not, a simple string comparison is done against
-// whatever Go's reflect package claims the short name of the type of
-// v to be.
+// It provides a simple wrapper around wdte.Reflect, checking
+// underlying type compatability.
 func Reflect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("reflect")
 
@@ -575,11 +571,7 @@ func Reflect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	v := args[0].Call(frame)
 	t := args[1].Call(frame).(wdte.String)
 
-	if r, ok := v.(wdte.Reflector); ok {
-		return wdte.Bool(r.Reflect(string(t)))
-	}
-
-	return wdte.Bool(reflect.TypeOf(v).Name() == string(t))
+	return wdte.Bool(wdte.Reflect(v, string(t)))
 }
 
 // Scope is a scope containing the functions in this package.

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math/big"
+	"reflect"
 	"strings"
 )
 
@@ -40,6 +41,19 @@ type Atter interface {
 // returns true.
 type Reflector interface {
 	Reflect(name string) bool
+}
+
+// Reflect checks if a Func can be considered to be of a given type.
+// If v implements Reflector, v.Reflect(name) is used to check for
+// compatability. If not, a simple string comparison is done against
+// whatever Go's reflect package claims the short name of the
+// underlying type to be.
+func Reflect(f Func, name string) bool {
+	if r, ok := f.(Reflector); ok {
+		return r.Reflect(name)
+	}
+
+	return reflect.TypeOf(f).Name() == name
 }
 
 // A String is a string, as parsed from a string literal. That's about
