@@ -532,13 +532,13 @@ func TestIO(t *testing.T) {
 		},
 		{
 			name:   "Lines",
-			script: `let io => import 'io'; let s => import 'stream'; let main str => io.readString str -> io.lines -> s.collect;`,
+			script: `let io => import 'io'; let s => import 'stream'; let str => import 'strings'; let main v => str.read v -> io.lines -> s.collect;`,
 			args:   []wdte.Func{wdte.String("Line 1\nLine 2\nLine 3")},
 			ret:    wdte.Array{wdte.String("Line 1"), wdte.String("Line 2"), wdte.String("Line 3")},
 		},
 		{
 			name:   "Scan",
-			script: `let io => import 'io'; let s => import 'stream'; let main str => io.readString str -> io.scan '|||' -> s.collect;`,
+			script: `let io => import 'io'; let s => import 'stream'; let str => import 'strings'; let main v => str.read v -> io.scan '|||' -> s.collect;`,
 			args:   []wdte.Func{wdte.String("Part 1|||Part 2|||Part 3")},
 			ret:    wdte.Array{wdte.String("Part 1"), wdte.String("Part 2"), wdte.String("Part 3")},
 		},
@@ -626,6 +626,11 @@ func TestStrings(t *testing.T) {
 			name:   "Format/Lambda",
 			script: `let str => import 'strings'; str.format '{}' (@ s n => + n 2);`,
 			ret:    wdte.String(`(@ s n => ...)`),
+		},
+		{
+			name:   "Format/Partial",
+			script: `let str => import 'strings'; let t => str.format '{} + {}: {}' 3 2; + 3 2 -> t;`,
+			ret:    wdte.String("3 + 2: 5"),
 		},
 	})
 }

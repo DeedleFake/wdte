@@ -228,6 +228,34 @@ func Join(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return wdte.String(strings.Join(s, string(args[1].Call(frame).(wdte.String))))
 }
 
+type reader struct {
+	*strings.Reader
+}
+
+func (r reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+	return r
+}
+
+func (r reader) Reflect(name string) bool { // nolint
+	return name == "Reader"
+}
+
+// Read is a WDTE function with the following signature:
+//
+//    read s
+//
+// Returns a reader which reads from the string s.
+func Read(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("read")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Read)
+	}
+
+	s := args[0].Call(frame).(wdte.String)
+	return reader{Reader: strings.NewReader(string(s))}
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"contains": wdte.GoFunc(Contains),
@@ -241,6 +269,7 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"split":  wdte.GoFunc(Split),
 	"join":   wdte.GoFunc(Join),
 
+	"read":   wdte.GoFunc(Read),
 	"format": wdte.GoFunc(Format),
 })
 

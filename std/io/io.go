@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/auto"
@@ -288,34 +287,6 @@ func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return a1
 }
 
-type stringReader struct {
-	*strings.Reader
-}
-
-func (r stringReader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
-	return r
-}
-
-func (r stringReader) Reflect(name string) bool { // nolint
-	return name == "Reader"
-}
-
-// ReadString is a WDTE function with the following signature:
-//
-//    readString s
-//
-// Returns a reader which reads from the string s.
-func ReadString(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	frame = frame.Sub("readString")
-
-	if len(args) == 0 {
-		return wdte.GoFunc(ReadString)
-	}
-
-	s := args[0].Call(frame).(wdte.String)
-	return stringReader{Reader: strings.NewReader(string(s))}
-}
-
 // String is a WDTE function with the following signature:
 //
 //    string r
@@ -587,12 +558,11 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"combine": wdte.GoFunc(Combine),
 	"copy":    wdte.GoFunc(Copy),
 
-	"readString": wdte.GoFunc(ReadString),
-	"string":     wdte.GoFunc(String),
-	"lines":      wdte.GoFunc(Lines),
-	"words":      wdte.GoFunc(Words),
-	"scan":       wdte.GoFunc(Scan),
-	"runes":      wdte.GoFunc(Runes),
+	"string": wdte.GoFunc(String),
+	"lines":  wdte.GoFunc(Lines),
+	"words":  wdte.GoFunc(Words),
+	"scan":   wdte.GoFunc(Scan),
+	"runes":  wdte.GoFunc(Runes),
 
 	"write":   wdte.GoFunc(Write),
 	"writeln": wdte.GoFunc(Writeln),

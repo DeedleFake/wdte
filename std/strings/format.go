@@ -16,7 +16,9 @@ import (
 // Format is a WDTE function with the following signatures:
 //
 //    format tmpl ...
-//    (format tmpl) ...
+//
+// Format has some special rules for returning a partial function. For
+// more information, see below.
 //
 // This is the general-purpose string formatting function of the
 // standard library, similar to Go's fmt.Sprintf(). Unlike
@@ -32,6 +34,25 @@ import (
 //    q      Place the value in quotes using strconv.Quote.
 //    ?      Mark the value with it's underlying Go type, such as
 //           wdte.Number(3).
+//
+// Format's rules for returning a partial function are dependant on
+// the value of the first argument. Specifically, if the first
+// argument attempts to substitute in more arguments than were given,
+// a partial function will be returned. For example,
+//
+//    format '' # Returns ''
+//    format '{}' 3 # Returns '3'
+//    format '{}' # Returns a partial function.
+//    (format '{} {}' 3) 'example' # Returns '3 example'
+//
+// Note that the total number of arguments required is the smallest
+// number necessary to perform every substitution specified by the
+// first argument. For example,
+//
+//    format '{3} {}'
+//
+// will return a partial function that requires 5 arguments before it
+// will return the formatted string.
 //
 // TODO: Add more flags.
 func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -91,6 +112,11 @@ func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		}
 
 		i++
+		if i >= len(args) {
+			// TODO: Cache the current buffer.
+			return auto.SaveArgs(wdte.GoFunc(Format), args...)
+		}
+
 		out.WriteString(flags.Format(args[i].Call(frame)))
 	}
 }
