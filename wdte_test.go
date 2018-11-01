@@ -627,6 +627,11 @@ func TestStrings(t *testing.T) {
 			script: `let str => import 'strings'; str.format '{}' (@ s n => + n 2);`,
 			ret:    wdte.String(`(@ s n => ...)`),
 		},
+		{
+			name:   "Format/Partial",
+			script: `let str => import 'strings'; let t => str.format '{} + {}: {}' 3 2; + 3 2 -> t;`,
+			ret:    wdte.String("3 + 2: 5"),
+		},
 	})
 }
 
