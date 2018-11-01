@@ -24,16 +24,16 @@ self.__precacheManifest = [
     "url": "/wdte/static/media/outline-icons.ef60a4f6.woff"
   },
   {
-    "revision": "9c74e172f87984c48ddf5c8108cabe67",
-    "url": "/wdte/static/media/flags.9c74e172.png"
-  },
-  {
     "revision": "701ae6abd4719e9c2ada3535a497b341",
     "url": "/wdte/static/media/outline-icons.701ae6ab.eot"
   },
   {
     "revision": "ad97afd3337e8cda302d10ff5a4026b8",
     "url": "/wdte/static/media/outline-icons.ad97afd3.ttf"
+  },
+  {
+    "revision": "9c74e172f87984c48ddf5c8108cabe67",
+    "url": "/wdte/static/media/flags.9c74e172.png"
   },
   {
     "revision": "0ab54153eeeca0ce03978cc463b257f7",
@@ -72,15 +72,15 @@ self.__precacheManifest = [
     "url": "/wdte/static/media/outline-icons.82f60bd0.svg"
   },
   {
-    "revision": "260db8e435564efa6aea",
-    "url": "/wdte/static/js/1.260db8e4.chunk.js"
+    "revision": "0abcb7f27cea0a538560",
+    "url": "/wdte/static/js/1.0abcb7f2.chunk.js"
   },
   {
-    "revision": "260db8e435564efa6aea",
+    "revision": "0abcb7f27cea0a538560",
     "url": "/wdte/static/css/1.f46a152c.chunk.css"
   },
   {
-    "revision": "ac1d1818cd6ca8c0351bc12f6cd2aace",
+    "revision": "ded9d8e47e9f93fa1f1d8011bdee1782",
     "url": "/wdte/index.html"
   }
 ];
