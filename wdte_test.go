@@ -33,9 +33,13 @@ type test struct {
 }
 
 func runTests(t *testing.T, tests []test) {
+	t.Helper()
+
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
+			t.Helper()
+
 			if test.disabled {
 				t.SkipNow()
 			}
