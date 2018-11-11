@@ -306,6 +306,10 @@ func (s *Scope) Parent() *Scope {
 // Freeze returns a new function which executes in the scope s
 // regardless of whatever Frame it is called with.
 func (s *Scope) Freeze(f Func) Func {
+	if sf, ok := f.(*ScopedFunc); ok {
+		return sf
+	}
+
 	return &ScopedFunc{
 		Func:  f,
 		Scope: s,
@@ -599,14 +603,19 @@ func (v Var) Call(frame Frame, args ...Func) Func { // nolint
 
 // A ScopedFunc is an expression that uses a predefined scope instead
 // of the one that comes with its frame. This is to make sure that a
-// lazily evaluated expression has access to the correct scope.
+// lazily evaluated expression has access to the correct scope. It
+// caches the result of its evaluation the first time it is evaluated,
+// preventing expressions that are being lazily evaluated from being
+// evaluated twice.
 type ScopedFunc struct {
 	Func  Func
 	Scope *Scope
 }
 
-func (f ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
-	return f.Func.Call(frame.WithScope(f.Scope), args...)
+func (f *ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
+	r := f.Func.Call(frame.WithScope(f.Scope), args...)
+	f.Func = r
+	return r
 }
 
 func (f ScopedFunc) String() string { // nolint
