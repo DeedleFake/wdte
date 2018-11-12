@@ -52,12 +52,12 @@ self.__precacheManifest = [
     "url": "/wdte/static/media/brand-icons.a046592b.woff"
   },
   {
-    "revision": "8e3c7f5520f5ae906c6cf6d7f3ddcd19",
-    "url": "/wdte/static/media/icons.8e3c7f55.eot"
-  },
-  {
     "revision": "b87b9ba532ace76ae9f6edfe9f72ded2",
     "url": "/wdte/static/media/icons.b87b9ba5.ttf"
+  },
+  {
+    "revision": "8e3c7f5520f5ae906c6cf6d7f3ddcd19",
+    "url": "/wdte/static/media/icons.8e3c7f55.eot"
   },
   {
     "revision": "13db00b7a34fee4d819ab7f9838cc428",
@@ -72,15 +72,15 @@ self.__precacheManifest = [
     "url": "/wdte/static/media/outline-icons.82f60bd0.svg"
   },
   {
-    "revision": "0abcb7f27cea0a538560",
-    "url": "/wdte/static/js/1.0abcb7f2.chunk.js"
+    "revision": "c019f8389d4c12cb9505",
+    "url": "/wdte/static/js/1.c019f838.chunk.js"
   },
   {
-    "revision": "0abcb7f27cea0a538560",
+    "revision": "c019f8389d4c12cb9505",
     "url": "/wdte/static/css/1.f46a152c.chunk.css"
   },
   {
-    "revision": "ded9d8e47e9f93fa1f1d8011bdee1782",
+    "revision": "b683e897b53eb290a7d5457c410a3520",
     "url": "/wdte/index.html"
   }
 ];
