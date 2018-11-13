@@ -462,6 +462,9 @@ func (f FuncCall) String() string { // nolint
 	return fmt.Sprint(f.Func)
 }
 
+// A ChainPiece is, as you can probably guess from the name, a piece
+// of a Chain. It stores the underlying expression as well as some
+// extra information necessary for properly evaluating the Chain.
 type ChainPiece struct {
 	Expr Func
 
@@ -780,16 +783,29 @@ type Assigner struct {
 	Expr Func
 }
 
-func (a Assigner) Call(frame Frame, args ...Func) Func {
+func (a Assigner) Call(frame Frame, args ...Func) Func { // nolint
 	return a.Expr.Call(frame, args...)
 }
 
-func (a Assigner) Assign(frame Frame, scope *Scope) (*Scope, Func) {
+func (a Assigner) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nolint
 	return a.AssignFunc(frame, scope, a.IDs, a.Expr)
 }
 
+// AssignFunc places items into a scope. How exactly it does this
+// differs, but the general idea is that it should return a scope
+// which contains the IDs given with data somehow gotten from the
+// provided Func, possibly involving calls using the given Frame. It
+// returns the new scope and a Func. Ideally, this should be the Func
+// that was originally provided, possibly wrapped in something, but it
+// may not be.
+//
+// In the event of an error, an AssignFunc should return a nil scope
+// alongside the returned Func to indicate that it didn't simply store
+// an error value in the scope, which would be completely valid.
 type AssignFunc func(Frame, *Scope, []ID, Func) (*Scope, Func)
 
+// AssignSimple is an AssignFunc which places a single value into the
+// scope with a single ID.
 func AssignSimple(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) {
 	frame = frame.WithScope(frame.Scope().Sub(scope))
 
@@ -797,6 +813,8 @@ func AssignSimple(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) 
 	return scope.Add(ids[0], f), f
 }
 
+// AssignPattern performs a pattern matching assignment, placing
+// values retrieved from an Atter into the corresponding provided IDs.
 func AssignPattern(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) {
 	assignAtter := func(frame Frame, f interface {
 		Func
