@@ -515,12 +515,11 @@ func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
 // of the expressions in the compound, returning the value of the last
 // one. If the compound is empty, nil is returned.
 //
-// If an element of a compound is a *Let, then the unevaluated
-// right-hand side is placed into a new subscope under the ID
-// specified by the right-hand side. The remainder of the elements in
-// the compound are then evaluated under this new subscope. If the
-// last element in the compound is a *Let, the right-hand side is
-// returned as a lambda if it has arugments.
+// If an element of a compound is an Assigner, it is used to build a
+// new subscope under which the remainder of the elements of the
+// compound will be evaluated. If the element is the last element of
+// the compound, the Func returned by its assignment is returned from
+// the whole compound.
 type Compound []Func
 
 // Collect executes the compound the same as Call, but also returns
@@ -531,8 +530,8 @@ type Compound []Func
 func (c Compound) Collect(frame Frame) (letScope *Scope, last Func) {
 	for _, f := range c {
 		switch f := f.(type) {
-		case assigner:
-			letScope, last = f.assign(frame, letScope)
+		case Assigner:
+			letScope, last = f.Assign(frame, letScope)
 		default:
 			last = f.Call(frame.WithScope(frame.Scope().Sub(letScope)))
 		}
@@ -763,8 +762,14 @@ func (lambda *Lambda) String() string { // nolint
 	return buf.String()
 }
 
-type assigner interface {
-	assign(Frame, *Scope) (*Scope, Func)
+// An Assigner is a Func which is capable of performing an assignment
+// in a scope, such as a *Let inside of a Compount.
+type Assigner interface {
+	// Assign assigns a value to a scope, returning both the new
+	// subscope and the value, or, if the specific value makes no senses
+	// to return, such as in the case of a *LetPattern, it returns
+	// something that does make sense.
+	Assign(Frame, *Scope) (*Scope, Func)
 }
 
 // A Let is an expression that maps an expression to an ID. It's used
@@ -782,13 +787,16 @@ func (let *Let) Call(frame Frame, args ...Func) Func { // nolint
 	return let.Expr.Call(frame, args...)
 }
 
-func (let *Let) assign(frame Frame, scope *Scope) (*Scope, Func) {
+func (let *Let) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nolint
 	frame = frame.WithScope(frame.Scope().Sub(scope))
 
 	f := frame.Scope().Freeze(let.Expr)
 	return scope.Add(let.ID, f), f
 }
 
+// A LetPattern performs a pattern matching assignment, placing the
+// values from an underlying expression into multiple places in the
+// scope.
 type LetPattern struct {
 	IDs  []ID
 	Expr Func
@@ -798,7 +806,26 @@ func (let *LetPattern) Call(frame Frame, args ...Func) Func { // nolint
 	return let.Expr.Call(frame, args...)
 }
 
-func (let *LetPattern) assign(frame Frame, scope *Scope) (*Scope, Func) {
+func (let *LetPattern) assignAtter(frame Frame, scope *Scope, f interface {
+	Func
+	Atter
+}) (*Scope, Func) {
+	m := make(map[ID]Func, len(let.IDs))
+	for i, id := range let.IDs {
+		v, ok := f.At(Number(i))
+		if !ok {
+			return scope, &Error{
+				Err:   errors.New("Atter shorter than pattern"),
+				Frame: frame,
+			}
+		}
+
+		m[id] = frame.Scope().Freeze(v)
+	}
+	return scope.Map(m), frame.Scope().Freeze(f)
+}
+
+func (let *LetPattern) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nolint
 	frame = frame.WithScope(frame.Scope().Sub(scope))
 
 	switch f := let.Expr.Call(frame).(type) {
@@ -809,40 +836,18 @@ func (let *LetPattern) assign(frame Frame, scope *Scope) (*Scope, Func) {
 	}:
 		if f.Len() < len(let.IDs) {
 			return scope, &Error{
-				Err:   errors.New("Array shorter than pattern"),
+				Err:   errors.New("Lenner shorter than pattern"),
 				Frame: frame,
 			}
 		}
 
-		for i, id := range let.IDs {
-			v, ok := f.At(Number(i))
-			if !ok {
-				return scope, &Error{
-					Err:   errors.New("Array shorter than pattern"),
-					Frame: frame,
-				}
-			}
-
-			scope = scope.Add(id, frame.Scope().Freeze(v))
-		}
-		return scope, frame.Scope().Freeze(f)
+		return let.assignAtter(frame, scope, f)
 
 	case interface {
 		Func
 		Atter
 	}:
-		for i, id := range let.IDs {
-			v, ok := f.At(Number(i))
-			if !ok {
-				return scope, &Error{
-					Err:   errors.New("Array shorter than pattern"),
-					Frame: frame,
-				}
-			}
-
-			scope = scope.Add(id, frame.Scope().Freeze(v))
-		}
-		return scope, frame.Scope().Freeze(f)
+		return let.assignAtter(frame, scope, f)
 
 	default:
 		return scope, &Error{
