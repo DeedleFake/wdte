@@ -36,7 +36,9 @@
             | <letexpr> ; <cexprs>
             | ε
   <lambda> -> (@ <funcmods> id <argdecls> => <cexprs> )
- <letexpr> -> let <funcmods> id <argdecls> => <expr>
+ <letexpr> -> let <assign>
+  <assign> -> <funcmods> id <argdecls> => <expr>
+            | [ id <argdecls> ; ] => <expr>
    <import> -> import string
 
 # vim: ts=2 sw=2 et
