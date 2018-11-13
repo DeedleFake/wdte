@@ -100,10 +100,13 @@ This example demonstrates lambdas by implementing an iterative Fibonacci number 
 let a => import 'arrays';
 
 let fib n => s.range 1 n
-	-> s.reduce [0; 1] (@ self p n => [
-		at p 1;
-		+ (at p 0) (at p 1);
-	])
+	-> s.reduce [0; 1] (@ self p n =>
+		let [a b] => p;
+		[
+			b;
+			+ a b;
+		];
+	)
 	-> at 1
 	;
 
