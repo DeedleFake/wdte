@@ -2,6 +2,7 @@ package wdte
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -527,20 +528,17 @@ type Compound []Func
 // alongside the usual return value. This is useful when dealing with
 // scopes as modules, as it allows you to evaluate specific functions
 // in a script.
-func (c Compound) Collect(frame Frame) (*Scope, Func) {
-	var letScope *Scope
-
-	var last Func
+func (c Compound) Collect(frame Frame) (letScope *Scope, last Func) {
 	for _, f := range c {
 		switch f := f.(type) {
-		case *Let:
-			last = frame.Scope().Sub(letScope).Freeze(f.Expr)
-			letScope = letScope.Add(f.ID, last)
+		case assigner:
+			letScope, last = f.assign(frame, letScope)
 		default:
 			last = f.Call(frame.WithScope(frame.Scope().Sub(letScope)))
-			if _, ok := last.(error); ok {
-				return letScope, last
-			}
+		}
+
+		if _, ok := last.(error); ok {
+			return letScope, last
 		}
 	}
 
@@ -765,6 +763,10 @@ func (lambda *Lambda) String() string { // nolint
 	return buf.String()
 }
 
+type assigner interface {
+	assign(Frame, *Scope) (*Scope, Func)
+}
+
 // A Let is an expression that maps an expression to an ID. It's used
 // inside compounds to create subscopes, essentially allowing for
 // read-only, shadowable variable declarations.
@@ -778,4 +780,74 @@ type Let struct {
 
 func (let *Let) Call(frame Frame, args ...Func) Func { // nolint
 	return let.Expr.Call(frame, args...)
+}
+
+func (let *Let) assign(frame Frame, scope *Scope) (*Scope, Func) {
+	frame = frame.WithScope(frame.Scope().Sub(scope))
+
+	f := frame.Scope().Freeze(let.Expr)
+	return scope.Add(let.ID, f), f
+}
+
+type LetPattern struct {
+	IDs  []ID
+	Expr Func
+}
+
+func (let *LetPattern) Call(frame Frame, args ...Func) Func { // nolint
+	return let.Expr.Call(frame, args...)
+}
+
+func (let *LetPattern) assign(frame Frame, scope *Scope) (*Scope, Func) {
+	frame = frame.WithScope(frame.Scope().Sub(scope))
+
+	switch f := let.Expr.Call(frame).(type) {
+	case interface {
+		Func
+		Atter
+		Lenner
+	}:
+		if f.Len() < len(let.IDs) {
+			return scope, &Error{
+				Err:   errors.New("Array shorter than pattern"),
+				Frame: frame,
+			}
+		}
+
+		for i, id := range let.IDs {
+			v, ok := f.At(Number(i))
+			if !ok {
+				return scope, &Error{
+					Err:   errors.New("Array shorter than pattern"),
+					Frame: frame,
+				}
+			}
+
+			scope = scope.Add(id, frame.Scope().Freeze(v))
+		}
+		return scope, frame.Scope().Freeze(f)
+
+	case interface {
+		Func
+		Atter
+	}:
+		for i, id := range let.IDs {
+			v, ok := f.At(Number(i))
+			if !ok {
+				return scope, &Error{
+					Err:   errors.New("Array shorter than pattern"),
+					Frame: frame,
+				}
+			}
+
+			scope = scope.Add(id, frame.Scope().Freeze(v))
+		}
+		return scope, frame.Scope().Freeze(f)
+
+	default:
+		return scope, &Error{
+			Err:   fmt.Errorf("Invalid pattern matching type: %T", f),
+			Frame: frame,
+		}
+	}
 }
