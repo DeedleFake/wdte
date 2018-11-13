@@ -159,6 +159,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(3),
 		},
 		{
+			name:   "Simple/Pattern",
+			script: `let [a b] => [3; 5]; [b; a];`,
+			ret:    wdte.Array{wdte.Number(5), wdte.Number(3)},
+		},
+		{
 			name:   "Simple/Args",
 			script: `let test n => + n 3; test 5;`,
 			ret:    wdte.Number(8),

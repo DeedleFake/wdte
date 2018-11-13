@@ -89,35 +89,51 @@ func (m *translator) fromExpr(expr *ast.NTerm) Func {
 }
 
 func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
-	mods := m.fromFuncMods(expr.Children()[1].(*ast.NTerm))
-	id := ID(expr.Children()[2].(*ast.Term).Tok().Val.(string))
-	args := m.fromArgDecls(expr.Children()[3].(*ast.NTerm), nil)
-	inner := m.fromExpr(expr.Children()[5].(*ast.NTerm))
+	assign := expr.Children()[1].(*ast.NTerm)
 
-	if mods&funcModMemo != 0 {
-		inner = &Memo{
-			Func: inner,
-			Args: args,
+	switch first := assign.Children()[0].(type) {
+	case *ast.NTerm:
+		mods := m.fromFuncMods(first)
+		id := ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))
+		args := m.fromArgDecls(assign.Children()[2].(*ast.NTerm), nil)
+		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm))
+
+		if mods&funcModMemo != 0 {
+			inner = &Memo{
+				Func: inner,
+				Args: args,
+			}
 		}
-	}
 
-	var right Func
-	switch len(args) {
-	case 0:
-		right = inner
+		var right Func
+		switch len(args) {
+		case 0:
+			right = inner
 
-	default:
-		right = &Lambda{
+		default:
+			right = &Lambda{
+				ID:   id,
+				Expr: inner,
+				Args: args,
+			}
+		}
+
+		return &Let{
 			ID:   id,
-			Expr: inner,
-			Args: args,
+			Expr: right,
+		}
+
+	case *ast.Term:
+		return &LetPattern{
+			IDs: m.fromArgDecls(
+				assign.Children()[2].(*ast.NTerm),
+				[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))},
+			),
+			Expr: m.fromExpr(assign.Children()[6].(*ast.NTerm)),
 		}
 	}
 
-	return &Let{
-		ID:   id,
-		Expr: right,
-	}
+	panic(fmt.Errorf("Malformed AST with bad <assign>: %#v", assign))
 }
 
 func (m *translator) fromSlot(expr *ast.NTerm) ID {
