@@ -68,24 +68,30 @@ func (m *translator) fromArgDecls(argdecls *ast.NTerm, ids []ID) []ID {
 	}
 }
 
-func (m *translator) fromExpr(expr *ast.NTerm) Func {
+func (m *translator) fromExpr(expr *ast.NTerm, ignored bool, chain Chain) (r Func) {
 	first := m.fromSingle(expr.Children()[0].(*ast.NTerm))
 	in := m.fromArgs(expr.Children()[1].(*ast.NTerm), nil)
-	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
+	slots, assignFunc := m.fromSlot(expr.Children()[3].(*ast.NTerm))
 
-	r := &FuncCall{
+	r = &FuncCall{
 		Func: first,
 		Args: in,
 	}
-	r = m.fromSwitch(expr.Children()[3].(*ast.NTerm), r)
-	r.Slot = slot
+	r = m.fromSwitch(expr.Children()[2].(*ast.NTerm), r)
 
-	chain := m.fromChain(expr.Children()[4].(*ast.NTerm), Chain{r})
-	if len(chain) == 1 {
-		return r
+	piece := &ChainPiece{
+		Expr: r,
+
+		Ignored:    ignored,
+		Slots:      slots,
+		AssignFunc: assignFunc,
 	}
 
-	return chain
+	fc := m.fromChain(expr.Children()[4].(*ast.NTerm), append(chain, piece))
+	if chain, ok := fc.(Chain); ok && (len(chain) == 1) {
+		return r
+	}
+	return fc
 }
 
 func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
@@ -96,7 +102,7 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 		mods := m.fromFuncMods(first)
 		id := ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))
 		args := m.fromArgDecls(assign.Children()[2].(*ast.NTerm), nil)
-		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm))
+		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm), false, nil)
 
 		if mods&funcModMemo != 0 {
 			inner = &Memo{
@@ -118,30 +124,46 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 			}
 		}
 
-		return &Let{
-			ID:   id,
+		return &Assigner{
+			AssignFunc: AssignSimple,
+
+			IDs:  []ID{id},
 			Expr: right,
 		}
 
 	case *ast.Term:
-		return &LetPattern{
+		return &Assigner{
+			AssignFunc: AssignPattern,
+
 			IDs: m.fromArgDecls(
 				assign.Children()[2].(*ast.NTerm),
 				[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))},
 			),
-			Expr: m.fromExpr(assign.Children()[6].(*ast.NTerm)),
+			Expr: m.fromExpr(assign.Children()[6].(*ast.NTerm), false, nil),
 		}
 	}
 
 	panic(fmt.Errorf("Malformed AST with bad <assign>: %#v", assign))
 }
 
-func (m *translator) fromSlot(expr *ast.NTerm) ID {
+func (m *translator) fromSlot(expr *ast.NTerm) ([]ID, AssignFunc) {
 	if _, ok := expr.Children()[0].(*ast.Epsilon); ok {
-		return ""
+		return nil, func(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) {
+			return scope, val
+		}
 	}
 
-	return ID(expr.Children()[1].(*ast.Term).Tok().Val.(string))
+	assign := expr.Children()[1].(*ast.NTerm)
+
+	first := assign.Children()[0].(*ast.Term)
+	if first.Tok().Type == scanner.ID {
+		return []ID{ID(first.Tok().Val.(string))}, AssignSimple
+	}
+
+	return m.fromArgDecls(
+		assign.Children()[2].(*ast.NTerm),
+		[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))},
+	), AssignPattern
 }
 
 func (m *translator) fromSingle(single *ast.NTerm) Func {
@@ -217,18 +239,16 @@ func (m *translator) fromArray(array *ast.NTerm) Func {
 	return Array(m.fromExprs(aexprs.Children()[0].(*ast.NTerm), nil))
 }
 
-func (m *translator) fromSwitch(s *ast.NTerm, check *FuncCall) *FuncCall {
+func (m *translator) fromSwitch(s *ast.NTerm, check Func) Func {
 	if _, ok := s.Children()[0].(*ast.Epsilon); ok {
 		return check
 	}
 
 	switches := m.fromSwitches(s.Children()[1].(*ast.NTerm), nil)
 
-	return &FuncCall{
-		Func: &Switch{
-			Check: check,
-			Cases: switches,
-		},
+	return &Switch{
+		Check: check,
+		Cases: switches,
 	}
 }
 
@@ -236,8 +256,8 @@ func (m *translator) fromSwitches(switches *ast.NTerm, cases [][2]Func) [][2]Fun
 	switch sw := switches.Children()[0].(type) {
 	case *ast.NTerm:
 		cases = append(cases, [...]Func{
-			m.fromExpr(sw),
-			m.fromExpr(switches.Children()[2].(*ast.NTerm)),
+			m.fromExpr(sw, false, nil),
+			m.fromExpr(switches.Children()[2].(*ast.NTerm), false, nil),
 		})
 		return m.fromSwitches(switches.Children()[4].(*ast.NTerm), cases)
 
@@ -252,7 +272,7 @@ func (m *translator) fromSwitches(switches *ast.NTerm, cases [][2]Func) [][2]Fun
 func (m *translator) fromCompound(compound *ast.NTerm) Func {
 	c := Compound(m.fromExprs(compound.Children()[1].(*ast.NTerm), nil))
 	if len(c) == 0 {
-		if _, ok := c[0].(*Let); !ok {
+		if _, ok := c[0].(*Assigner); !ok {
 			return c[0]
 		}
 	}
@@ -268,7 +288,7 @@ func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 
 	inner := Func(expr)
 	if len(expr) == 1 {
-		if _, ok := expr[0].(*Let); !ok {
+		if _, ok := expr[0].(*Assigner); !ok {
 			inner = expr[0]
 		}
 	}
@@ -301,7 +321,7 @@ func (m *translator) fromExprs(exprs *ast.NTerm, funcs []Func) []Func {
 	case *ast.NTerm:
 		switch expr.Name() {
 		case "expr":
-			funcs = append(funcs, m.fromExpr(expr))
+			funcs = append(funcs, m.fromExpr(expr, false, nil))
 		case "letexpr":
 			let := m.fromLetExpr(expr)
 			funcs = append(funcs, let)
@@ -330,29 +350,13 @@ func (m *translator) fromArgs(args *ast.NTerm, funcs []Func) []Func {
 	}
 }
 
-func (m *translator) fromChain(chain *ast.NTerm, acc Chain) Chain {
+func (m *translator) fromChain(chain *ast.NTerm, acc Chain) Func {
 	if _, ok := chain.Children()[0].(*ast.Epsilon); ok {
 		return acc
 	}
 
-	expr := chain.Children()[1].(*ast.NTerm)
-	first := m.fromSingle(expr.Children()[0].(*ast.NTerm))
-	in := m.fromArgs(expr.Children()[1].(*ast.NTerm), nil)
-	slot := m.fromSlot(expr.Children()[2].(*ast.NTerm))
 	ignored := chain.Children()[0].(*ast.Term).Tok().Val == "--"
-
-	r := &FuncCall{
-		Func: first,
-		Args: in,
-	}
-	r = m.fromSwitch(
-		expr.Children()[3].(*ast.NTerm),
-		r,
-	)
-	r.Slot = slot
-	r.Ignored = ignored
-
-	return m.fromChain(expr.Children()[4].(*ast.NTerm), append(acc, r))
+	return m.fromExpr(chain.Children()[1].(*ast.NTerm), ignored, acc)
 }
 
 type funcMod uint

@@ -436,9 +436,6 @@ func (f GoFunc) String() string { // nolint
 type FuncCall struct {
 	Func Func
 	Args []Func
-
-	Slot    ID
-	Ignored bool
 }
 
 func (f FuncCall) Call(frame Frame, args ...Func) Func { // nolint
@@ -465,25 +462,40 @@ func (f FuncCall) String() string { // nolint
 	return fmt.Sprint(f.Func)
 }
 
+// A ChainPiece is, as you can probably guess from the name, a piece
+// of a Chain. It stores the underlying expression as well as some
+// extra information necessary for properly evaluating the Chain.
+type ChainPiece struct {
+	Expr Func
+
+	Ignored    bool
+	Slots      []ID
+	AssignFunc AssignFunc
+}
+
 // Chain is an unevaluated chain expression.
-type Chain []*FuncCall
+type Chain []*ChainPiece
+
+func (c ChainPiece) Call(frame Frame, args ...Func) Func {
+	return c.Expr.Call(frame, args...)
+}
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
-	ret := f[0].Call(frame)
-	if f[0].Slot != "" {
-		frame = frame.WithScope(frame.Scope().Add(f[0].Slot, ret))
-	}
+	var slotScope *Scope
+	var prev Func
+	for _, cur := range f {
+		tmp := cur.Call(frame.WithScope(frame.Scope().Sub(slotScope)))
+		if prev != nil {
+			tmp = tmp.Call(frame.WithScope(frame.Scope().Sub(slotScope)), prev)
+		}
 
-	for i := 1; i < len(f); i++ {
-		tmp := f[i].Call(frame).Call(frame, ret)
-		if f[i].Slot != "" {
-			frame = frame.WithScope(frame.Scope().Add(f[i].Slot, tmp))
-		}
-		if !f[i].Ignored {
-			ret = tmp
+		slotScope, tmp = cur.AssignFunc(frame, slotScope, cur.Slots, tmp)
+
+		if !cur.Ignored {
+			prev = tmp
 		}
 	}
-	return ret
+	return prev
 }
 
 // A Sub is a function that is in a subscope. This is most commonly an
@@ -530,7 +542,7 @@ type Compound []Func
 func (c Compound) Collect(frame Frame) (letScope *Scope, last Func) {
 	for _, f := range c {
 		switch f := f.(type) {
-		case Assigner:
+		case *Assigner:
 			letScope, last = f.Assign(frame, letScope)
 		default:
 			last = f.Call(frame.WithScope(frame.Scope().Sub(letScope)))
@@ -762,97 +774,89 @@ func (lambda *Lambda) String() string { // nolint
 	return buf.String()
 }
 
-// An Assigner is a Func which is capable of performing an assignment
-// in a scope, such as a *Let inside of a Compount.
-type Assigner interface {
-	// Assign assigns a value to a scope, returning both the new
-	// subscope and the value, or, if the specific value makes no senses
-	// to return, such as in the case of a *LetPattern, it returns
-	// something that does make sense.
-	//
-	// Assign returning an error as its returned Func does not mean that
-	// an error has actually happened, as it could simply be that an
-	// error value was assigned to something. If an error has happened
-	// during the assignment itself, it returns a nil scope.
-	Assign(Frame, *Scope) (*Scope, Func)
-}
+// An Assigner bundles a known list of IDs and an expression with an
+// AssignFunc.
+type Assigner struct {
+	AssignFunc AssignFunc
 
-// A Let is an expression that maps an expression to an ID. It's used
-// inside compounds to create subscopes, essentially allowing for
-// read-only, shadowable variable declarations.
-//
-// When evaluated, a Let simply passes everything through to its inner
-// expression.
-type Let struct {
-	ID   ID
-	Expr Func
-}
-
-func (let *Let) Call(frame Frame, args ...Func) Func { // nolint
-	return let.Expr.Call(frame, args...)
-}
-
-func (let *Let) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nolint
-	frame = frame.WithScope(frame.Scope().Sub(scope))
-
-	f := frame.Scope().Freeze(let.Expr)
-	return scope.Add(let.ID, f), f
-}
-
-// A LetPattern performs a pattern matching assignment, placing the
-// values from an underlying expression into multiple places in the
-// scope.
-type LetPattern struct {
 	IDs  []ID
 	Expr Func
 }
 
-func (let *LetPattern) Call(frame Frame, args ...Func) Func { // nolint
-	return let.Expr.Call(frame, args...)
+func (a Assigner) Call(frame Frame, args ...Func) Func { // nolint
+	return a.Expr.Call(frame, args...)
 }
 
-func (let *LetPattern) assignAtter(frame Frame, scope *Scope, f interface {
-	Func
-	Atter
-}) (*Scope, Func) {
-	m := make(map[ID]Func, len(let.IDs))
-	for i, id := range let.IDs {
-		v, ok := f.At(Number(i))
-		if !ok {
-			return nil, &Error{
-				Err:   errors.New("Atter shorter than pattern"),
-				Frame: frame,
-			}
-		}
-
-		m[id] = frame.Scope().Freeze(v)
-	}
-	return scope.Map(m), frame.Scope().Freeze(f)
+func (a Assigner) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nolint
+	return a.AssignFunc(frame, scope, a.IDs, a.Expr)
 }
 
-func (let *LetPattern) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nolint
+// AssignFunc places items into a scope. How exactly it does this
+// differs, but the general idea is that it should return a scope
+// which contains the IDs given with data somehow gotten from the
+// provided Func, possibly involving calls using the given Frame. It
+// returns the new scope and a Func. Ideally, this should be the Func
+// that was originally provided, possibly wrapped in something, but it
+// may not be.
+//
+// In the event of an error, an AssignFunc should return a nil scope
+// alongside the returned Func to indicate that it didn't simply store
+// an error value in the scope, which would be completely valid.
+type AssignFunc func(Frame, *Scope, []ID, Func) (*Scope, Func)
+
+// AssignSimple is an AssignFunc which places a single value into the
+// scope with a single ID.
+func AssignSimple(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) {
 	frame = frame.WithScope(frame.Scope().Sub(scope))
 
-	switch f := let.Expr.Call(frame).(type) {
+	f := frame.Scope().Freeze(val)
+	return scope.Add(ids[0], f), f
+}
+
+// AssignPattern performs a pattern matching assignment, placing
+// values retrieved from an Atter into the corresponding provided IDs.
+func AssignPattern(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) {
+	assignAtter := func(frame Frame, f interface {
+		Func
+		Atter
+	}) (*Scope, Func) {
+		m := make(map[ID]Func, len(ids))
+		for i, id := range ids {
+			v, ok := f.At(Number(i))
+			if !ok {
+				return nil, &Error{
+					Err:   errors.New("Atter shorter than pattern"),
+					Frame: frame,
+				}
+			}
+
+			m[id] = frame.Scope().Freeze(v)
+		}
+		return scope.Map(m), frame.Scope().Freeze(f)
+	}
+
+	frame = frame.WithScope(frame.Scope().Sub(scope))
+
+	switch f := val.Call(frame).(type) {
 	case interface {
 		Func
 		Atter
 		Lenner
 	}:
-		if f.Len() < len(let.IDs) {
+		if f.Len() < len(ids) {
 			return nil, &Error{
 				Err:   errors.New("Lenner shorter than pattern"),
 				Frame: frame,
 			}
 		}
 
-		return let.assignAtter(frame, scope, f)
+		return assignAtter(frame, f)
 
 	case interface {
 		Func
 		Atter
 	}:
-		return let.assignAtter(frame, scope, f)
+		return assignAtter(frame, f)
 
 	default:
 		return nil, &Error{

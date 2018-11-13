@@ -1,44 +1,46 @@
-  <script> -> <cexprs> Ω
-<funcmods> -> <funcmod> <funcmods>
-            | ε
- <funcmod> -> memo
-<argdecls> -> id <argdecls>
-            | ε
-    <expr> -> <single> <args> <slot> <switch> <chain>
-    <args> -> <single> <args>
-            | ε
-   <chain> -> -> <expr>
-            | -- <expr>
-            | ε
-    <slot> -> : id
-            | ε
-  <single> -> number
-            | string
-            | <import>
-            | <lambda>
-            | <array>
-            | <subbable>
-<subbable> -> id <sub>
-            | <compound> <sub>
-     <sub> -> . <subbable>
-            | ε
-   <array> -> [ <aexprs> ]
-  <aexprs> -> <exprs>
-            | ;
-  <switch> -> { <switches> }
-            | ε
-<compound> -> ( <cexprs> )
-   <exprs> -> <expr> ; <exprs>
-            | ε
-<switches> -> <expr> => <expr> ; <switches>
-            | ε
-  <cexprs> -> <expr> ; <cexprs>
-            | <letexpr> ; <cexprs>
-            | ε
-  <lambda> -> (@ <funcmods> id <argdecls> => <cexprs> )
- <letexpr> -> let <assign>
-  <assign> -> <funcmods> id <argdecls> => <expr>
-            | [ id <argdecls> ; ] => <expr>
-   <import> -> import string
+    <script> -> <cexprs> Ω
+  <funcmods> -> <funcmod> <funcmods>
+              | ε
+   <funcmod> -> memo
+  <argdecls> -> id <argdecls>
+              | ε
+      <expr> -> <single> <args> <switch> <slot> <chain>
+      <args> -> <single> <args>
+              | ε
+     <chain> -> -> <expr>
+              | -- <expr>
+              | ε
+      <slot> -> : <slotassign>
+              | ε
+<slotassign> -> id
+              | [ id <argdecls> ; ]
+    <single> -> number
+              | string
+              | <import>
+              | <lambda>
+              | <array>
+              | <subbable>
+  <subbable> -> id <sub>
+              | <compound> <sub>
+       <sub> -> . <subbable>
+              | ε
+     <array> -> [ <aexprs> ]
+    <aexprs> -> <exprs>
+              | ;
+    <switch> -> { <switches> }
+              | ε
+  <compound> -> ( <cexprs> )
+     <exprs> -> <expr> ; <exprs>
+              | ε
+  <switches> -> <expr> => <expr> ; <switches>
+              | ε
+    <cexprs> -> <expr> ; <cexprs>
+              | <letexpr> ; <cexprs>
+              | ε
+    <lambda> -> (@ <funcmods> id <argdecls> => <cexprs> )
+   <letexpr> -> let <letassign>
+ <letassign> -> <funcmods> id <argdecls> => <expr>
+              | [ id <argdecls> ; ] => <expr>
+    <import> -> import string
 
 # vim: ts=2 sw=2 et
