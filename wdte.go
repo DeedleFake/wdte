@@ -536,7 +536,7 @@ func (c Compound) Collect(frame Frame) (letScope *Scope, last Func) {
 			last = f.Call(frame.WithScope(frame.Scope().Sub(letScope)))
 		}
 
-		if _, ok := last.(error); ok {
+		if _, ok := last.(error); ok && letScope == nil {
 			return letScope, last
 		}
 	}
@@ -769,6 +769,11 @@ type Assigner interface {
 	// subscope and the value, or, if the specific value makes no senses
 	// to return, such as in the case of a *LetPattern, it returns
 	// something that does make sense.
+	//
+	// Assign returning an error as its returned Func does not mean that
+	// an error has actually happened, as it could simply be that an
+	// error value was assigned to something. If an error has happened
+	// during the assignment itself, it returns a nil scope.
 	Assign(Frame, *Scope) (*Scope, Func)
 }
 
@@ -814,7 +819,7 @@ func (let *LetPattern) assignAtter(frame Frame, scope *Scope, f interface {
 	for i, id := range let.IDs {
 		v, ok := f.At(Number(i))
 		if !ok {
-			return scope, &Error{
+			return nil, &Error{
 				Err:   errors.New("Atter shorter than pattern"),
 				Frame: frame,
 			}
@@ -835,7 +840,7 @@ func (let *LetPattern) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nol
 		Lenner
 	}:
 		if f.Len() < len(let.IDs) {
-			return scope, &Error{
+			return nil, &Error{
 				Err:   errors.New("Lenner shorter than pattern"),
 				Frame: frame,
 			}
@@ -850,7 +855,7 @@ func (let *LetPattern) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nol
 		return let.assignAtter(frame, scope, f)
 
 	default:
-		return scope, &Error{
+		return nil, &Error{
 			Err:   fmt.Errorf("Invalid pattern matching type: %T", f),
 			Frame: frame,
 		}
