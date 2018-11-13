@@ -199,6 +199,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(3),
 		},
 		{
+			name:   "Chain/Slot/Pattern",
+			script: `[1; 2] : a -> a : [a b] -> [b; a];`,
+			ret:    wdte.Array{wdte.Number(2), wdte.Number(1)},
+		},
+		{
 			name:   "Chain/Ignored",
 			script: `1 -> + 2 -- + 5 -> - 1;`,
 			ret:    wdte.Number(2),
