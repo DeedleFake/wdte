@@ -530,6 +530,11 @@ func TestStream(t *testing.T) {
 			ret:    wdte.Number(120),
 		},
 		{
+			name:   "Fold",
+			script: `let s => import 'stream'; s.range 5 -> s.fold +;`,
+			ret:    wdte.Number(10),
+		},
+		{
 			name:   "Any/True",
 			script: `let s => import 'stream'; let main => s.range 5 -> s.any (== 3);`,
 			ret:    wdte.Bool(true),
