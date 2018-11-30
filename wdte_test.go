@@ -520,6 +520,15 @@ func TestStream(t *testing.T) {
 			},
 		},
 		{
+			name:   "RepeatAndLimit",
+			script: `let s => import 'stream'; s.range 3 -> s.repeat -> s.limit 9 -> s.collect;`,
+			ret: wdte.Array{
+				wdte.Number(0), wdte.Number(1), wdte.Number(2),
+				wdte.Number(0), wdte.Number(1), wdte.Number(2),
+				wdte.Number(0), wdte.Number(1), wdte.Number(2),
+			},
+		},
+		{
 			name:   "Drain",
 			script: `let s => import 'stream'; let io => import 'io'; let main => s.range 5 -> s.map (io.writeln io.stdout) -> s.drain;`,
 			out:    "0\n1\n2\n3\n4\n",

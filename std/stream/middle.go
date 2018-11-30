@@ -161,3 +161,88 @@ func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return r, true
 	})
 }
+
+// Repeat is a WDTE function with the following signature:
+//
+//    repeat s
+//
+// Repeat returns a Stream that buffers the elements from the Stream
+// s. Once s has ended, the Stream starts repeating from the begnning
+// of the buffer, looping infinitely. In other words,
+//
+//    range 3 -> repeat
+//
+// will yield the sequence (0, 1, 2) repeatedly with no end.
+//
+// Repeat is most useful used with Limit. When combining the two, note
+// that Limit limits individual elements, not repetitions, so the
+// number passed to Limit should be multiplied properly if the client
+// wants to limit to a specific number of repetitions.
+func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("repeat")
+
+	switch len(args) {
+	case 0:
+		return wdte.GoFunc(Repeat)
+	}
+
+	s := args[0].Call(frame).(Stream)
+
+	var buf []wdte.Func
+	loop := -1
+	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+		frame = frame.Sub("repeat")
+
+	exit:
+		if loop >= 0 {
+			n := buf[loop]
+
+			loop++
+			loop %= len(buf)
+
+			return n, true
+		}
+
+		n, ok := s.Next(frame)
+		if !ok {
+			loop = 0
+			goto exit
+		}
+
+		buf = append(buf, n)
+		return n, true
+	})
+}
+
+// Limit is a WDTE function with the following signature:
+//
+//    (limit n) s
+//
+// Limit returns a Stream that stops after a maximum of n elements
+// from s have been yielded.
+func Limit(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("limit")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Limit)
+	}
+
+	n := args[0].Call(frame).(wdte.Number)
+
+	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		frame = frame.Sub("limit")
+
+		s := args[0].Call(frame).(Stream)
+
+		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+			frame = frame.Sub("limit")
+
+			if n <= 0 {
+				return nil, false
+			}
+			n--
+
+			return s.Next(frame)
+		})
+	})
+}
