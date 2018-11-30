@@ -132,6 +132,32 @@ func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 }
 
+// Fold is a WDTE function with the following signatures:
+//
+//    fold s r
+//    (fold r) s
+//
+// Fold is exactly like Reduce, but is uses the first element of the
+// Stream s as its initial element, rather than taking an explicit
+// one. If there is no first element, it returns End.
+func Fold(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("fold")
+
+	if len(args) < 2 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Fold), args...)
+	}
+
+	s := args[0].Call(frame).(Stream)
+	cur, ok := s.Next(frame)
+	if !ok {
+		return End()
+	}
+
+	r := args[1]
+
+	return Reduce(frame, s, cur, r)
+}
+
 // TODO: Implement this. It should be able to essentially insert its
 // own output into another chain, so that
 //
