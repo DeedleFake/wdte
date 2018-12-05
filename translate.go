@@ -68,7 +68,7 @@ func (m *translator) fromArgDecls(argdecls *ast.NTerm, ids []ID) []ID {
 	}
 }
 
-func (m *translator) fromExpr(expr *ast.NTerm, ignored bool, chain Chain) (r Func) {
+func (m *translator) fromExpr(expr *ast.NTerm, flags uint, chain Chain) (r Func) {
 	first := m.fromSingle(expr.Children()[0].(*ast.NTerm))
 	in := m.fromArgs(expr.Children()[1].(*ast.NTerm), nil)
 	slots, assignFunc := m.fromSlot(expr.Children()[3].(*ast.NTerm))
@@ -82,7 +82,7 @@ func (m *translator) fromExpr(expr *ast.NTerm, ignored bool, chain Chain) (r Fun
 	piece := &ChainPiece{
 		Expr: r,
 
-		Ignored:    ignored,
+		Flags:      flags,
 		Slots:      slots,
 		AssignFunc: assignFunc,
 	}
@@ -102,7 +102,7 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 		mods := m.fromFuncMods(first)
 		id := ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))
 		args := m.fromArgDecls(assign.Children()[2].(*ast.NTerm), nil)
-		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm), false, nil)
+		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm), 0, nil)
 
 		if mods&funcModMemo != 0 {
 			inner = &Memo{
@@ -139,7 +139,7 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 				assign.Children()[2].(*ast.NTerm),
 				[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))},
 			),
-			Expr: m.fromExpr(assign.Children()[6].(*ast.NTerm), false, nil),
+			Expr: m.fromExpr(assign.Children()[6].(*ast.NTerm), 0, nil),
 		}
 	}
 
@@ -256,8 +256,8 @@ func (m *translator) fromSwitches(switches *ast.NTerm, cases [][2]Func) [][2]Fun
 	switch sw := switches.Children()[0].(type) {
 	case *ast.NTerm:
 		cases = append(cases, [...]Func{
-			m.fromExpr(sw, false, nil),
-			m.fromExpr(switches.Children()[2].(*ast.NTerm), false, nil),
+			m.fromExpr(sw, 0, nil),
+			m.fromExpr(switches.Children()[2].(*ast.NTerm), 0, nil),
 		})
 		return m.fromSwitches(switches.Children()[4].(*ast.NTerm), cases)
 
@@ -321,7 +321,7 @@ func (m *translator) fromExprs(exprs *ast.NTerm, funcs []Func) []Func {
 	case *ast.NTerm:
 		switch expr.Name() {
 		case "expr":
-			funcs = append(funcs, m.fromExpr(expr, false, nil))
+			funcs = append(funcs, m.fromExpr(expr, 0, nil))
 		case "letexpr":
 			let := m.fromLetExpr(expr)
 			funcs = append(funcs, let)
@@ -355,8 +355,17 @@ func (m *translator) fromChain(chain *ast.NTerm, acc Chain) Func {
 		return acc
 	}
 
-	ignored := chain.Children()[0].(*ast.Term).Tok().Val == "--"
-	return m.fromExpr(chain.Children()[1].(*ast.NTerm), ignored, acc)
+	oper := chain.Children()[0].(*ast.Term).Tok().Val
+
+	var flags uint
+	if oper == "--" {
+		flags |= IgnoredChain
+	}
+	if oper == "-|" {
+		flags |= ErrorChain
+	}
+
+	return m.fromExpr(chain.Children()[1].(*ast.NTerm), flags, acc)
 }
 
 type funcMod uint

@@ -1,7 +1,6 @@
 package wdte
 
 import (
-	"bytes"
 	"fmt"
 	"math/big"
 	"reflect"
@@ -206,10 +205,7 @@ func (e Error) Call(frame Frame, args ...Func) Func { // nolint
 }
 
 func (e Error) Error() string {
-	var buf bytes.Buffer
-	_ = e.Frame.Backtrace(&buf)
-
-	return fmt.Sprintf("WDTE Error: %v\n%s", e.Err, buf.Bytes())
+	return e.Err.Error()
 }
 
 func (e Error) Reflect(name string) bool { // nolint

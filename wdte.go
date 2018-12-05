@@ -462,15 +462,29 @@ func (f FuncCall) String() string { // nolint
 	return fmt.Sprint(f.Func)
 }
 
+const (
+	NormalChain  = 0
+	IgnoredChain = 1 << (iota - 1)
+	ErrorChain
+)
+
 // A ChainPiece is, as you can probably guess from the name, a piece
 // of a Chain. It stores the underlying expression as well as some
 // extra information necessary for properly evaluating the Chain.
 type ChainPiece struct {
 	Expr Func
 
-	Ignored    bool
+	Flags      uint
 	Slots      []ID
 	AssignFunc AssignFunc
+}
+
+func (p ChainPiece) String() string { // nolint
+	if inner, ok := p.Expr.(fmt.Stringer); ok {
+		return inner.String()
+	}
+
+	return fmt.Sprint(p.Expr)
 }
 
 // Chain is an unevaluated chain expression.
@@ -484,6 +498,10 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	var slotScope *Scope
 	var prev Func
 	for _, cur := range f {
+		if _, ok := prev.(error); ok != (cur.Flags&ErrorChain != 0) {
+			continue
+		}
+
 		tmp := cur.Call(frame.WithScope(frame.Scope().Sub(slotScope)))
 		if prev != nil {
 			tmp = tmp.Call(frame.WithScope(frame.Scope().Sub(slotScope)), prev)
@@ -491,11 +509,34 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 
 		slotScope, tmp = cur.AssignFunc(frame, slotScope, cur.Slots, tmp)
 
-		if !cur.Ignored {
+		if cur.Flags&IgnoredChain == 0 {
 			prev = tmp
 		}
 	}
 	return prev
+}
+
+func (f Chain) String() string {
+	if len(f) == 0 {
+		return "<empty chain>"
+	}
+
+	var sb strings.Builder
+
+	fmt.Fprint(&sb, f[0])
+	for _, p := range f[1:] {
+		m := "->"
+		if p.Flags&IgnoredChain != 0 {
+			m = "--"
+		}
+		if p.Flags&ErrorChain != 0 {
+			m = "-|"
+		}
+
+		fmt.Fprintf(&sb, " %v %v", m, p)
+	}
+
+	return sb.String()
 }
 
 // A Sub is a function that is in a subscope. This is most commonly an

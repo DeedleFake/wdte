@@ -209,6 +209,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(2),
 		},
 		{
+			name:   "Chain/Error",
+			script: `1 -| 'Not broken yet.' -> a -> + 3 -| 'It broke.' -| 'Or did it?';`,
+			ret:    wdte.String("It broke."),
+		},
+		{
 			name:   "Fib",
 			script: `let main n => n { <= 1 => n; true => + (main (- n 2)) (main (- n 1)); }; main 12;`,
 			ret:    wdte.Number(144),
@@ -577,6 +582,11 @@ func TestIO(t *testing.T) {
 			name:   "Writeln",
 			script: `let io => import 'io'; let main => 'test' -> io.writeln io.stdout;`,
 			out:    "test\n",
+		},
+		{
+			name:   "Panic",
+			script: `let io => import 'io'; + a b -| io.panic io.stderr 'Failed to add a and b' -| 3;`,
+			err:    `Failed to add a and b: "a" is not in scope` + "\n",
 		},
 		{
 			name:   "Lines",
