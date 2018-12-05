@@ -9,6 +9,7 @@
               | ε
      <chain> -> -> <expr>
               | -- <expr>
+              | -| <expr>
               | ε
       <slot> -> : <slotassign>
               | ε
