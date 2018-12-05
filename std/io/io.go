@@ -546,6 +546,65 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}).Call(frame, args...)
 }
 
+// Panic is a WDTE function with the following signatures:
+//
+//    panic err
+//    panic w err
+//    panic desc err
+//    panic w desc err
+//
+// Note that, somewhat unusually, Panic accepts its arguments in any order.
+//
+// It writes the given error to w, prepending the optional
+// description in the form `desc: err` and appending a newline. It
+// then returns the error. If an error occurs somewhere internally,
+// such as while printing, that error is returned instead.
+//
+// Panic is primarily intended for use with the error chain operator.
+// For example:
+//
+//    + a b -| panic 'Failed to add a and b';
+func Panic(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("panic")
+
+	var w writer
+	var desc wdte.String
+	var e error
+
+	set := func(f wdte.Func) {
+		switch f := f.(type) {
+		case writer:
+			w = f
+		case wdte.String:
+			desc = f + ": "
+		case error:
+			e = f
+
+		default:
+			panic(fmt.Errorf("Unexpected argument type: %T", f))
+		}
+	}
+
+	n := 3
+	if len(args) < 3 {
+		n = len(args)
+	}
+
+	for i, arg := range args[:n] {
+		args[i] = arg.Call(frame)
+		set(args[i])
+	}
+	if e == nil {
+		return auto.SaveArgs(wdte.GoFunc(Panic), args...)
+	}
+
+	_, err := fmt.Fprintf(w, "%v%v\n", desc, e)
+	if err != nil {
+		return wdte.Error{Err: err, Frame: frame}
+	}
+	return e.(wdte.Func)
+}
+
 // Scope is a scope containing the functions in this package.
 var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"stdin":  stdin{},
@@ -566,6 +625,8 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 
 	"write":   wdte.GoFunc(Write),
 	"writeln": wdte.GoFunc(Writeln),
+	"panic":   wdte.GoFunc(Panic),
+	//"panicln": wdte.GoFunc(Panicln),
 })
 
 func init() {

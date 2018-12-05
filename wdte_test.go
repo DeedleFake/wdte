@@ -584,6 +584,11 @@ func TestIO(t *testing.T) {
 			out:    "test\n",
 		},
 		{
+			name:   "Panic",
+			script: `let io => import 'io'; + a b -| io.panic io.stderr 'Failed to add a and b' -| 3;`,
+			err:    `Failed to add a and b: "a" is not in scope` + "\n",
+		},
+		{
 			name:   "Lines",
 			script: `let io => import 'io'; let s => import 'stream'; let str => import 'strings'; let main v => str.read v -> io.lines -> s.collect;`,
 			args:   []wdte.Func{wdte.String("Line 1\nLine 2\nLine 3")},
