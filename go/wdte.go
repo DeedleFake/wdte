@@ -78,6 +78,7 @@ func main() {
 				bufPool.Put(buf)
 			}()
 
+			wdteio.Stderr = stderr{buf}
 			iomod := wdteio.Scope.Map(map[wdte.ID]wdte.Func{
 				"stdin": wdteio.Reader{
 					Reader: errorIO("stdin is not supported in the playground"),

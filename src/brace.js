@@ -26,7 +26,7 @@ brace.define('ace/mode/wdte', (acequire, exports, module) => {
 				},
 				{
 					token: 'keyword.operator',
-					regex: '\\.|->|\\{|\\}|\\[|\\]|\\(|\\)|=>|;|:|--|\\(@',
+					regex: '\\.|\\{|\\}|\\[|\\]|\\(|\\)|=>|;|:|->|--|-\\||\\(@',
 				},
 				{
 					token: 'string',
