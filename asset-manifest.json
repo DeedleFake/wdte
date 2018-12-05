@@ -1,6 +1,6 @@
 {
-  "main.js": "/wdte/static/js/main.c90569a4.chunk.js",
-  "main.js.map": "/wdte/static/js/main.c90569a4.chunk.js.map",
+  "main.js": "/wdte/static/js/main.4bc29531.chunk.js",
+  "main.js.map": "/wdte/static/js/main.4bc29531.chunk.js.map",
   "static/css/1.f46a152c.chunk.css": "/wdte/static/css/1.f46a152c.chunk.css",
   "static/js/1.24d5757f.chunk.js": "/wdte/static/js/1.24d5757f.chunk.js",
   "static/js/1.24d5757f.chunk.js.map": "/wdte/static/js/1.24d5757f.chunk.js.map",
@@ -9,6 +9,6 @@
   "static/media/semantic.min.css": "/wdte/static/media/brand-icons.a1a749e8.svg",
   "static/css/1.f46a152c.chunk.css.map": "/wdte/static/css/1.f46a152c.chunk.css.map",
   "index.html": "/wdte/index.html",
-  "precache-manifest.054454b3071a986cd2fb4254ece459c0.js": "/wdte/precache-manifest.054454b3071a986cd2fb4254ece459c0.js",
+  "precache-manifest.b22328f528c5c06d39d9be12f578931c.js": "/wdte/precache-manifest.b22328f528c5c06d39d9be12f578931c.js",
   "service-worker.js": "/wdte/service-worker.js"
 }
