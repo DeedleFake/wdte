@@ -209,6 +209,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(2),
 		},
 		{
+			name:   "Chain/Error",
+			script: `1 -| 'Not broken yet.' -> a -> + 3 -| 'It broke.' -| 'Or did it?';`,
+			ret:    wdte.String("It broke."),
+		},
+		{
 			name:   "Fib",
 			script: `let main n => n { <= 1 => n; true => + (main (- n 2)) (main (- n 1)); }; main 12;`,
 			ret:    wdte.Number(144),
