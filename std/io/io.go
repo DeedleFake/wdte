@@ -560,6 +560,8 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // then returns the error. If an error occurs somewhere internally,
 // such as while printing, that error is returned instead.
 //
+// If w is not given, it defaults to Stderr.
+//
 // Panic is primarily intended for use with the error chain operator.
 // For example:
 //
@@ -567,7 +569,7 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Panic(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("panic")
 
-	var w writer
+	w := writer(stderr{})
 	var desc wdte.String
 	var e error
 
