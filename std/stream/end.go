@@ -79,14 +79,18 @@ func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	s := args[0].Call(frame).(Stream)
+
+	last := End()
 	for {
 		n, ok := s.Next(frame)
 		if !ok {
-			return s
+			return last
 		}
 		if _, ok := n.(error); ok {
 			return n
 		}
+
+		last = n
 	}
 }
 

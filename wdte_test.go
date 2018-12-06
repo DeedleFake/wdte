@@ -534,9 +534,18 @@ func TestStream(t *testing.T) {
 			},
 		},
 		{
-			name:   "Drain",
-			script: `let s => import 'stream'; let io => import 'io'; let main => s.range 5 -> s.map (io.writeln io.stdout) -> s.drain;`,
-			out:    "0\n1\n2\n3\n4\n",
+			name: "Drain",
+			script: `
+				let s => import 'stream';
+				let io => import 'io';
+				let main =>
+					s.range 5
+					-> s.map (@ p v => io.writeln io.stdout v; v)
+					-> s.drain
+					;
+				`,
+			ret: wdte.Number(4),
+			out: "0\n1\n2\n3\n4\n",
 		},
 		{
 			name:   "Reduce",
