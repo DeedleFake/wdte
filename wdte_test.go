@@ -568,6 +568,16 @@ func TestStream(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(7), wdte.Number(6), wdte.Number(5)},
 		},
 		{
+			name:   "Extent/Range",
+			script: `let s => import 'stream'; s.range 10 -> s.extent 3 >;`,
+			ret:    wdte.Array{wdte.Number(9), wdte.Number(8), wdte.Number(7)},
+		},
+		{
+			name:   "Extent/Sort",
+			script: `let s => import 'stream'; s.concat (s.range 5) (s.range 2 10 3) -> s.extent -1 <;`,
+			ret:    wdte.Array{wdte.Number(0), wdte.Number(1), wdte.Number(2), wdte.Number(2), wdte.Number(3), wdte.Number(4), wdte.Number(5), wdte.Number(8)},
+		},
+		{
 			name:   "Any/True",
 			script: `let s => import 'stream'; let main => s.range 5 -> s.any (== 3);`,
 			ret:    wdte.Bool(true),

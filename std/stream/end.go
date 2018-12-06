@@ -180,6 +180,10 @@ func Fold(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //    range 10 -> extent 3 >
 //
 // will return [9; 8; 7].
+//
+// If n is less than 0, there is no limit on the length of the list
+// built, meaning that it will contain every element that the Stream
+// yields, essentially acting like a sorting variant of collect.
 func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("extent")
 
@@ -193,11 +197,13 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	var c func(wdte.Array, int, wdte.Func) wdte.Array
 	c = func(extent wdte.Array, i int, f wdte.Func) wdte.Array {
-		extent = append(extent[:i], append(wdte.Array{f}, extent[i:len(extent)-1]...)...)
+		extent = append(extent[:i], append(wdte.Array{f}, extent[i:]...)...)
 
-		if len(extent) == int(length) {
+		if (length >= 0) && (len(extent) >= int(length)) {
+			extent = extent[:int(length)]
+
 			c = func(extent wdte.Array, i int, f wdte.Func) wdte.Array {
-				copy(extent[i:], extent[i+1:])
+				copy(extent[i+1:], extent[i:])
 				extent[i] = f
 				return extent
 			}
@@ -206,7 +212,12 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return extent
 	}
 
-	extent := make(wdte.Array, 0, int(length))
+	sc := int(length)
+	if sc < 0 {
+		sc = 0
+	}
+
+	extent := make(wdte.Array, 0, sc)
 	for {
 		n, ok := s.Next(frame)
 		if !ok {
@@ -222,7 +233,7 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			continue
 		}
 
-		if len(extent) < int(length) {
+		if (length < 0) || (len(extent) < int(length)) {
 			extent = append(extent, n)
 		}
 	}
