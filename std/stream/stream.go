@@ -55,6 +55,7 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"drain":   wdte.GoFunc(Drain),
 	"reduce":  wdte.GoFunc(Reduce),
 	"fold":    wdte.GoFunc(Fold),
+	"extent":  wdte.GoFunc(Extent),
 	//"chain":   wdte.GoFunc(Chain),
 	"any": wdte.GoFunc(Any),
 	"all": wdte.GoFunc(All),

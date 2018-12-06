@@ -1,6 +1,8 @@
 package stream
 
 import (
+	"sort"
+
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/auto"
 )
@@ -160,6 +162,70 @@ func Fold(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	r := args[1]
 
 	return Reduce(frame, s, cur, r)
+}
+
+// Extent is a WDTE function with the following signatures:
+//
+//    extent s n less
+//    (extent n less) s
+//    (extent less) s n
+//    ((extent less) n) s
+//
+// It drains the Stream s, building up a list of up to n elements
+// yielded for which less returns true compared to other elements in
+// the list, sorted such that the first element of the list is the
+// most less of them. In other words, it returns the n most minimum
+// elements using less to perform the compartison. For example,
+//
+//    range 10 -> extent 3 >
+//
+// will return [9; 8; 7].
+func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("extent")
+
+	if len(args) < 3 {
+		return auto.SaveArgsReverse(wdte.GoFunc(Extent), args...)
+	}
+
+	s := args[0].Call(frame).(Stream)
+	length := args[1].Call(frame).(wdte.Number)
+	less := args[2].Call(frame)
+
+	var c func(wdte.Array, int, wdte.Func) wdte.Array
+	c = func(extent wdte.Array, i int, f wdte.Func) wdte.Array {
+		extent = append(extent[:i], append(wdte.Array{f}, extent[i:len(extent)-1]...)...)
+
+		if len(extent) == int(length) {
+			c = func(extent wdte.Array, i int, f wdte.Func) wdte.Array {
+				copy(extent[i:], extent[i+1:])
+				extent[i] = f
+				return extent
+			}
+		}
+
+		return extent
+	}
+
+	extent := make(wdte.Array, 0, int(length))
+	for {
+		n, ok := s.Next(frame)
+		if !ok {
+			return extent
+		}
+		n = n.Call(frame)
+
+		i := sort.Search(len(extent), func(i int) bool {
+			return less.Call(frame, n, extent[i]) == wdte.Bool(true)
+		})
+		if i < len(extent) {
+			extent = c(extent, i, n)
+			continue
+		}
+
+		if len(extent) < int(length) {
+			extent = append(extent, n)
+		}
+	}
 }
 
 // TODO: Implement this. It should be able to essentially insert its
