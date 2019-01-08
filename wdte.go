@@ -509,7 +509,7 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 
 		slotScope, tmp = cur.AssignFunc(frame, slotScope, cur.Slots, tmp)
 
-		if cur.Flags&IgnoredChain == 0 {
+		if _, ok := tmp.(error); ok || (cur.Flags&IgnoredChain == 0) {
 			prev = tmp
 		}
 	}
