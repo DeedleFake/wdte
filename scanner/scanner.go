@@ -8,6 +8,16 @@ import (
 	"unicode"
 )
 
+// MacroMap specifies mappings of macro names to their definitions.
+// For example, an entry with the key "example" would be available in
+// scanned code as
+//
+//    @example[some input or another]
+//
+// In this example, the string "some input or another" would be passed
+// to the definition. The tokens returned by the macro are inserted
+// raw into the token stream that is yielded by the scanner. Returned
+// tokens of type Macro are reprocessed via the same map.
 type MacroMap map[string]func(string) ([]Token, error)
 
 // A Scanner tokenizes runes from an io.Reader.
@@ -28,7 +38,8 @@ type Scanner struct {
 	macroBuf []Token
 }
 
-// New returns a new Scanner that reads from r.
+// New returns a new Scanner that reads from r. macros, which may be
+// nil, specifies mappings of macro names to their definitions.
 func New(r io.Reader, macros MacroMap) *Scanner {
 	var rr io.RuneReader
 	switch r := r.(type) {
@@ -167,7 +178,12 @@ func (s *Scanner) setTok(t TokenType, v interface{}) {
 			for i := len(toks) - 1; i >= 1; i-- {
 				s.macroBuf = append(s.macroBuf, toks[i])
 			}
-			s.tok = toks[0]
+			s.tok = Token{
+				Line: s.tline,
+				Col:  s.tcol,
+				Type: toks[0].Type,
+				Val:  toks[0].Val,
+			}
 		}
 		s.err = err
 		return

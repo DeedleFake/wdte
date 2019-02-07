@@ -10,7 +10,7 @@ import (
 )
 
 func file(im wdte.Importer, file io.Reader) {
-	m, err := wdte.Parse(file, im)
+	m, err := wdte.Parse(file, im, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to parse script: %v", err)
 		os.Exit(1)

@@ -8,13 +8,13 @@ import (
 )
 
 func ExamplePartial() {
-	stack, partial := repl.Partial(strings.NewReader("let io =>"), nil)
+	stack, partial := repl.Partial(strings.NewReader("let io =>"), nil, nil)
 	fmt.Println(partial)
 
-	stack, partial = repl.Partial(strings.NewReader("import 'io'"), stack)
+	stack, partial = repl.Partial(strings.NewReader("import 'io'"), stack, nil)
 	fmt.Println(partial)
 
-	stack, partial = repl.Partial(strings.NewReader(";"), stack)
+	stack, partial = repl.Partial(strings.NewReader(";"), stack, nil)
 	fmt.Println(partial)
 	// Output: true
 	// true

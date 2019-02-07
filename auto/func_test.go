@@ -139,7 +139,7 @@ func TestFuncPartial(t *testing.T) {
 }
 
 func ExampleFunc() {
-	c, err := wdte.Parse(strings.NewReader(`add 3 2;`), nil)
+	c, err := wdte.Parse(strings.NewReader(`add 3 2;`), nil, nil)
 	if err != nil {
 		panic(err)
 	}

@@ -18,7 +18,7 @@ func main() {
 	}
 	flag.Parse()
 
-	im := importer("", strings.Split(*blacklist, ","), flag.Args())
+	im := importer("", strings.Split(*blacklist, ","), flag.Args(), nil)
 
 	if *eval != "" {
 		file(im, strings.NewReader(*eval))
@@ -28,7 +28,7 @@ func main() {
 	inpath := flag.Arg(0)
 	switch inpath {
 	case "", "-":
-		stdin(im)
+		stdin(im, nil)
 
 	default:
 		f, err := os.Open(inpath)
