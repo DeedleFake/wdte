@@ -95,7 +95,7 @@ func (r *REPL) Next() (ret wdte.Func, err error) {
 		return nil, err
 	}
 
-	stack, partial := Partial(bytes.NewReader(src), r.stack, macros)
+	stack, partial := Partial(bytes.NewReader(src), r.stack, r.macros)
 	r.stack = stack
 	if partial {
 		r.buf = append(r.buf, src...)
