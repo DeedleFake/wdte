@@ -9,13 +9,14 @@ import (
 	"strings"
 
 	"github.com/DeedleFake/wdte/ast"
+	"github.com/DeedleFake/wdte/scanner"
 )
 
 // Parse parses an AST from r and then translates it into a top-level
 // compound. im is used to handle import statements. If im is nil, a
 // no-op importer is used. In most cases, std.Import is a good default.
-func Parse(r io.Reader, im Importer) (Compound, error) {
-	root, err := ast.Parse(r)
+func Parse(r io.Reader, im Importer, macros scanner.MacroMap) (Compound, error) {
+	root, err := ast.Parse(r, macros)
 	if err != nil {
 		return nil, err
 	}
