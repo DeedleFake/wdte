@@ -49,8 +49,9 @@ type REPL struct {
 	// scope.
 	Scope *wdte.Scope
 
-	next NextFunc
-	im   wdte.Importer
+	next   NextFunc
+	im     wdte.Importer
+	macros scanner.MacroMap
 
 	stack []string
 	buf   []byte
@@ -58,11 +59,12 @@ type REPL struct {
 
 // New creates a new REPL which reads with next, imports using im, and
 // executes the first line with the scope start.
-func New(next NextFunc, im wdte.Importer, start *wdte.Scope) *REPL {
+func New(next NextFunc, im wdte.Importer, macros scanner.MacroMap, start *wdte.Scope) *REPL {
 	return &REPL{
-		next:  next,
-		im:    im,
-		Scope: start,
+		next:   next,
+		im:     im,
+		macros: macros,
+		Scope:  start,
 	}
 }
 
@@ -93,7 +95,7 @@ func (r *REPL) Next() (ret wdte.Func, err error) {
 		return nil, err
 	}
 
-	stack, partial := Partial(bytes.NewReader(src), r.stack)
+	stack, partial := Partial(bytes.NewReader(src), r.stack, macros)
 	r.stack = stack
 	if partial {
 		r.buf = append(r.buf, src...)
@@ -103,7 +105,7 @@ func (r *REPL) Next() (ret wdte.Func, err error) {
 	src = append(r.buf, src...)
 	r.buf = r.buf[:0]
 
-	m, err := wdte.Parse(bytes.NewReader(src), r.im)
+	m, err := wdte.Parse(bytes.NewReader(src), r.im, r.macros)
 	if err != nil {
 		return nil, err
 	}
@@ -150,8 +152,8 @@ func pop(stack []string) (string, []string) {
 // initial value of stack should be nil, and subsequent values should
 // be the value of the first return. The second return is true if the
 // expression was incomplete.
-func Partial(r io.Reader, stack []string) ([]string, bool) {
-	s := scanner.New(r)
+func Partial(r io.Reader, stack []string, macros scanner.MacroMap) ([]string, bool) {
+	s := scanner.New(r, macros)
 	var prev scanner.Token
 	for s.Scan() {
 		switch tok := s.Tok(); tok.Type {

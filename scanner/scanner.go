@@ -8,6 +8,16 @@ import (
 	"unicode"
 )
 
+// MacroMap specifies mappings of macro names to their definitions.
+// For example, an entry with the key "example" would be available in
+// scanned code as
+//
+//    @example[some input or another]
+//
+// In this example, the string "some input or another" would be passed
+// to the definition. The tokens returned by the macro are inserted
+// raw into the token stream that is yielded by the scanner. Returned
+// tokens of type Macro are reprocessed via the same map.
 type MacroMap map[string]func(string) ([]Token, error)
 
 // A Scanner tokenizes runes from an io.Reader.
