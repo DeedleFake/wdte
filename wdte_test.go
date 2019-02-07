@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/scanner"
 	"github.com/DeedleFake/wdte/std"
 	_ "github.com/DeedleFake/wdte/std/arrays"
 	wdteio "github.com/DeedleFake/wdte/std/io"
@@ -24,6 +25,7 @@ type test struct {
 
 	script string
 	im     wdte.Importer
+	macros scanner.MacroMap
 
 	args []wdte.Func
 	ret  wdte.Func
@@ -68,7 +70,7 @@ func runTests(t *testing.T, tests []test) {
 				})
 			}
 
-			m, err := wdte.Parse(strings.NewReader(test.script), im)
+			m, err := wdte.Parse(strings.NewReader(test.script), im, test.macros)
 			if err != nil {
 				t.Fatalf("Failed to parse script: %v", err)
 			}
@@ -331,6 +333,29 @@ func TestBasics(t *testing.T) {
 
 				return std.Import(im)
 			}),
+		},
+		{
+			name:   "Macro/ROT13",
+			script: `@rot13[test];`,
+			ret:    wdte.String("grfg"),
+			macros: scanner.MacroMap{
+				"rot13": func(input string) ([]scanner.Token, error) {
+					r := make([]rune, 0, len(input))
+					for _, c := range input {
+						switch {
+						case (c >= 'a') && (c <= 'z'):
+							r = append(r, (c-'a'+13)%26+'a')
+						case (c >= 'A') && (c <= 'Z'):
+							r = append(r, (c-'A'+13)%26+'A')
+						default:
+							r = append(r, c)
+						}
+					}
+					return []scanner.Token{
+						{Type: scanner.String, Val: string(r)},
+					}, nil
+				},
+			},
 		},
 	})
 }

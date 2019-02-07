@@ -9,12 +9,12 @@ import (
 )
 
 // Parse parses a full script, returning the root node of the AST.
-func Parse(r io.Reader) (Node, error) {
-	return parse(r, tokenStack{pgen.NTerm("script")}, pgen.Table)
+func Parse(r io.Reader, macros scanner.MacroMap) (Node, error) {
+	return parse(r, tokenStack{pgen.NTerm("script")}, pgen.Table, macros)
 }
 
-func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule) (ast Node, err error) {
-	s := scanner.New(r)
+func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule, macros scanner.MacroMap) (ast Node, err error) {
+	s := scanner.New(r, macros)
 
 	more := s.Scan()
 	var cur *NTerm
