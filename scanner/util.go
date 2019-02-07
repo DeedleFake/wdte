@@ -57,3 +57,23 @@ func symbolicSuffix(str string) string {
 func isQuote(r rune) bool {
 	return (r == '\'') || (r == '"')
 }
+
+func endQuote(r rune) rune {
+	switch r {
+	case '(':
+		return ')'
+	case ')':
+		return '('
+	case '[':
+		return ']'
+	case ']':
+		return '['
+	case '{':
+		return '}'
+	case '}':
+		return '{'
+
+	default:
+		return r
+	}
+}

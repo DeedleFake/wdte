@@ -20,6 +20,7 @@ type Scanner struct {
 
 	tbuf  bytes.Buffer
 	quote rune
+	macro string
 }
 
 // New returns a new Scanner that reads from r.
@@ -164,6 +165,11 @@ func (s *Scanner) whitespace(r rune) stateFunc {
 		return s.maybeNumber
 	}
 
+	if r == '!' {
+		s.tline, s.tcol = s.line, s.col
+		return s.macroName
+	}
+
 	if unicode.IsDigit(r) {
 		s.tline, s.tcol = s.line, s.col
 		s.unread(r)
@@ -292,4 +298,26 @@ func (s *Scanner) id(r rune) stateFunc {
 	s.setTok(t, val)
 	s.unread(r)
 	return nil
+}
+
+func (s *Scanner) macroName(r rune) stateFunc {
+	if unicode.IsDigit(r) || unicode.IsLetter(r) {
+		s.tbuf.WriteRune(r)
+		return s.macroName
+	}
+
+	s.quote = endQuote(r)
+	s.macro = s.tbuf.String()
+	s.tbuf.Reset()
+	return s.macroInput
+}
+
+func (s *Scanner) macroInput(r rune) stateFunc {
+	if r == s.quote {
+		s.setTok(Macro, [2]string{s.macro, s.tbuf.String()})
+		return nil
+	}
+
+	s.tbuf.WriteRune(r)
+	return s.macroInput
 }

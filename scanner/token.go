@@ -20,6 +20,7 @@ const (
 	String
 	ID
 	Keyword
+	Macro
 	EOF
 )
 
@@ -35,6 +36,8 @@ func (t TokenType) String() string {
 		return "id"
 	case Keyword:
 		return "keyword"
+	case Macro:
+		return "macro"
 	case EOF:
 		return "EOF"
 	}

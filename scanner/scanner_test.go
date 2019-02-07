@@ -151,6 +151,15 @@ o => print "double\n" 'single\\';`,
 				{Type: scanner.EOF},
 			},
 		},
+		{
+			name: "Macro",
+			in:   `!fmt[{q}, 'greetings'];`,
+			out: []scanner.Token{
+				{Type: scanner.Macro, Val: [2]string{"fmt", "{q}, 'greetings'"}},
+				{Type: scanner.Keyword, Val: ";"},
+				{Type: scanner.EOF},
+			},
+		},
 	}
 
 	for _, test := range tests {
