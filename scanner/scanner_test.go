@@ -153,7 +153,7 @@ o => print "double\n" 'single\\';`,
 		},
 		{
 			name: "Macro",
-			in:   `!fmt[{q}, 'greetings'];`,
+			in:   `@fmt[{q}, 'greetings'];`,
 			out: []scanner.Token{
 				{Type: scanner.Macro, Val: [2]string{"fmt", "{q}, 'greetings'"}},
 				{Type: scanner.Keyword, Val: ";"},
@@ -164,7 +164,7 @@ o => print "double\n" 'single\\';`,
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s := scanner.New(strings.NewReader(test.in))
+			s := scanner.New(strings.NewReader(test.in), nil)
 			for i := 0; s.Scan(); i++ {
 				if i >= len(test.out) {
 					t.Fatalf("Extra token: %#v", s.Tok())
@@ -203,7 +203,7 @@ var (
 )
 
 func ExampleScanner() {
-	s := scanner.New(r)
+	s := scanner.New(r, nil)
 	for s.Scan() {
 		/* Do something with s.Tok(). */
 	}

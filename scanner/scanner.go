@@ -8,6 +8,8 @@ import (
 	"unicode"
 )
 
+type MacroMap map[string]func(string) ([]Token, error)
+
 // A Scanner tokenizes runes from an io.Reader.
 type Scanner struct {
 	r               io.RuneReader
@@ -21,10 +23,13 @@ type Scanner struct {
 	tbuf  bytes.Buffer
 	quote rune
 	macro string
+
+	macroMap MacroMap
+	macroBuf []Token
 }
 
 // New returns a new Scanner that reads from r.
-func New(r io.Reader) *Scanner {
+func New(r io.Reader, macros MacroMap) *Scanner {
 	var rr io.RuneReader
 	switch r := r.(type) {
 	case io.RuneReader:
@@ -36,6 +41,8 @@ func New(r io.Reader) *Scanner {
 	return &Scanner{
 		r:    rr,
 		line: 1,
+
+		macroMap: macros,
 	}
 }
 
@@ -45,6 +52,13 @@ func New(r io.Reader) *Scanner {
 func (s *Scanner) Scan() bool {
 	if s.err != nil {
 		return false
+	}
+
+	if len(s.macroBuf) > 0 {
+		tok := s.macroBuf[len(s.macroBuf)-1]
+		s.macroBuf = s.macroBuf[:len(s.macroBuf)-1]
+		s.setTok(tok.Type, tok.Val)
+		return s.err == nil
 	}
 
 	s.tbuf.Reset()
@@ -130,7 +144,8 @@ func (s *Scanner) unread(r rune) {
 }
 
 func (s *Scanner) setTok(t TokenType, v interface{}) {
-	if t == Keyword {
+	switch t {
+	case Keyword:
 		switch v {
 		case ")", "]", "}":
 			if (s.tok.Type != Keyword) || (s.tok.Val != ";") {
@@ -138,6 +153,24 @@ func (s *Scanner) setTok(t TokenType, v interface{}) {
 				v = ";"
 			}
 		}
+
+	case Macro:
+		v := v.([2]string)
+
+		macro := s.macroMap[v[0]]
+		if macro == nil {
+			break
+		}
+
+		toks, err := macro(v[1])
+		if len(toks) > 0 {
+			for i := len(toks) - 1; i >= 1; i-- {
+				s.macroBuf = append(s.macroBuf, toks[i])
+			}
+			s.tok = toks[0]
+		}
+		s.err = err
+		return
 	}
 
 	s.tok = Token{
@@ -165,7 +198,7 @@ func (s *Scanner) whitespace(r rune) stateFunc {
 		return s.maybeNumber
 	}
 
-	if r == '!' {
+	if r == '@' {
 		s.tline, s.tcol = s.line, s.col
 		return s.macroName
 	}
