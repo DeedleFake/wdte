@@ -339,7 +339,7 @@ func TestBasics(t *testing.T) {
 			script: `@rot13[test];`,
 			ret:    wdte.String("grfg"),
 			macros: scanner.MacroMap{
-				"rot13": func(input string) ([]scanner.Token, error) {
+				"rot13": func(input string) ([]scanner.TokenValue, error) {
 					r := make([]rune, 0, len(input))
 					for _, c := range input {
 						switch {
@@ -351,8 +351,8 @@ func TestBasics(t *testing.T) {
 							r = append(r, c)
 						}
 					}
-					return []scanner.Token{
-						{Type: scanner.String, Val: string(r)},
+					return []scanner.TokenValue{
+						scanner.String(r),
 					}, nil
 				},
 			},

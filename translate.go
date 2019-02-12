@@ -46,7 +46,7 @@ func (m *translator) fromFuncMods(funcMods *ast.NTerm) funcMod {
 
 func (m *translator) fromFuncMod(funcMod *ast.NTerm) funcMod {
 	switch mod := funcMod.Children()[0].(*ast.Term).Tok().Val; mod {
-	case "memo":
+	case scanner.Keyword("memo"):
 		return funcModMemo
 
 	default:
@@ -57,7 +57,7 @@ func (m *translator) fromFuncMod(funcMod *ast.NTerm) funcMod {
 func (m *translator) fromArgDecls(argdecls *ast.NTerm, ids []ID) []ID {
 	switch arg := argdecls.Children()[0].(type) {
 	case *ast.Term:
-		ids = append(ids, ID(arg.Tok().Val.(string)))
+		ids = append(ids, ID(arg.Tok().Val.(scanner.ID)))
 		return m.fromArgDecls(argdecls.Children()[1].(*ast.NTerm), ids)
 
 	case *ast.Epsilon:
@@ -100,7 +100,7 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 	switch first := assign.Children()[0].(type) {
 	case *ast.NTerm:
 		mods := m.fromFuncMods(first)
-		id := ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))
+		id := ID(assign.Children()[1].(*ast.Term).Tok().Val.(scanner.ID))
 		args := m.fromArgDecls(assign.Children()[2].(*ast.NTerm), nil)
 		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm), 0, nil)
 
@@ -137,7 +137,7 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 
 			IDs: m.fromArgDecls(
 				assign.Children()[2].(*ast.NTerm),
-				[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))},
+				[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(scanner.ID))},
 			),
 			Expr: m.fromExpr(assign.Children()[6].(*ast.NTerm), 0, nil),
 		}
@@ -156,24 +156,24 @@ func (m *translator) fromSlot(expr *ast.NTerm) ([]ID, AssignFunc) {
 	assign := expr.Children()[1].(*ast.NTerm)
 
 	first := assign.Children()[0].(*ast.Term)
-	if first.Tok().Type == scanner.ID {
-		return []ID{ID(first.Tok().Val.(string))}, AssignSimple
+	if id, ok := first.Tok().Val.(scanner.ID); ok {
+		return []ID{ID(id)}, AssignSimple
 	}
 
 	return m.fromArgDecls(
 		assign.Children()[2].(*ast.NTerm),
-		[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))},
+		[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(scanner.ID))},
 	), AssignPattern
 }
 
 func (m *translator) fromSingle(single *ast.NTerm) Func {
 	switch s := single.Children()[0].(type) {
 	case *ast.Term:
-		switch s.Tok().Type {
+		switch tok := s.Tok().Val.(type) {
 		case scanner.Number:
-			return Number(s.Tok().Val.(float64))
+			return Number(tok)
 		case scanner.String:
-			return String(s.Tok().Val.(string))
+			return String(tok)
 		}
 
 	case *ast.NTerm:
@@ -201,9 +201,9 @@ func (m *translator) fromSubbable(subbable *ast.NTerm, acc Sub) Sub {
 	var found bool
 	switch s := subbable.Children()[0].(type) {
 	case *ast.Term:
-		switch s.Tok().Type {
+		switch tok := s.Tok().Val.(type) {
 		case scanner.ID:
-			acc = append(acc, Var(s.Tok().Val.(string)))
+			acc = append(acc, Var(tok))
 			found = true
 		}
 
@@ -282,7 +282,7 @@ func (m *translator) fromCompound(compound *ast.NTerm) Func {
 
 func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm))
-	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(string))
+	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(scanner.ID))
 	args := m.fromArgDecls(lambda.Children()[3].(*ast.NTerm), nil)
 	expr := Compound(m.fromExprs(lambda.Children()[5].(*ast.NTerm), nil))
 
@@ -308,7 +308,7 @@ func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 }
 
 func (m *translator) fromImport(im *ast.NTerm) Func {
-	s, err := m.im.Import(im.Children()[1].(*ast.Term).Tok().Val.(string))
+	s, err := m.im.Import(string(im.Children()[1].(*ast.Term).Tok().Val.(scanner.String)))
 	if err != nil {
 		panic(err)
 	}
@@ -358,10 +358,10 @@ func (m *translator) fromChain(chain *ast.NTerm, acc Chain) Func {
 	oper := chain.Children()[0].(*ast.Term).Tok().Val
 
 	var flags uint
-	if oper == "--" {
+	if oper == scanner.Keyword("--") {
 		flags |= IgnoredChain
 	}
-	if oper == "-|" {
+	if oper == scanner.Keyword("-|") {
 		flags |= ErrorChain
 	}
 
