@@ -1,31 +1,29 @@
 package pgen
 
-import "github.com/DeedleFake/wdte/scanner"
+import "fmt"
 
 //go:generate pgen -out table.go ../../../res/grammar.ebnf
+
+const (
+	ID uint = iota
+	String
+	Number
+	Keyword
+)
 
 func newTerm(t string) Term {
 	switch t {
 	case "id":
-		return Term{
-			Type: scanner.ID,
-		}
+		return Term{Type: ID}
 
 	case "string":
-		return Term{
-			Type: scanner.String,
-		}
+		return Term{Type: String}
 
 	case "number":
-		return Term{
-			Type: scanner.Number,
-		}
+		return Term{Type: Number}
 	}
 
-	return Term{
-		Type:    scanner.Keyword,
-		Keyword: t,
-	}
+	return Term{Type: Keyword, Keyword: t}
 }
 
 func newNTerm(nt string) NTerm {
@@ -47,16 +45,23 @@ func newRule(tokens ...Token) (r Rule) {
 type Token interface{}
 
 type Term struct {
-	Type    scanner.TokenType
+	Type    uint
 	Keyword string
 }
 
 func (t Term) String() string {
-	if t.Type == scanner.Keyword {
+	switch t.Type {
+	case ID:
+		return "id"
+	case String:
+		return "string"
+	case Number:
+		return "number"
+	case Keyword:
 		return t.Keyword
 	}
 
-	return t.Type.String()
+	panic(fmt.Errorf("Unknown terminal type: %v", t.Type))
 }
 
 type NTerm string
