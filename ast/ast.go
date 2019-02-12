@@ -67,8 +67,8 @@ func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule, macros sc
 			})
 
 		case pgen.EOF:
-			if s.Tok().Type != scanner.EOF {
-				return nil, parseError(s, fmt.Errorf("EOF expected, but found %v", s.Tok().Type))
+			if _, ok := s.Tok().Val.(scanner.EOF); !ok {
+				return nil, parseError(s, fmt.Errorf("EOF expected, but found %T", s.Tok().Val))
 			}
 			return cur, nil
 		}
@@ -78,25 +78,28 @@ func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule, macros sc
 func tokensEqual(stok scanner.Token, gtok pgen.Token) bool {
 	switch gtok := gtok.(type) {
 	case pgen.Term:
-		return (gtok.Type == stok.Type) && ((stok.Type != scanner.Keyword) || (gtok.Keyword == stok.Val))
+		st, ok := stok.Val.(scanner.Keyword)
+		return (ok && (st == scanner.Keyword(gtok.Keyword))) || (toPGenTerm(stok) == gtok)
 	}
 
 	panic(fmt.Errorf("Tried to compare non-terminal: %#v", gtok))
 }
 
 func toPGenTerm(tok scanner.Token) pgen.Token {
-	var keyword string
-	switch tok.Type {
+	switch tok := tok.Val.(type) {
+	case scanner.ID:
+		return pgen.Term{Type: pgen.ID}
+	case scanner.String:
+		return pgen.Term{Type: pgen.String}
+	case scanner.Number:
+		return pgen.Term{Type: pgen.Number}
 	case scanner.Keyword:
-		keyword = fmt.Sprintf("%v", tok.Val)
+		return pgen.Term{Type: pgen.Keyword, Keyword: string(tok)}
 	case scanner.EOF:
 		return pgen.EOF{}
 	}
 
-	return pgen.Term{
-		Type:    tok.Type,
-		Keyword: keyword,
-	}
+	panic(fmt.Errorf("Unexpected token type: %T", tok.Val))
 }
 
 // A ParseError is returned if an error happens during parsing.
