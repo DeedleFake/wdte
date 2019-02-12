@@ -18,7 +18,7 @@ import (
 // to the definition. The tokens returned by the macro are inserted
 // raw into the token stream that is yielded by the scanner. Returned
 // tokens of type Macro are reprocessed via the same map.
-type MacroMap map[string]func(string) ([]Token, error)
+type MacroMap map[string]func(string) ([]TokenValue, error)
 
 // A Scanner tokenizes runes from an io.Reader.
 type Scanner struct {
@@ -35,7 +35,7 @@ type Scanner struct {
 	macro string
 
 	macroMap MacroMap
-	macroBuf []Token
+	macroBuf []TokenValue
 }
 
 // New returns a new Scanner that reads from r. macros, which may be
@@ -68,7 +68,7 @@ func (s *Scanner) Scan() bool {
 	if len(s.macroBuf) > 0 {
 		tok := s.macroBuf[len(s.macroBuf)-1]
 		s.macroBuf = s.macroBuf[:len(s.macroBuf)-1]
-		s.setTok(tok.Type, tok.Val)
+		s.setTok(tok)
 		return s.err == nil
 	}
 
@@ -84,7 +84,7 @@ func (s *Scanner) Scan() bool {
 		case io.EOF:
 			if eof {
 				s.err = err
-				s.setTok(EOF, nil)
+				s.setTok(EOF{})
 				return true
 			}
 
@@ -154,26 +154,24 @@ func (s *Scanner) unread(r rune) {
 	}
 }
 
-func (s *Scanner) setTok(t TokenType, v interface{}) {
-	switch t {
+func (s *Scanner) setTok(val TokenValue) {
+	switch v := val.(type) {
 	case Keyword:
 		switch v {
 		case ")", "]", "}":
-			if (s.tok.Type != Keyword) || (s.tok.Val != ";") {
-				s.unread(rune(v.(string)[0]))
-				v = ";"
+			if st, ok := s.tok.Val.(Keyword); !ok || (st != ";") {
+				s.unread(rune(v[0]))
+				val = Keyword(";")
 			}
 		}
 
 	case Macro:
-		v := v.([2]string)
-
-		macro := s.macroMap[v[0]]
+		macro := s.macroMap[v.Name]
 		if macro == nil {
 			break
 		}
 
-		toks, err := macro(v[1])
+		toks, err := macro(v.Input)
 		if len(toks) > 0 {
 			for i := len(toks) - 1; i >= 1; i-- {
 				s.macroBuf = append(s.macroBuf, toks[i])
@@ -181,8 +179,7 @@ func (s *Scanner) setTok(t TokenType, v interface{}) {
 			s.tok = Token{
 				Line: s.tline,
 				Col:  s.tcol,
-				Type: toks[0].Type,
-				Val:  toks[0].Val,
+				Val:  toks[0],
 			}
 		}
 		s.err = err
@@ -192,8 +189,7 @@ func (s *Scanner) setTok(t TokenType, v interface{}) {
 	s.tok = Token{
 		Line: s.tline,
 		Col:  s.tcol,
-		Type: t,
-		Val:  v,
+		Val:  val,
 	}
 }
 
@@ -268,7 +264,7 @@ func (s *Scanner) number(r rune) stateFunc {
 	}
 
 	val, _ := strconv.ParseFloat(s.tbuf.String(), 64)
-	s.setTok(Number, val)
+	s.setTok(Number(val))
 
 	s.unread(r)
 	return nil
@@ -284,7 +280,7 @@ func (s *Scanner) string(r rune) stateFunc {
 		return s.string
 	}
 
-	s.setTok(String, s.tbuf.String())
+	s.setTok(String(s.tbuf.String()))
 
 	return nil
 }
@@ -316,7 +312,7 @@ func (s *Scanner) id(r rune) stateFunc {
 			s.unread(valr[i])
 		}
 
-		s.setTok(Keyword, k)
+		s.setTok(Keyword(k))
 		return nil
 	}
 
@@ -329,22 +325,24 @@ func (s *Scanner) id(r rune) stateFunc {
 				s.unread(kr[i])
 			}
 
-			t, val := ID, val[:len(val)-len(k)]
-			if isKeyword(val) {
-				t = Keyword
+			raw := val[:len(val)-len(k)]
+			v := TokenValue(ID(raw))
+			if isKeyword(raw) {
+				v = Keyword(raw)
 			}
-			s.setTok(t, val)
+			s.setTok(v)
 			return nil
 		}
 
 		return s.id
 	}
 
-	t, val := ID, s.tbuf.String()
-	if isKeyword(val) {
-		t = Keyword
+	raw := s.tbuf.String()
+	v := TokenValue(ID(raw))
+	if isKeyword(raw) {
+		v = Keyword(raw)
 	}
-	s.setTok(t, val)
+	s.setTok(v)
 	s.unread(r)
 	return nil
 }
@@ -363,7 +361,7 @@ func (s *Scanner) macroName(r rune) stateFunc {
 
 func (s *Scanner) macroInput(r rune) stateFunc {
 	if r == s.quote {
-		s.setTok(Macro, [2]string{s.macro, s.tbuf.String()})
+		s.setTok(Macro{Name: s.macro, Input: s.tbuf.String()})
 		return nil
 	}
 

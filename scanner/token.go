@@ -1,46 +1,39 @@
 package scanner
 
-import (
-	"fmt"
-)
-
 // A Token is a usable element parsed from a string.
 type Token struct {
 	Line, Col int
-	Type      TokenType
-	Val       interface{}
+	Val       TokenValue
 }
 
-// TokenType is the type of a token.
-type TokenType uint
-
-const (
-	Invalid TokenType = iota // nolint
-	Number
-	String
-	ID
-	Keyword
-	Macro
-	EOF
-)
-
-func (t TokenType) String() string {
-	switch t {
-	case Invalid:
-		return "invalid"
-	case Number:
-		return "number"
-	case String:
-		return "string"
-	case ID:
-		return "id"
-	case Keyword:
-		return "keyword"
-	case Macro:
-		return "macro"
-	case EOF:
-		return "EOF"
-	}
-
-	panic(fmt.Errorf("Invalid token type: %v", uint(t)))
+// A TokenValue is the value of a token.
+type TokenValue interface {
+	token()
 }
+
+type Number float64
+
+func (Number) token() {}
+
+type String string
+
+func (String) token() {}
+
+type ID string
+
+func (ID) token() {}
+
+type Keyword string
+
+func (Keyword) token() {}
+
+type Macro struct {
+	Name  string
+	Input string
+}
+
+func (Macro) token() {}
+
+type EOF struct{}
+
+func (EOF) token() {}
