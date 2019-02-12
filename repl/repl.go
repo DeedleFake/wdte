@@ -156,9 +156,9 @@ func Partial(r io.Reader, stack []string, macros scanner.MacroMap) ([]string, bo
 	s := scanner.New(r, macros)
 	var prev scanner.Token
 	for s.Scan() {
-		switch tok := s.Tok(); tok.Type {
+		switch tok := s.Tok().Val.(type) {
 		case scanner.Keyword:
-			switch v := tok.Val.(string); v {
+			switch v := string(tok); v {
 			case "(", "(@":
 				stack = append(stack, ")")
 			case "[":
@@ -173,7 +173,7 @@ func Partial(r io.Reader, stack []string, macros scanner.MacroMap) ([]string, bo
 			}
 
 		case scanner.EOF:
-			if (len(stack) > 0) || (prev.Val != ";") {
+			if (len(stack) > 0) || (prev.Val != scanner.Keyword(";")) {
 				return stack, true
 			}
 		}
