@@ -68,52 +68,56 @@ func main() {
 	)
 
 	js.Global().Set("WDTE", map[string]interface{}{
-		"run": js.NewCallback(func(args []js.Value) {
-			input := args[0].String()
-			output := args[1]
+		"run": js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+			go func() {
+				input := args[0].String()
+				output := args[1]
 
-			buf := bufPool.Get().(*bytes.Buffer)
-			defer func() {
-				buf.Reset()
-				bufPool.Put(buf)
-			}()
+				buf := bufPool.Get().(*bytes.Buffer)
+				defer func() {
+					buf.Reset()
+					bufPool.Put(buf)
+				}()
 
-			wdteio.Stderr = stderr{buf}
-			iomod := wdteio.Scope.Map(map[wdte.ID]wdte.Func{
-				"stdin": wdteio.Reader{
-					Reader: errorIO("stdin is not supported in the playground"),
-				},
+				wdteio.Stderr = stderr{buf}
+				iomod := wdteio.Scope.Map(map[wdte.ID]wdte.Func{
+					"stdin": wdteio.Reader{
+						Reader: errorIO("stdin is not supported in the playground"),
+					},
 
-				"stdout": stdout{buf},
+					"stdout": stdout{buf},
 
-				"stderr": stderr{buf},
-			})
+					"stderr": stderr{buf},
+				})
 
-			c, err := wdte.Parse(strings.NewReader(input), wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
-				switch from {
-				case "io":
-					return iomod, nil
+				c, err := wdte.Parse(strings.NewReader(input), wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
+					switch from {
+					case "io":
+						return iomod, nil
+					}
+
+					return std.Import(from)
+				}), nil)
+				if err != nil {
+					output.Invoke(fmt.Sprintf("Error: Failed to parse input: %v", err))
+					return
 				}
 
-				return std.Import(from)
-			}))
-			if err != nil {
-				output.Invoke(fmt.Sprintf("Error: Failed to parse input: %v", err))
-				return
-			}
+				frame := std.F()
+				frame = frame.WithScope(frame.Scope().Add("io", iomod))
 
-			frame := std.F()
-			frame = frame.WithScope(frame.Scope().Add("io", iomod))
+				ctx, cancel := context.WithTimeout(frame.Context(), 5*time.Second)
+				defer cancel()
 
-			ctx, cancel := context.WithTimeout(frame.Context(), 5*time.Second)
-			defer cancel()
+				r := c.Call(frame.WithContext(ctx))
+				if err, ok := r.(error); ok {
+					fmt.Fprintf(buf, "\n\nError: %v", err)
+				}
 
-			r := c.Call(frame.WithContext(ctx))
-			if err, ok := r.(error); ok {
-				fmt.Fprintf(buf, "\n\nError: %v", err)
-			}
+				output.Invoke(js.Null(), buf.String())
+			}()
 
-			output.Invoke(js.Null(), buf.String())
+			return nil
 		}),
 	})
 
