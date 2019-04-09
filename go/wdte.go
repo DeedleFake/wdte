@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"runtime"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"syscall/js"
@@ -94,6 +96,34 @@ func main() {
 					switch from {
 					case "io":
 						return iomod, nil
+
+					case "playground":
+						return wdte.S().Map(map[wdte.ID]wdte.Func{
+							"wdteVersion": wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+								bi, ok := debug.ReadBuildInfo()
+								if !ok {
+									return wdte.Error{
+										Frame: frame,
+										Err:   errors.New("Failed to read build info"),
+									}
+								}
+
+								for _, dep := range bi.Deps {
+									if dep.Path != "github.com/DeedleFake/wdte" {
+										continue
+									}
+
+									return wdte.String(dep.Version)
+								}
+
+								return wdte.Error{
+									Frame: frame,
+									Err:   errors.New("WDTE's version could not be determined"),
+								}
+							}),
+
+							"goVersion": wdte.String(runtime.Version()),
+						}), nil
 					}
 
 					return std.Import(from)
