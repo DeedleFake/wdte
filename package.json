@@ -29,6 +29,7 @@
     "gh-pages": "^2.0.1",
     "jss-preset-default": "^4.5.0",
     "npm-run-all": "^4.1.5",
+    "pako": "^1.0.10",
     "prettier": "^1.16.4",
     "react": "^16.8.6",
     "react-ace": "^6.4.0",

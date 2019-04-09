@@ -1,7 +1,9 @@
 // @format
 
-import React, { useState, useReducer, useCallback, useMemo } from 'react'
+import React, { useState, useReducer, useCallback } from 'react'
 import { CSSTransition, TransitionGroup } from 'react-transition-group'
+
+import { Buffer } from 'buffer'
 
 import ReactMarkdown from 'react-markdown'
 
@@ -11,6 +13,8 @@ import './brace'
 import { makeStyles } from '@material-ui/styles'
 
 import { Menu, Dropdown, Message } from 'semantic-ui-react'
+
+import pako from 'pako'
 
 import initial from './initial'
 import * as examples from './examples'
@@ -92,14 +96,18 @@ const App = (props) => {
 	const classes = useStyles()
 
 	const [description, setDescription] = useState(initial.desc)
-	const [input, setInput] = useState(() =>
-		window.location.hash !== ''
-			? decodeURIComponent(window.location.hash.substr(1))
-			: initial.input,
-	)
+	const [input, setInput] = useState(() => {
+		try {
+			return pako.inflate(
+				Buffer.from(window.location.hash.substr(1), 'base64'),
+				{ to: 'string' },
+			)
+		} catch (err) {
+			console.warn(err)
+			return initial.input
+		}
+	})
 	const [output, setOutput] = useState('')
-
-	const encodedInput = useMemo(() => encodeURIComponent(input), [input])
 
 	const [messages, dispatchMessages] = useReducer(
 		(state, action) => {
@@ -152,6 +160,8 @@ const App = (props) => {
 
 	const share = useCallback(() => {
 		try {
+			let encodedInput = Buffer.from(pako.deflate(input)).toString('base64')
+
 			clipboard.copy(
 				`${window.location.origin}${window.location.pathname}#${encodedInput}`,
 			)
@@ -160,7 +170,7 @@ const App = (props) => {
 		} catch (err) {
 			addMessage('error', `Failed to copy to clipboard: ${err.toString()}`)
 		}
-	}, [encodedInput])
+	}, [input])
 
 	return (
 		<div className={classes.main}>
