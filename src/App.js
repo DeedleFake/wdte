@@ -155,6 +155,7 @@ const App = (props) => {
 			clipboard.copy(
 				`${window.location.origin}${window.location.pathname}#${encodedInput}`,
 			)
+			window.location.href = `#${encodedInput}`
 			addMessage('success', 'Link successfully copied to clipboard.')
 		} catch (err) {
 			addMessage('error', `Failed to copy to clipboard: ${err.toString()}`)
