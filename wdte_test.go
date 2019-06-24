@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"math"
+	"math/rand"
 	"reflect"
 	"strings"
 	"testing"
@@ -14,6 +15,7 @@ import (
 	_ "github.com/DeedleFake/wdte/std/arrays"
 	wdteio "github.com/DeedleFake/wdte/std/io"
 	_ "github.com/DeedleFake/wdte/std/math"
+	_ "github.com/DeedleFake/wdte/std/rand"
 	_ "github.com/DeedleFake/wdte/std/stream"
 	_ "github.com/DeedleFake/wdte/std/strings"
 )
@@ -797,6 +799,21 @@ func TestArrays(t *testing.T) {
 			name:   "Stream",
 			script: `let a => import 'arrays'; let s => import 'stream'; let main => a.stream ['this'; 'is'; 'a'; 'test'] -> s.collect;`,
 			ret:    wdte.Array{wdte.String("this"), wdte.String("is"), wdte.String("a"), wdte.String("test")},
+		},
+	})
+}
+
+func TestRand(t *testing.T) {
+	runTests(t, []test{
+		{
+			name:   "Simple",
+			script: `let m => import 'math'; let rand => import 'rand'; rand.gen 1 -> rand.next -> * 100 -> m.floor;`,
+			ret:    wdte.Number(math.Floor(rand.New(rand.NewSource(1)).Float64() * 100)),
+		},
+		{
+			name:   "Stream",
+			script: `let s => import 'stream'; let m => import 'math'; let rand => import 'rand'; rand.gen 1 -> rand.stream 3 -> s.map (* 100) -> s.map m.floor -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(60), wdte.Number(94), wdte.Number(66)},
 		},
 	})
 }
