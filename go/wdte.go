@@ -18,6 +18,7 @@ import (
 	_ "github.com/DeedleFake/wdte/std/arrays"
 	wdteio "github.com/DeedleFake/wdte/std/io"
 	_ "github.com/DeedleFake/wdte/std/math"
+	_ "github.com/DeedleFake/wdte/std/rand"
 	_ "github.com/DeedleFake/wdte/std/stream"
 	_ "github.com/DeedleFake/wdte/std/strings"
 )
