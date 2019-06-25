@@ -27,7 +27,13 @@ Returns the version of WDTE that the playground is using.
 
 #### goVersion
     goVersion
-Returns the version of Go that the playground was built with.`,
+Returns the version of Go that the playground was built with.
+
+Macros
+------
+
+#### raw
+Yields the raw text of its input.`,
 
 	input: `io.stdout -> io.writeln 'Greetings, pocket universe.';`,
 }

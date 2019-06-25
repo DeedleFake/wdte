@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/scanner"
 	"github.com/DeedleFake/wdte/std"
 	_ "github.com/DeedleFake/wdte/std/arrays"
 	wdteio "github.com/DeedleFake/wdte/std/io"
@@ -93,7 +94,7 @@ func main() {
 					"stderr": stderr{buf},
 				})
 
-				c, err := wdte.Parse(strings.NewReader(input), wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
+				importer := wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
 					switch from {
 					case "io":
 						return iomod, nil
@@ -128,7 +129,20 @@ func main() {
 					}
 
 					return std.Import(from)
-				}), nil)
+				})
+
+				macros := scanner.MacroMap{
+					"raw": func(text string) ([]scanner.Token, error) {
+						return []scanner.Token{
+							{
+								Type: scanner.String,
+								Val:  text,
+							},
+						}, nil
+					},
+				}
+
+				c, err := wdte.Parse(strings.NewReader(input), importer, macros)
 				if err != nil {
 					output.Invoke(fmt.Sprintf("Error: Failed to parse input: %v", err))
 					return
