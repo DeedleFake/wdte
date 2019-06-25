@@ -1,3 +1,5 @@
+// @format
+
 // Copyright 2018 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -7,78 +9,51 @@
 		// global already exists
 	} else if (typeof window !== 'undefined') {
 		window.global = window
-	} else if (typeof self !== 'undefined') {
-		self.global = self
 	} else {
 		throw new Error(
 			'cannot export Go (neither global, window nor self is defined)',
 		)
 	}
 
-	// Map web browser API and Node.js API to a single common API (preferring web standards over Node.js API).
-	const isNodeJS = global.process && global.process.title === 'node'
-	if (isNodeJS) {
-		global.require = require
-		global.fs = require('fs')
-
-		const nodeCrypto = require('crypto')
-		global.crypto = {
-			getRandomValues(b) {
-				nodeCrypto.randomFillSync(b)
-			},
-		}
-
-		global.performance = {
-			now() {
-				const [sec, nsec] = process.hrtime()
-				return sec * 1000 + nsec / 1000000
-			},
-		}
-
-		const util = require('util')
-		global.TextEncoder = util.TextEncoder
-		global.TextDecoder = util.TextDecoder
-	} else {
-		let outputBuf = ''
-		global.fs = {
-			constants: {
-				O_WRONLY: -1,
-				O_RDWR: -1,
-				O_CREAT: -1,
-				O_TRUNC: -1,
-				O_APPEND: -1,
-				O_EXCL: -1,
-			}, // unused
-			writeSync(fd, buf) {
-				outputBuf += decoder.decode(buf)
-				const nl = outputBuf.lastIndexOf('\n')
-				if (nl != -1) {
-					console.log(outputBuf.substr(0, nl))
-					outputBuf = outputBuf.substr(nl + 1)
-				}
-				return buf.length
-			},
-			write(fd, buf, offset, length, position, callback) {
-				if (offset !== 0 || length !== buf.length || position !== null) {
-					throw new Error('not implemented')
-				}
-				const n = this.writeSync(fd, buf)
-				callback(null, n)
-			},
-			open(path, flags, mode, callback) {
-				const err = new Error('not implemented')
-				err.code = 'ENOSYS'
-				callback(err)
-			},
-			read(fd, buffer, offset, length, position, callback) {
-				const err = new Error('not implemented')
-				err.code = 'ENOSYS'
-				callback(err)
-			},
-			fsync(fd, callback) {
-				callback(null)
-			},
-		}
+	let outputBuf = ''
+	global.fs = {
+		constants: {
+			O_WRONLY: -1,
+			O_RDWR: -1,
+			O_CREAT: -1,
+			O_TRUNC: -1,
+			O_APPEND: -1,
+			O_EXCL: -1,
+		}, // unused
+		writeSync(fd, buf) {
+			outputBuf += decoder.decode(buf)
+			const nl = outputBuf.lastIndexOf('\n')
+			if (nl !== -1) {
+				console.log(outputBuf.substr(0, nl))
+				outputBuf = outputBuf.substr(nl + 1)
+			}
+			return buf.length
+		},
+		write(fd, buf, offset, length, position, callback) {
+			if (offset !== 0 || length !== buf.length || position !== null) {
+				throw new Error('not implemented')
+			}
+			const n = this.writeSync(fd, buf)
+			callback(null, n)
+		},
+		open(path, flags, mode, callback) {
+			const err = new Error('not implemented')
+			err.code = 'ENOSYS'
+			callback(err)
+		},
+		read(fd, buffer, offset, length, position, callback) {
+			const err = new Error('not implemented')
+			err.code = 'ENOSYS'
+			callback(err)
+		},
+		fsync(fd, callback) {
+			callback(null)
+		},
 	}
 
 	const encoder = new TextEncoder('utf-8')
@@ -163,6 +138,8 @@
 						mem().setUint32(addr + 4, nanHead, true)
 						mem().setUint32(addr, 4, true)
 						return
+					default:
+						break
 				}
 
 				let ref = this._refs.get(v)
@@ -181,6 +158,8 @@
 						break
 					case 'function':
 						typeFlag = 3
+						break
+					default:
 						break
 				}
 				mem().setUint32(addr + 4, nanHead | typeFlag, true)
@@ -231,13 +210,7 @@
 
 					// func wasmWrite(fd uintptr, p unsafe.Pointer, n int32)
 					'runtime.wasmWrite': (sp) => {
-						const fd = getInt64(sp + 8)
-						const p = getInt64(sp + 16)
-						const n = mem().getInt32(sp + 24, true)
-						fs.writeSync(
-							fd,
-							new Uint8Array(this._inst.exports.mem.buffer, p, n),
-						)
+						throw new Error('write is not implemented')
 					},
 
 					// func nanotime() int64
@@ -474,31 +447,6 @@
 			}
 		}
 	}
-
-	if (isNodeJS) {
-		if (process.argv.length < 3) {
-			process.stderr.write('usage: go_js_wasm_exec [wasm binary] [arguments]\n')
-			process.exit(1)
-		}
-
-		const go = new Go()
-		go.argv = process.argv.slice(2)
-		go.env = Object.assign({ TMPDIR: require('os').tmpdir() }, process.env)
-		go.exit = process.exit
-		WebAssembly.instantiate(fs.readFileSync(process.argv[2]), go.importObject)
-			.then((result) => {
-				process.on('exit', (code) => {
-					// Node.js exits if no event handler is pending
-					if (code === 0 && !go.exited) {
-						// deadlock, make Go print error and stack traces
-						go._pendingEvent = { id: 0 }
-						go._resume()
-					}
-				})
-				return go.run(result.instance)
-			})
-			.catch((err) => {
-				throw err
-			})
-	}
 })()
+
+export default global.Go

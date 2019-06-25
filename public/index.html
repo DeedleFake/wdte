@@ -2,17 +2,6 @@
 <html>
 	<head>
 		<title>WDTE Playground</title>
-
-		<script type='application/javascript' src='go.js'></script>
-		<script type='application/javascript'>
-			(async () => {
-				let buf = await fetch('./wdte.wasm').then((rsp) => rsp.arrayBuffer())
-
-				let go = new Go()
-				let wasm = await WebAssembly.instantiate(buf, go.importObject)
-				go.run(wasm.instance)
-			})()
-		</script>
 	</head>
 	<body>
 		<div id='root'></div>
