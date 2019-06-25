@@ -12,7 +12,7 @@ import './brace'
 
 import { makeStyles } from '@material-ui/styles'
 
-import { Menu, Dropdown, Message } from 'semantic-ui-react'
+import { Menu, Dropdown, Message, Button } from 'semantic-ui-react'
 
 import pako from 'pako'
 
@@ -45,26 +45,45 @@ const useStyles = makeStyles((theme) => ({
 		display: 'flex',
 		flexDirection: 'column',
 
-		flex: 1,
+		flex: '1 0 300px',
 		margin: 8,
 		overflowY: 'auto',
-		minWidth: 300,
 	},
 
 	message: {
 		marginBottom: '8px !important',
 	},
 
-	output: {
-		minHeight: 300,
-		fontFamily: 'Go-Mono',
-		fontSize: 12,
-		flex: 1,
-		overflow: 'auto',
-		padding: 8,
+	inputToolbar: {},
+
+	input: {
+		flex: '0 1 50%',
+		borderRadius: 8,
+	},
+
+	outputWrapper: {
+		display: 'flex',
+		flexDirection: 'column',
+		flex: '0 1 50%',
+		marginTop: 12,
 		boxShadow: 'inset 4px 4px 4px #AAAAAA',
 		borderRadius: 8,
 		backgroundColor: '#CCCCCC',
+	},
+
+	outputToolbar: {
+		flex: 0,
+		alignSelf: 'end',
+		margin: '8px !important',
+	},
+
+	output: {
+		flex: '1 0 0',
+		fontFamily: 'Go-Mono',
+		fontSize: 12,
+		margin: '8px 8px 0px 8px',
+		overflow: 'auto',
+		userSelect: 'contain',
 	},
 
 	slide: {
@@ -143,12 +162,9 @@ const App = (props) => {
 		{ id: 0 },
 	)
 
-	const addMessage = useCallback(
-		(type, msg, timeout = 3000) => {
-			dispatchMessages({ $: 'add', type, msg, timeout })
-		},
-		[messages],
-	)
+	const addMessage = useCallback((type, msg, timeout = 3000) => {
+		dispatchMessages({ $: 'add', type, msg, timeout })
+	}, [])
 
 	const runCode = useCallback(async () => {
 		try {
@@ -170,7 +186,16 @@ const App = (props) => {
 		} catch (err) {
 			addMessage('error', `Failed to copy to clipboard: ${err.toString()}`)
 		}
-	}, [input])
+	}, [input, addMessage])
+
+	const copyOutput = useCallback(() => {
+		try {
+			clipboard.copy(output)
+			addMessage('success', 'Output successfully copied to clipboard.')
+		} catch (err) {
+			addMessage('error', `Failed to copy to clipboard: ${err.toString()}`)
+		}
+	}, [output, addMessage])
 
 	return (
 		<div className={classes.main}>
@@ -201,7 +226,7 @@ const App = (props) => {
 			</TransitionGroup>
 
 			<div className={classes.column}>
-				<Menu inverted>
+				<Menu className={classes.inputToolbar} inverted>
 					<Menu.Item onClick={runCode}>Run</Menu.Item>
 
 					<Dropdown item text="Examples">
@@ -229,12 +254,13 @@ const App = (props) => {
 
 				{/* TODO: Find a way to use classes instead. */}
 				<AceEditor
+					className={classes.input}
 					style={{
 						width: null,
 						height: null,
-						minHeight: 300,
-						flex: 1,
-						borderRadius: 8,
+					}}
+					editorProps={{
+						$blockScrolling: Infinity,
 					}}
 					mode="wdte"
 					theme="vibrant_ink"
@@ -242,7 +268,13 @@ const App = (props) => {
 					onChange={(val) => setInput(val)}
 				/>
 
-				<pre className={classes.output}>{output}</pre>
+				<div className={classes.outputWrapper}>
+					<pre className={classes.output}>{output}</pre>
+
+					<Button.Group compact className={classes.outputToolbar}>
+						<Button icon="clipboard" onClick={copyOutput} />
+					</Button.Group>
+				</div>
 			</div>
 		</div>
 	)
