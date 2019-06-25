@@ -87,6 +87,7 @@ const useStyles = makeStyles((theme) => ({
 		border: 0,
 		backgroundColor: 'inherit',
 		resize: 'none',
+		whiteSpace: 'nowrap',
 	},
 
 	slide: {
