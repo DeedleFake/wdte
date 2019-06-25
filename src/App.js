@@ -54,7 +54,9 @@ const useStyles = makeStyles((theme) => ({
 		marginBottom: '8px !important',
 	},
 
-	inputToolbar: {},
+	inputToolbar: {
+		flex: 0,
+	},
 
 	input: {
 		flex: '0 1 50%',
@@ -80,10 +82,11 @@ const useStyles = makeStyles((theme) => ({
 	output: {
 		flex: '1 0 0',
 		fontFamily: 'Go-Mono',
-		fontSize: 12,
+		fontSize: 14,
 		margin: '8px 8px 0px 8px',
-		overflow: 'auto',
-		userSelect: 'contain',
+		border: 0,
+		backgroundColor: 'inherit',
+		resize: 'none',
 	},
 
 	slide: {
@@ -269,7 +272,7 @@ const App = (props) => {
 				/>
 
 				<div className={classes.outputWrapper}>
-					<pre className={classes.output}>{output}</pre>
+					<textarea className={classes.output} readOnly value={output} />
 
 					<Button.Group compact className={classes.outputToolbar}>
 						<Button icon="clipboard" onClick={copyOutput} />
