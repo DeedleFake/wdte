@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.js": "/wdte/static/js/main.87a6336b.chunk.js",
-    "main.js.map": "/wdte/static/js/main.87a6336b.chunk.js.map",
+    "main.js": "/wdte/static/js/main.e64163f6.chunk.js",
+    "main.js.map": "/wdte/static/js/main.e64163f6.chunk.js.map",
     "runtime~main.js": "/wdte/static/js/runtime~main.a7fecc17.js",
     "runtime~main.js.map": "/wdte/static/js/runtime~main.a7fecc17.js.map",
     "static/css/2.c3ce4789.chunk.css": "/wdte/static/css/2.c3ce4789.chunk.css",
-    "static/js/2.e9e2b576.chunk.js": "/wdte/static/js/2.e9e2b576.chunk.js",
-    "static/js/2.e9e2b576.chunk.js.map": "/wdte/static/js/2.e9e2b576.chunk.js.map",
+    "static/js/2.ef3cd9db.chunk.js": "/wdte/static/js/2.ef3cd9db.chunk.js",
+    "static/js/2.ef3cd9db.chunk.js.map": "/wdte/static/js/2.ef3cd9db.chunk.js.map",
     "index.html": "/wdte/index.html",
-    "precache-manifest.cec2b9c1d46f808ceb3d0899ee603f1f.js": "/wdte/precache-manifest.cec2b9c1d46f808ceb3d0899ee603f1f.js",
+    "precache-manifest.781db2a19b93b61f52f6d7d2db730021.js": "/wdte/precache-manifest.781db2a19b93b61f52f6d7d2db730021.js",
     "service-worker.js": "/wdte/service-worker.js",
     "static/css/2.c3ce4789.chunk.css.map": "/wdte/static/css/2.c3ce4789.chunk.css.map",
     "static/media/semantic.min.css": "/wdte/static/media/outline-icons.ef60a4f6.woff"
