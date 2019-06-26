@@ -5,11 +5,11 @@ import ReactDOM from 'react-dom'
 
 import 'semantic-ui-css/semantic.min.css'
 
-import Go from './assets/wasm_exec'
-
 import App from './App'
 
-let go = new Go()
+import './assets/wasm_exec'
+
+let go = new window.Go()
 WebAssembly.instantiateStreaming(fetch('./wdte.wasm'), go.importObject).then(
 	(wasm) => go.run(wasm.instance),
 )
