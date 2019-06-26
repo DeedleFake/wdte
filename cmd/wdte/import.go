@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/DeedleFake/wdte"
@@ -36,6 +37,22 @@ func importer(wd string, blacklist []string, args []string, macros scanner.Macro
 
 	cliScope := wdte.S().Map(map[wdte.ID]wdte.Func{
 		"args": wargs,
+
+		"goVersion": wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+			return wdte.String(runtime.Version())
+		}),
+
+		"wdteVersion": wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+			v, err := wdteVersion()
+			if err != nil {
+				return &wdte.Error{
+					Frame: frame,
+					Err:   err,
+				}
+			}
+
+			return wdte.String(v)
+		}),
 	})
 
 	std.Register("cli", cliScope)
