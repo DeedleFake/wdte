@@ -10,7 +10,7 @@ import (
 	"unicode"
 
 	"github.com/DeedleFake/wdte"
-	"github.com/DeedleFake/wdte/auto"
+	"github.com/DeedleFake/wdte/wdteutil"
 )
 
 // Format is a WDTE function with the following signatures:
@@ -59,7 +59,7 @@ func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("format")
 
 	if len(args) < 2 {
-		return auto.SaveArgs(wdte.GoFunc(Format), args...)
+		return wdteutil.SaveArgs(wdte.GoFunc(Format), args...)
 	}
 
 	var i int
@@ -114,7 +114,7 @@ func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		i++
 		if i >= len(args) {
 			// TODO: Cache the current buffer.
-			return auto.SaveArgs(wdte.GoFunc(Format), args...)
+			return wdteutil.SaveArgs(wdte.GoFunc(Format), args...)
 		}
 
 		out.WriteString(flags.Format(args[i].Call(frame)))

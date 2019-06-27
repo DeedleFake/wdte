@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/DeedleFake/wdte"
-	"github.com/DeedleFake/wdte/auto"
 	"github.com/DeedleFake/wdte/std"
+	"github.com/DeedleFake/wdte/wdteutil"
 )
 
 // Contains is a WDTE function with the following signatures:
@@ -19,7 +19,7 @@ func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("contains")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Contains), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Contains), args...)
 	}
 
 	haystack := args[0].Call(frame).(wdte.String)
@@ -38,7 +38,7 @@ func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("prefix")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Prefix), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Prefix), args...)
 	}
 
 	haystack := args[0].Call(frame).(wdte.String)
@@ -57,7 +57,7 @@ func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("suffix")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Suffix), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Suffix), args...)
 	}
 
 	haystack := args[0].Call(frame).(wdte.String)
@@ -78,7 +78,7 @@ func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("index")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Index), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Index), args...)
 	}
 
 	haystack := args[0].Call(frame).(wdte.String)
@@ -132,7 +132,7 @@ func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("repeat")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Repeat), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Repeat), args...)
 	}
 
 	var str wdte.String
@@ -168,7 +168,7 @@ func Split(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("split")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Split), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Split), args...)
 	}
 
 	str := args[0].Call(frame).(wdte.String)
@@ -216,7 +216,7 @@ func Join(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("join")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Join), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Join), args...)
 	}
 
 	a := args[0].Call(frame).(wdte.Array)

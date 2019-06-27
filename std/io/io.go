@@ -10,8 +10,8 @@ import (
 	"os"
 
 	"github.com/DeedleFake/wdte"
-	"github.com/DeedleFake/wdte/auto"
 	"github.com/DeedleFake/wdte/std"
+	"github.com/DeedleFake/wdte/wdteutil"
 )
 
 // These variables are what are returned by the corresponding
@@ -157,7 +157,7 @@ func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("seek")
 
 	if len(args) < 3 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Seek), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Seek), args...)
 	}
 
 	s := args[0].Call(frame).(io.Seeker)
@@ -217,7 +217,7 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("combine")
 
 	if len(args) < 2 {
-		return auto.SaveArgs(wdte.GoFunc(Combine), args...)
+		return wdteutil.SaveArgs(wdte.GoFunc(Combine), args...)
 	}
 
 	switch a0 := args[0].Call(frame).(type) {
@@ -262,7 +262,7 @@ func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("copy")
 
 	if len(args) < 2 {
-		return auto.SaveArgs(wdte.GoFunc(Copy), args...)
+		return wdteutil.SaveArgs(wdte.GoFunc(Copy), args...)
 	}
 
 	var w writer
@@ -391,7 +391,7 @@ func Scan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("scan")
 
 	if len(args) < 2 {
-		return auto.SaveArgs(wdte.GoFunc(Scan), args...)
+		return wdteutil.SaveArgs(wdte.GoFunc(Scan), args...)
 	}
 
 	var r reader
@@ -484,7 +484,7 @@ func Runes(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func write(f func(io.Writer, interface{}) error) (gf wdte.Func) {
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if len(args) < 2 {
-			return auto.SaveArgsReverse(gf, args...)
+			return wdteutil.SaveArgsReverse(gf, args...)
 		}
 
 		var w writer
@@ -597,7 +597,7 @@ func Panic(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		set(args[i])
 	}
 	if e == nil {
-		return auto.SaveArgs(wdte.GoFunc(Panic), args...)
+		return wdteutil.SaveArgs(wdte.GoFunc(Panic), args...)
 	}
 
 	_, err := fmt.Fprintf(w, "%v%v\n", desc, e)

@@ -2,7 +2,7 @@ package stream
 
 import (
 	"github.com/DeedleFake/wdte"
-	"github.com/DeedleFake/wdte/auto"
+	"github.com/DeedleFake/wdte/wdteutil"
 )
 
 // New is a WDTE function with the following signature:
@@ -17,7 +17,7 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("new")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(New), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(New), args...)
 	}
 
 	prev := args[0]
@@ -111,7 +111,7 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("concat")
 
 	if len(args) < 2 {
-		return auto.SaveArgs(wdte.GoFunc(Concat), args...)
+		return wdteutil.SaveArgs(wdte.GoFunc(Concat), args...)
 	}
 
 	var i int

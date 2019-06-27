@@ -8,9 +8,9 @@ import (
 	"math/rand"
 
 	"github.com/DeedleFake/wdte"
-	"github.com/DeedleFake/wdte/auto"
 	"github.com/DeedleFake/wdte/std"
 	"github.com/DeedleFake/wdte/std/stream"
+	"github.com/DeedleFake/wdte/wdteutil"
 )
 
 // A Source is a WDTE function that can create successive random
@@ -109,7 +109,7 @@ func Stream(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("stream")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Stream), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Stream), args...)
 	}
 
 	r := args[0].Call(frame).(Source)

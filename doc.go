@@ -201,7 +201,7 @@
 // manual implementations of Func. If more automatic behavior is
 // required, possibly at the cost of some runtime performance,
 // functions for automatically wrapping Go functions are provided in
-// the auto package.
+// the wdteutil package.
 //
 // One final note: WDTE is lazily-evaluated. Very, very
 // lazily-evaluated. Until Go code manually calls a Func

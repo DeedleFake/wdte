@@ -4,7 +4,7 @@ import (
 	"sort"
 
 	"github.com/DeedleFake/wdte"
-	"github.com/DeedleFake/wdte/auto"
+	"github.com/DeedleFake/wdte/wdteutil"
 )
 
 // end is a special value returned by the function provided to new.
@@ -121,7 +121,7 @@ func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("reduce")
 
 	if len(args) < 3 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Reduce), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Reduce), args...)
 	}
 
 	s := args[0].Call(frame).(Stream)
@@ -150,7 +150,7 @@ func Fold(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("fold")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Fold), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Fold), args...)
 	}
 
 	s := args[0].Call(frame).(Stream)
@@ -188,7 +188,7 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("extent")
 
 	if len(args) < 3 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Extent), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Extent), args...)
 	}
 
 	s := args[0].Call(frame).(Stream)
@@ -290,7 +290,7 @@ func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("any")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(Any), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Any), args...)
 	}
 
 	s := args[0].Call(frame).(Stream)
@@ -320,7 +320,7 @@ func All(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("all")
 
 	if len(args) < 2 {
-		return auto.SaveArgsReverse(wdte.GoFunc(All), args...)
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(All), args...)
 	}
 
 	s := args[0].Call(frame).(Stream)

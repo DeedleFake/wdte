@@ -5,8 +5,8 @@ import (
 	"sort"
 
 	"github.com/DeedleFake/wdte"
-	"github.com/DeedleFake/wdte/auto"
 	"github.com/DeedleFake/wdte/std"
+	"github.com/DeedleFake/wdte/wdteutil"
 )
 
 // Concat is a WDTE function with the following signatures:
@@ -25,7 +25,7 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("concat")
 
 	if len(args) < 2 {
-		return auto.SaveArgs(wdte.GoFunc(Concat), args...)
+		return wdteutil.SaveArgs(wdte.GoFunc(Concat), args...)
 	}
 
 	array := args[0].Call(frame).(wdte.Array)
@@ -38,7 +38,7 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func sorter(sortFunc func(interface{}, func(int, int) bool)) (f wdte.GoFunc) {
 	return func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if len(args) < 2 {
-			return auto.SaveArgs(f, args...)
+			return wdteutil.SaveArgs(f, args...)
 		}
 
 		var array wdte.Array
