@@ -17,16 +17,16 @@ brace.define('ace/mode/wdte', (acequire, exports, module) => {
 					regex: '^#.*$',
 				},
 				{
-					token: 'constant',
-					regex: '[0-9]+|[0-9]+\\.[0-9]+|\\.[0-9]+',
-				},
-				{
 					token: 'keyword',
 					regex: '(\\b(memo|let|import)\\b)',
 				},
 				{
 					token: 'keyword.operator',
 					regex: '\\.|\\{|\\}|\\[|\\]|\\(|\\)|=>|;|:|->|--|-\\||\\(@',
+				},
+				{
+					token: 'constant',
+					regex: '\\b[0-9]+|[0-9]+\\.[0-9]+|\\.[0-9]+',
 				},
 				{
 					token: 'string',
