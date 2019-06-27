@@ -113,11 +113,18 @@ func (n Number) Call(frame Frame, args ...Func) Func { // nolint
 
 func (n Number) Compare(other Func) (int, bool) { // nolint
 	o, ok := other.(Number)
-	if !ok {
-		return -1, false
-	}
 
-	return int(n - o), true
+	switch {
+	case !ok:
+		return -1, false
+
+	case n < o:
+		return -1, true
+	case n > o:
+		return 1, true
+	default:
+		return 0, true
+	}
 }
 
 func (n Number) String() string { // nolint
