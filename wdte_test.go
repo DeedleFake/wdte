@@ -16,6 +16,7 @@ import (
 	wdteio "github.com/DeedleFake/wdte/std/io"
 	_ "github.com/DeedleFake/wdte/std/math"
 	_ "github.com/DeedleFake/wdte/std/rand"
+	"github.com/DeedleFake/wdte/std/stream"
 	_ "github.com/DeedleFake/wdte/std/stream"
 	_ "github.com/DeedleFake/wdte/std/strings"
 )
@@ -565,6 +566,14 @@ func TestStream(t *testing.T) {
 				wdte.Number(0), wdte.Number(1), wdte.Number(2),
 				wdte.Number(0), wdte.Number(1), wdte.Number(2),
 				wdte.Number(0), wdte.Number(1), wdte.Number(2),
+			},
+		},
+		{
+			name:   "Zip",
+			script: `let s => import 'stream'; s.zip (s.range 2) (s.range 1 2) -> s.collect;`,
+			ret: wdte.Array{
+				wdte.Array{wdte.Number(0), wdte.Number(1)},
+				wdte.Array{wdte.Number(1), stream.End()},
 			},
 		},
 		{
