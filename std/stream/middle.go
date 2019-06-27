@@ -1,6 +1,9 @@
 package stream
 
-import "github.com/DeedleFake/wdte"
+import (
+	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/wdteutil"
+)
 
 // Map is a WDTE function with the following signature:
 //
@@ -244,5 +247,56 @@ func Limit(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 			return s.Next(frame)
 		})
+	})
+}
+
+// Zip is a WDTE function with the following signatures:
+//
+//    (zip s1) ...
+//    zip ...
+//
+// Zip returns a Stream which yields the streams that it is given
+// simultaneuously as arrays. In other words,
+//
+//    zip (a.stream [1; 2; 3]) (a.stream ['a'; 'b'; 'c'])
+//
+// will yield
+//
+//    [1; 'a']
+//    [2; 'b']
+//    [3; 'c']
+//
+// The order of the yielded arrays matches the order that the streams
+// are given in. If one of the streams ends before the other ones, End
+// will be yielded for that stream after that point.
+func Zip(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("zip")
+
+	if len(args) < 2 {
+		return wdteutil.SaveArgs(wdte.GoFunc(Zip), args...)
+	}
+
+	streams := make([]Stream, 0, len(args))
+	for _, arg := range args {
+		streams = append(streams, arg.Call(frame).(Stream))
+	}
+
+	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+		frame = frame.Sub("zip")
+
+		r := make(wdte.Array, 0, len(streams))
+		var more bool
+		for _, stream := range streams {
+			n, ok := stream.Next(frame)
+			if !ok {
+				r = append(r, end{})
+				continue
+			}
+
+			r = append(r, n)
+			more = true
+		}
+
+		return r, more
 	})
 }

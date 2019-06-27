@@ -49,6 +49,7 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"enumerate": wdte.GoFunc(Enumerate),
 	"repeat":    wdte.GoFunc(Repeat),
 	"limit":     wdte.GoFunc(Limit),
+	"zip":       wdte.GoFunc(Zip),
 
 	"end":     End(),
 	"collect": wdte.GoFunc(Collect),
