@@ -1,4 +1,4 @@
-package auto
+package wdteutil
 
 import (
 	"errors"
@@ -85,7 +85,6 @@ func FromFunc(frame wdte.Frame, w wdte.Func, expected reflect.Type) reflect.Valu
 			wargs = append(wargs, toWDTE(arg))
 		}
 
-		fmt.Println(w)
 		r := w.Call(frame, wargs...)
 		if expected.NumOut() == 0 {
 			// TODO: Should zero return values be allowed?

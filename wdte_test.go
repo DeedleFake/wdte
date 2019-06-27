@@ -39,11 +39,13 @@ type test struct {
 
 func runTests(t *testing.T, tests []test) {
 	t.Helper()
+	t.Parallel()
 
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Helper()
+			t.Parallel()
 
 			if test.disabled {
 				t.SkipNow()
@@ -62,9 +64,9 @@ func runTests(t *testing.T, tests []test) {
 					switch from {
 					case "io":
 						return scope.Map(map[wdte.ID]wdte.Func{
-							"stdin":  wdteio.Reader{strings.NewReader(test.in)},
-							"stdout": wdteio.Writer{&stdout},
-							"stderr": wdteio.Writer{&stderr},
+							"stdin":  wdteio.Reader{Reader: strings.NewReader(test.in)},
+							"stdout": wdteio.Writer{Writer: &stdout},
+							"stderr": wdteio.Writer{Writer: &stderr},
 						}), nil
 					}
 
@@ -324,7 +326,7 @@ func TestBasics(t *testing.T) {
 			im: wdte.ImportFunc(func(im string) (*wdte.Scope, error) {
 				if im == "test" {
 					return wdte.S().Map(map[wdte.ID]wdte.Func{
-						"reader": wdteio.Reader{&pieceReader{
+						"reader": wdteio.Reader{Reader: &pieceReader{
 							pieces: []io.Reader{
 								strings.NewReader("one"),
 								strings.NewReader("two"),

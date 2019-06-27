@@ -480,6 +480,10 @@ type ChainPiece struct {
 	AssignFunc AssignFunc
 }
 
+func (p ChainPiece) Call(frame Frame, args ...Func) Func {
+	return p.Expr.Call(frame, args...)
+}
+
 func (p ChainPiece) String() string { // nolint
 	if inner, ok := p.Expr.(fmt.Stringer); ok {
 		return inner.String()
@@ -490,10 +494,6 @@ func (p ChainPiece) String() string { // nolint
 
 // Chain is an unevaluated chain expression.
 type Chain []*ChainPiece
-
-func (c ChainPiece) Call(frame Frame, args ...Func) Func {
-	return c.Expr.Call(frame, args...)
-}
 
 func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 	var slotScope *Scope

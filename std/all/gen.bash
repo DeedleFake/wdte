@@ -28,6 +28,8 @@ pkgs=$(cd .. && find . -type d -mindepth 1 | grep -v '\./all')
 
 echo "package $pkgname" > $out
 echo >> $out
+echo '// Code generated automatically. DO NOT EDIT.' >> $out
+echo >> $out
 echo "import (" >> $out
 for pkg in $pkgs; do
 	echo "	_ \"github.com/DeedleFake/wdte/std/$(echo "$pkg" | cut -c3-)\""

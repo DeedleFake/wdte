@@ -1,4 +1,4 @@
-package auto_test
+package wdteutil_test
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/DeedleFake/wdte"
-	"github.com/DeedleFake/wdte/auto"
 	"github.com/DeedleFake/wdte/std/stream"
+	"github.com/DeedleFake/wdte/wdteutil"
 )
 
 func testFunc(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -100,7 +100,7 @@ func TestFunc(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			f := auto.Func(test.name, test.f)
+			f := wdteutil.Func(test.name, test.f)
 			r := f.Call(wdte.F(), test.args...)
 
 			if (test.ret != nil) && !reflect.DeepEqual(r, test.ret) {
@@ -122,7 +122,7 @@ func TestFunc(t *testing.T) {
 }
 
 func TestFuncPartial(t *testing.T) {
-	f := auto.Func("test", func(v1, v2 int) string {
+	f := wdteutil.Func("test", func(v1, v2 int) string {
 		return fmt.Sprintf("(%v, %v)", v1, v2)
 	})
 
@@ -145,7 +145,7 @@ func ExampleFunc() {
 	}
 
 	scope := wdte.S().Add("add",
-		auto.Func("add", func(n1, n2 int) int {
+		wdteutil.Func("add", func(n1, n2 int) int {
 			return n1 + n2
 		}),
 	)
