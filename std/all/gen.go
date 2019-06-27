@@ -1,5 +1,7 @@
 package all
 
+// Code generated automatically. DO NOT EDIT.
+
 import (
 	_ "github.com/DeedleFake/wdte/std/arrays"
 	_ "github.com/DeedleFake/wdte/std/io"

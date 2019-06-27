@@ -53,7 +53,7 @@ func (g Grammar) detectAmbiguities() {
 	}
 	known := make(map[lookup]struct{}, len(g))
 
-	for nterm, _ := range g {
+	for nterm := range g {
 		for term, rule := range g.First(nterm) {
 			if isEpsilon(term) {
 				continue
