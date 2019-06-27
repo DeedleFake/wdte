@@ -191,6 +191,11 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(8),
 		},
 		{
+			name:   "Simple/Number/Compare",
+			script: `[< .2 .5; < .6 .5; > .2 .5; > .6 .5];`,
+			ret:    wdte.Array{wdte.Bool(true), wdte.Bool(false), wdte.Bool(false), wdte.Bool(true)},
+		},
+		{
 			name:   "Simple/String/Compare",
 			script: `[< 'a' 'b'; > 'a' 'b'];`,
 			ret:    wdte.Array{wdte.Bool(true), wdte.Bool(false)},
