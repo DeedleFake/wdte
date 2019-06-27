@@ -486,8 +486,6 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // collected from executing that compound. The argument must be a
 // compound literal or the function will fail. Assigning a compound to
 // an ID and then passing that ID will not work.
-//
-// It surrounds the returned scope with a bound called "collect".
 func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) == 0 {
 		return wdte.GoFunc(Collect)
@@ -531,8 +529,7 @@ func Known(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //    (sub id val) scope
 //
 // Sub returns a subscope of scope with the value val bound to the ID
-// id. It puts a "collect" lower bound on the scope but does not add
-// any upper bounds.
+// id.
 func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	if len(args) <= 2 {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Sub), args...)
