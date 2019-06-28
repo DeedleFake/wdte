@@ -354,9 +354,16 @@ func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
 	return s
 }
 
-func (s *Scope) At(i Func) (Func, bool) { // nolint
+func (s *Scope) At(i Func) (Func, error) { // nolint
 	v := s.Get(ID(i.(String)))
-	return v, v != nil
+	if v == nil {
+		return nil, fmt.Errorf("%v is not in scope", i)
+	}
+	return v, nil
+}
+
+func (s *Scope) Set(k, v Func) (Func, error) { // nolint
+	return s.Add(ID(k.(String)), v), nil
 }
 
 func (s *Scope) String() string { // nolint
@@ -864,10 +871,10 @@ func AssignPattern(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func)
 	}) (*Scope, Func) {
 		m := make(map[ID]Func, len(ids))
 		for i, id := range ids {
-			v, ok := f.At(Number(i))
-			if !ok {
+			v, err := f.At(Number(i))
+			if err != nil {
 				return nil, &Error{
-					Err:   errors.New("Atter shorter than pattern"),
+					Err:   err,
 					Frame: frame,
 				}
 			}

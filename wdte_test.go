@@ -443,6 +443,16 @@ func TestStd(t *testing.T) {
 			ret:    wdte.Number(math.Pi),
 		},
 		{
+			name:   "Set/Scope",
+			script: `let t => collect (let test => 3); let t => set t 'test2' 5; t.test2;`,
+			ret:    wdte.Number(5),
+		},
+		{
+			name:   "Set/Array",
+			script: `let t => [1; 2; 3]; set t 1 5;`,
+			ret:    wdte.Array{wdte.Number(1), wdte.Number(5), wdte.Number(3)},
+		},
+		{
 			name:   "Collect",
 			script: `let t => collect (let test => 3); t.test;`,
 			ret:    wdte.Number(3),
@@ -451,11 +461,6 @@ func TestStd(t *testing.T) {
 			name:   "Known",
 			script: `let t => collect (let test => 3; let other => 5); known t;`,
 			ret:    wdte.Array{wdte.String("other"), wdte.String("test")},
-		},
-		{
-			name:   "Sub",
-			script: `let t => collect (let test => 3); let t => sub t 'test2' 5; t.test2;`,
-			ret:    wdte.Number(5),
 		},
 		{
 			name:   "Reflect",

@@ -26,9 +26,15 @@ type Lenner interface {
 
 // An Atter is a Func that can be indexed, like an array or a string.
 type Atter interface {
-	// At returns the value at index i. If the index is out of range, it
-	// should return false as its second return value.
-	At(i Func) (Func, bool)
+	At(i Func) (Func, error)
+}
+
+// A Setter is a Func that can produce a new Func from itself with a
+// key-value mapping applied in some way. For example, a scope can
+// produce a subscope with a new variable added to it, or an array can
+// produce a new array with an index modified.
+type Setter interface {
+	Set(k, v Func) (Func, error)
 }
 
 // A Reflector is a Func that can determine if it can be treated as
@@ -85,16 +91,13 @@ func (s String) Len() int { // nolint
 	return len(s)
 }
 
-func (s String) At(i Func) (Func, bool) { // nolint
-	if i, ok := i.(Number); ok {
-		if (int(i) < 0) || (int(i) >= len(s)) {
-			return nil, false
-		}
-
-		return String(s[int(i)]), true
+func (s String) At(index Func) (Func, error) { // nolint
+	i := int(index.(Number))
+	if (i < 0) || (i >= len(s)) {
+		return nil, fmt.Errorf("index %v is out of range [0,%v)", i, len(s))
 	}
 
-	return nil, false
+	return String(s[i]), nil
 }
 
 func (s String) Reflect(name string) bool { // nolint
@@ -158,16 +161,25 @@ func (a Array) Len() int { // nolint
 	return len(a)
 }
 
-func (a Array) At(i Func) (Func, bool) { // nolint
-	if i, ok := i.(Number); ok {
-		if (int(i) < 0) || (int(i) >= len(a)) {
-			return nil, false
-		}
-
-		return a[int(i)], true
+func (a Array) At(index Func) (Func, error) { // nolint
+	i := int(index.(Number))
+	if (i < 0) || (i >= len(a)) {
+		return nil, fmt.Errorf("index %v is out of range [0,%v)", i, len(a))
 	}
 
-	return nil, false
+	return a[i], nil
+}
+
+func (a Array) Set(k, v Func) (Func, error) { // nolint
+	i := int(k.(Number))
+	if (i < 0) || (i >= len(a)) {
+		return nil, fmt.Errorf("index %v is out of bounds [0,%v]", i, len(a))
+	}
+
+	c := make(Array, len(a))
+	copy(c, a)
+	c[i] = v
+	return c, nil
 }
 
 func (a Array) String() string { // nolint
