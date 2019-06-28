@@ -467,15 +467,48 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	at := args[0].Call(frame).(wdte.Atter)
 	i := args[1].Call(frame)
 
-	ret, ok := at.At(i)
-	if !ok {
+	ret, err := at.At(i)
+	if err != nil {
 		return &wdte.Error{
 			Frame: frame,
-			Err:   fmt.Errorf("index %v out of range", i),
+			Err:   err,
 		}
 	}
 
 	return ret
+}
+
+// Set is a WDTE function with the following signatures:
+//
+//    set con key val
+//    (set val) con key
+//    (set key val) con
+//
+// Set uses con's implementation of Setter to produce a new value from
+// con with a key-val mapping applied to it. For example,
+//
+//    set [1; 2; 3] 1 5
+//
+// returns a new Array containing [1; 5; 3].
+func Set(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("set")
+
+	if len(args) < 3 {
+		return wdteutil.SaveArgsReverse(wdte.GoFunc(Set), args...)
+	}
+
+	s := args[0].Call(frame).(wdte.Setter)
+	k := args[1].Call(frame)
+	v := args[2]
+
+	r, err := s.Set(k, v)
+	if err != nil {
+		return &wdte.Error{
+			Frame: frame,
+			Err:   err,
+		}
+	}
+	return r
 }
 
 // Collect is a WDTE function with the following signature:
@@ -520,28 +553,6 @@ func Known(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	return ret
-}
-
-// Sub is a WDTE function with the following signatures:
-//
-//    sub scope id val
-//    (sub val) scope id
-//    (sub id val) scope
-//
-// Sub returns a subscope of scope with the value val bound to the ID
-// id.
-func Sub(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	if len(args) <= 2 {
-		return wdteutil.SaveArgsReverse(wdte.GoFunc(Sub), args...)
-	}
-
-	frame = frame.Sub("sub")
-
-	s := args[0].Call(frame).(*wdte.Scope)
-	id := wdte.ID(args[1].Call(frame).(wdte.String))
-	v := args[2]
-
-	return s.Add(id, v)
 }
 
 // Reflect is a WDTE function with the following signature:
@@ -592,7 +603,7 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 	"at":      wdte.GoFunc(At),
 	"collect": wdte.GoFunc(Collect),
 	"known":   wdte.GoFunc(Known),
-	"sub":     wdte.GoFunc(Sub),
+	"set":     wdte.GoFunc(Set),
 	"reflect": wdte.GoFunc(Reflect),
 })
 
