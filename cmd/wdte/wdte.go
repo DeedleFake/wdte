@@ -13,7 +13,7 @@ import (
 func wdteVersion() (string, error) {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return "", errors.New("Failed to read build info")
+		return "", errors.New("failed to read build info")
 	}
 
 	for _, dep := range bi.Deps {
