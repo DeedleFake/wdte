@@ -116,7 +116,7 @@ func (g Grammar) Nullable(tok Token) bool {
 		return false
 	}
 
-	panic(fmt.Errorf("Unexpected token type: %T", tok))
+	panic(fmt.Errorf("unexpected token type: %T", tok))
 }
 
 // First returns the first set of the given token. For terminals, the

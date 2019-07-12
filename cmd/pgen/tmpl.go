@@ -26,7 +26,7 @@ func init() {
 			return "newEOF()"
 		}
 
-		panic(fmt.Errorf("Unexpected token type: %T", t))
+		panic(fmt.Errorf("unexpected token type: %T", t))
 	}
 
 	tmpl.Funcs(template.FuncMap{
