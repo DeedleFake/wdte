@@ -29,13 +29,13 @@ func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule, macros sc
 				return nil, parseError(s, err)
 			}
 
-			return nil, parseError(s, fmt.Errorf("Expected %v, but found EOF", gtok))
+			return nil, parseError(s, fmt.Errorf("expected %v, but found EOF", gtok))
 		}
 
 		switch gtok := gtok.(type) {
 		case pgen.Term:
 			if !tokensEqual(s.Tok(), gtok) {
-				return nil, parseError(s, fmt.Errorf("Expected %v (<%v>), but found %v", gtok, cur.nt, s.Tok().Val))
+				return nil, parseError(s, fmt.Errorf("expected %v (<%v>), but found %v", gtok, cur.nt, s.Tok().Val))
 			}
 
 			cur.AddChild(&Term{
@@ -49,7 +49,7 @@ func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule, macros sc
 		case pgen.NTerm:
 			rule := table[pgen.Lookup{Term: toPGenTerm(s.Tok()), NTerm: gtok}]
 			if rule == nil {
-				return nil, parseError(s, fmt.Errorf("No rule for (%v, <%v>)", toPGenTerm(s.Tok()), gtok))
+				return nil, parseError(s, fmt.Errorf("no rule for (%v, <%v>)", toPGenTerm(s.Tok()), gtok))
 			}
 
 			g.PushRule(rule)
@@ -76,12 +76,11 @@ func parse(r io.Reader, g tokenStack, table map[pgen.Lookup]pgen.Rule, macros sc
 }
 
 func tokensEqual(stok scanner.Token, gtok pgen.Token) bool {
-	switch gtok := gtok.(type) {
-	case pgen.Term:
+	if gtok, ok := gtok.(pgen.Term); ok {
 		return (gtok.Type == stok.Type) && ((stok.Type != scanner.Keyword) || (gtok.Keyword == stok.Val))
 	}
 
-	panic(fmt.Errorf("Tried to compare non-terminal: %#v", gtok))
+	panic(fmt.Errorf("tried to compare non-terminal: %#v", gtok))
 }
 
 func toPGenTerm(tok scanner.Token) pgen.Token {
