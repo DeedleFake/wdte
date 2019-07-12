@@ -95,8 +95,7 @@ func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("upper")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Upper)
 	}
 
@@ -111,8 +110,7 @@ func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("lower")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Lower)
 	}
 

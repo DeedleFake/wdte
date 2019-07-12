@@ -90,7 +90,7 @@ func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		for {
 			r, _, err := s.ReadRune()
 			if err != nil {
-				return wdte.Error{Frame: frame, Err: fmt.Errorf("Unterminated format specifier")}
+				return wdte.Error{Frame: frame, Err: fmt.Errorf("unterminated format specifier")}
 			}
 			if r == '}' {
 				break
@@ -100,7 +100,7 @@ func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			case '#':
 				i = readIndex(s)
 				if i < 0 {
-					return wdte.Error{Frame: frame, Err: fmt.Errorf("Invalid index in format specifier")}
+					return wdte.Error{Frame: frame, Err: fmt.Errorf("invalid index in format specifier")}
 				}
 			case 'q':
 				flags |= formatQuote
