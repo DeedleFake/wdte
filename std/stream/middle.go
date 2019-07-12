@@ -12,16 +12,14 @@ import (
 // It returns a Stream which calls f on each element yielded by the
 // Stream s, yielding the return values of f in their place.
 func Map(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Map)
 	}
 
 	f := args[0].Call(frame)
 
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		switch len(args) {
-		case 0:
+		if len(args) == 0 {
 			return mapper
 		}
 
@@ -45,16 +43,14 @@ func Map(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 // It returns a Stream which yields only those values yielded by the
 // Stream s that (f value) results in true for.
 func Filter(frame wdte.Frame, args ...wdte.Func) (filter wdte.Func) {
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Filter)
 	}
 
 	f := args[0].Call(frame)
 
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		switch len(args) {
-		case 0:
+		if len(args) == 0 {
 			return filter
 		}
 
@@ -89,16 +85,14 @@ func Filter(frame wdte.Frame, args ...wdte.Func) (filter wdte.Func) {
 //
 //    [0; 1; 0; 1; 0; 1]
 func FlatMap(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(FlatMap)
 	}
 
 	f := args[0].Call(frame)
 
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		switch len(args) {
-		case 0:
+		if len(args) == 0 {
 			return mapper
 		}
 
@@ -143,8 +137,7 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("enumerate")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Enumerate)
 	}
 
@@ -184,8 +177,7 @@ func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("repeat")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Repeat)
 	}
 

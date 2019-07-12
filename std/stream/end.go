@@ -37,8 +37,7 @@ func End() wdte.Func {
 func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("collect")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Collect)
 	}
 
@@ -75,8 +74,7 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("drain")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Drain)
 	}
 
