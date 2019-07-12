@@ -201,15 +201,13 @@ func (m *translator) fromSubbable(subbable *ast.NTerm, acc Sub) Sub {
 	var found bool
 	switch s := subbable.Children()[0].(type) {
 	case *ast.Term:
-		switch s.Tok().Type {
-		case scanner.ID:
+		if s.Tok().Type == scanner.ID {
 			acc = append(acc, Var(s.Tok().Val.(string)))
 			found = true
 		}
 
 	case *ast.NTerm:
-		switch s.Name() {
-		case "compound":
+		if s.Name() == "compound" {
 			acc = append(acc, m.fromCompound(s))
 			found = true
 		}

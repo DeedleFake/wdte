@@ -69,9 +69,10 @@ func runTests(t *testing.T, tests []test) {
 							"stdout": wdteio.Writer{Writer: &stdout},
 							"stderr": wdteio.Writer{Writer: &stderr},
 						}), nil
-					}
 
-					return scope, nil
+					default:
+						return scope, nil
+					}
 				})
 			}
 
