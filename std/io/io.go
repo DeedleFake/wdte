@@ -238,7 +238,7 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return Writer{Writer: io.MultiWriter(w...)}
 
 	default:
-		panic(fmt.Errorf("Unexpected argument type: %T", a0))
+		panic(fmt.Errorf("unexpected argument type: %T", a0))
 	}
 }
 
@@ -475,7 +475,7 @@ func Runes(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	case io.Reader:
 		r = bufio.NewReader(a)
 	default:
-		panic(fmt.Errorf("Unexpected argument type: %T", a))
+		panic(fmt.Errorf("unexpected argument type: %T", a))
 	}
 
 	return runeStream{r: r}
@@ -583,7 +583,7 @@ func Panic(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			e = f
 
 		default:
-			panic(fmt.Errorf("Unexpected argument type: %T", f))
+			panic(fmt.Errorf("unexpected argument type: %T", f))
 		}
 	}
 
