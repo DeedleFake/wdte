@@ -42,5 +42,5 @@ func (t TokenType) String() string {
 		return "EOF"
 	}
 
-	panic(fmt.Errorf("Invalid token type: %v", uint(t)))
+	panic(fmt.Errorf("invalid token type: %v", uint(t)))
 }
