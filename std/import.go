@@ -19,7 +19,7 @@ func stdImporter(from string) (*wdte.Scope, error) {
 		return m, nil
 	}
 
-	return nil, fmt.Errorf("Unknown import: %q", from)
+	return nil, fmt.Errorf("unknown import: %q", from)
 }
 
 // Register registers a module for importing by Import.

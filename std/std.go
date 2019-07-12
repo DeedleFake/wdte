@@ -137,6 +137,24 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	))
 }
 
+func compare(a1, a2 wdte.Func, c func(lr bool, n int, ord bool) (bool, bool)) (bool, bool) {
+	if cmp, ok := a1.(wdte.Comparer); ok {
+		r, ord := cmp.Compare(a2)
+		if r, ok := c(true, r, ord); ok {
+			return r, true
+		}
+	}
+
+	if cmp, ok := a2.(wdte.Comparer); ok {
+		r, ord := cmp.Compare(a1)
+		if r, ok := c(false, r, ord); ok {
+			return r, true
+		}
+	}
+
+	return false, false
+}
+
 // Equals is a WDTE function with the following signatures:
 //
 //    == a b
@@ -152,23 +170,13 @@ func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	a1 := args[0].Call(frame)
-	if _, ok := a1.(error); ok {
-		return a1
-	}
-
 	a2 := args[1].Call(frame)
-	if _, ok := a2.(error); ok {
-		return a2
-	}
 
-	if cmp, ok := a1.(wdte.Comparer); ok {
-		c, _ := cmp.Compare(a2)
-		return wdte.Bool(c == 0)
-	}
-
-	if cmp, ok := a2.(wdte.Comparer); ok {
-		c, _ := cmp.Compare(a1)
-		return wdte.Bool(c == 0)
+	r, ok := compare(a1, a2, func(lr bool, n int, ord bool) (bool, bool) {
+		return n == 0, true
+	})
+	if ok {
+		return wdte.Bool(r)
 	}
 
 	return wdte.Bool(a1 == a2)
@@ -189,31 +197,25 @@ func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	a1 := args[0].Call(frame)
-	if _, ok := a1.(error); ok {
-		return a1
-	}
-
 	a2 := args[1].Call(frame)
-	if _, ok := a2.(error); ok {
-		return a2
-	}
 
-	if cmp, ok := a1.(wdte.Comparer); ok {
-		c, ord := cmp.Compare(a2)
-		if ord {
-			return wdte.Bool(c < 0)
+	r, ok := compare(a1, a2, func(lr bool, n int, ord bool) (bool, bool) {
+		if !ord {
+			return false, false
 		}
-	}
 
-	if cmp, ok := a2.(wdte.Comparer); ok {
-		c, ord := cmp.Compare(a1)
-		if ord {
-			return wdte.Bool(c > 0)
+		if lr {
+			return n < 0, true
 		}
+
+		return n > 0, true
+	})
+	if ok {
+		return wdte.Bool(r)
 	}
 
 	return wdte.Error{
-		Err:   fmt.Errorf("Unable to compare %v and %v", a1, a2),
+		Err:   fmt.Errorf("unable to compare %v and %v", a1, a2),
 		Frame: frame,
 	}
 }
@@ -233,31 +235,25 @@ func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	a1 := args[0].Call(frame)
-	if _, ok := a1.(error); ok {
-		return a1
-	}
-
 	a2 := args[1].Call(frame)
-	if _, ok := a2.(error); ok {
-		return a2
-	}
 
-	if cmp, ok := a1.(wdte.Comparer); ok {
-		c, ord := cmp.Compare(a2)
-		if ord {
-			return wdte.Bool(c > 0)
+	r, ok := compare(a1, a2, func(lr bool, n int, ord bool) (bool, bool) {
+		if !ord {
+			return false, false
 		}
-	}
 
-	if cmp, ok := a2.(wdte.Comparer); ok {
-		c, ord := cmp.Compare(a1)
-		if ord {
-			return wdte.Bool(c < 0)
+		if lr {
+			return n > 0, true
 		}
+
+		return n < 0, true
+	})
+	if ok {
+		return wdte.Bool(r)
 	}
 
 	return wdte.Error{
-		Err:   fmt.Errorf("Unable to compare %v and %v", a1, a2),
+		Err:   fmt.Errorf("unable to compare %v and %v", a1, a2),
 		Frame: frame,
 	}
 }
@@ -277,31 +273,25 @@ func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	a1 := args[0].Call(frame)
-	if _, ok := a1.(error); ok {
-		return a1
-	}
-
 	a2 := args[1].Call(frame)
-	if _, ok := a2.(error); ok {
-		return a2
-	}
 
-	if cmp, ok := a1.(wdte.Comparer); ok {
-		c, ord := cmp.Compare(a2)
-		if ord {
-			return wdte.Bool(c <= 0)
+	r, ok := compare(a1, a2, func(lr bool, n int, ord bool) (bool, bool) {
+		if !ord {
+			return n == 0, n == 0
 		}
-	}
 
-	if cmp, ok := a2.(wdte.Comparer); ok {
-		c, ord := cmp.Compare(a1)
-		if ord {
-			return wdte.Bool(c >= 0)
+		if lr {
+			return n <= 0, true
 		}
+
+		return n >= 0, true
+	})
+	if ok {
+		return wdte.Bool(r)
 	}
 
 	return wdte.Error{
-		Err:   fmt.Errorf("Unable to compare %v and %v", a1, a2),
+		Err:   fmt.Errorf("unable to compare %v and %v", a1, a2),
 		Frame: frame,
 	}
 }
@@ -321,27 +311,21 @@ func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	a1 := args[0].Call(frame)
-	if _, ok := a1.(error); ok {
-		return a1
-	}
-
 	a2 := args[1].Call(frame)
-	if _, ok := a2.(error); ok {
-		return a2
-	}
 
-	if cmp, ok := a1.(wdte.Comparer); ok {
-		c, ord := cmp.Compare(a2)
-		if ord {
-			return wdte.Bool(c >= 0)
+	r, ok := compare(a1, a2, func(lr bool, n int, ord bool) (bool, bool) {
+		if !ord {
+			return n == 0, n == 0
 		}
-	}
 
-	if cmp, ok := a2.(wdte.Comparer); ok {
-		c, ord := cmp.Compare(a1)
-		if ord {
-			return wdte.Bool(c <= 0)
+		if lr {
+			return n >= 0, true
 		}
+
+		return n <= 0, true
+	})
+	if ok {
+		return wdte.Bool(r)
 	}
 
 	return wdte.Error{
@@ -376,8 +360,7 @@ const (
 func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("&&")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(And)
 	}
 
@@ -399,8 +382,7 @@ func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("||")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Or)
 	}
 
@@ -422,8 +404,7 @@ func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("!")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Not)
 	}
 
@@ -439,8 +420,7 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("len")
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		return wdte.GoFunc(Len)
 	}
 
