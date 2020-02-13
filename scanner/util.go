@@ -1,39 +1,53 @@
 package scanner
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 var (
-	symbols = map[string]struct{}{
-		".":  {},
-		"{":  {},
-		"}":  {},
-		"[":  {},
-		"]":  {},
-		"(":  {},
-		")":  {},
-		"=>": {},
-		";":  {},
-		":":  {},
-		"->": {},
-		"--": {},
-		"-|": {},
-		"(@": {},
+	symbols = []string{
+		".",
+		"{",
+		"}",
+		"[",
+		"]",
+		"(",
+		")",
+		"(|",
+		"|)",
+		"=>",
+		";",
+		":",
+		"->",
+		"--",
+		"-|",
+		"(@",
 	}
 
-	keywords = map[string]struct{}{
-		"memo":   {},
-		"let":    {},
-		"import": {},
+	keywords = []string{
+		"memo",
+		"let",
+		"import",
 	}
 )
 
+func init() {
+	sort.Slice(symbols, func(i1, i2 int) bool { return len(symbols[i1]) > len(symbols[i2]) })
+}
+
 func isKeyword(str string) bool {
-	_, ok := keywords[str]
-	return ok
+	for _, k := range keywords {
+		if str == k {
+			return true
+		}
+	}
+
+	return false
 }
 
 func symbolicPrefix(str string) (f string) {
-	for k := range symbols {
+	for _, k := range symbols {
 		if strings.HasPrefix(str, k) {
 			if len(k) > len(f) {
 				f = k
@@ -45,7 +59,7 @@ func symbolicPrefix(str string) (f string) {
 }
 
 func symbolicSuffix(str string) string {
-	for k := range symbols {
+	for _, k := range symbols {
 		if strings.HasSuffix(str, k) {
 			return k
 		}

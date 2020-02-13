@@ -597,6 +597,21 @@ func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Call(frame.WithScope(frame.Scope().Sub(s)), args...)
 }
 
+// Collector wraps a compound, causing it to return its collected
+// scope instead of the last result. If any expression in the compound
+// returns an error, however, then that error is returned instead.
+type Collector struct {
+	Compound Compound
+}
+
+func (c Collector) Call(frame Frame, args ...Func) Func {
+	s, f := c.Compound.Collect(frame)
+	if _, ok := f.(error); ok {
+		return f
+	}
+	return s
+}
+
 // Switch represents a switch expression.
 type Switch struct {
 	// Check is the condition at the front of the switch.

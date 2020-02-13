@@ -180,8 +180,10 @@ func (m *translator) fromSingle(single *ast.NTerm) Func {
 		switch s.Name() {
 		case "array":
 			return m.fromArray(s)
+
 		case "lambda":
 			return m.fromLambda(s)
+
 		case "import":
 			return m.fromImport(s)
 
@@ -270,14 +272,20 @@ func (m *translator) fromSwitches(switches *ast.NTerm, cases [][2]Func) [][2]Fun
 }
 
 func (m *translator) fromCompound(compound *ast.NTerm) Func {
+	mode := compound.Children()[0].(*ast.Term).Tok().Val.(string)
 	c := Compound(m.fromExprs(compound.Children()[1].(*ast.NTerm), nil))
-	if len(c) == 0 {
+	if (len(c) == 1) && (mode != "(|") {
 		if _, ok := c[0].(*Assigner); !ok {
 			return c[0]
 		}
 	}
 
-	return c
+	r := Func(c)
+	if mode == "(|" {
+		r = Collector{Compound: c}
+	}
+
+	return r
 }
 
 func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {

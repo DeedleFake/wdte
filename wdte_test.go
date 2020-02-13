@@ -345,6 +345,11 @@ func TestBasics(t *testing.T) {
 			}),
 		},
 		{
+			name:   "Collect",
+			script: `let t => (| let test => 3 |); t.test;`,
+			ret:    wdte.Number(3),
+		},
+		{
 			name:   "Macro/ROT13",
 			script: `@rot13[test];`,
 			ret:    wdte.String("grfg"),
@@ -443,10 +448,9 @@ func TestStd(t *testing.T) {
 			ret:    wdte.Number(math.Pi),
 		},
 		{
-			disabled: true,
-			name:     "Set/Scope",
-			script:   `let t => collect (let test => 3); let t => set t 'test2' 5; t.test2;`,
-			ret:      wdte.Number(5),
+			name:   "Set/Scope",
+			script: `let t => (| let test => 3 |); let t => set t 'test2' 5; t.test2;`,
+			ret:    wdte.Number(5),
 		},
 		{
 			name:   "Set/Array",
@@ -454,16 +458,9 @@ func TestStd(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(1), wdte.Number(5), wdte.Number(3)},
 		},
 		{
-			disabled: true,
-			name:     "Collect",
-			script:   `let t => collect (let test => 3); t.test;`,
-			ret:      wdte.Number(3),
-		},
-		{
-			disabled: true,
-			name:     "Known",
-			script:   `let t => collect (let test => 3; let other => 5); known t;`,
-			ret:      wdte.Array{wdte.String("other"), wdte.String("test")},
+			name:   "Known",
+			script: `let t => (| let test => 3; let other => 5 |); known t;`,
+			ret:    wdte.Array{wdte.String("other"), wdte.String("test")},
 		},
 		{
 			name:   "Reflect",
@@ -798,10 +795,9 @@ func TestStrings(t *testing.T) {
 			ret:    wdte.String(`[3; 5; 2]`),
 		},
 		{
-			disabled: true,
-			name:     "Format/Scope",
-			script:   `let str => import 'strings'; let test => collect (let x => 3; let a => 2); str.format '{}' test;`,
-			ret:      wdte.String(`scope(a: 2; x: 3)`),
+			name:   "Format/Scope",
+			script: `let str => import 'strings'; let test => (| let x => 3; let a => 2 |); str.format '{}' test;`,
+			ret:    wdte.String(`scope(a: 2; x: 3)`),
 		},
 		{
 			name:   "Format/Lambda",
@@ -829,26 +825,25 @@ func TestArrays(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(3), wdte.Number(5), wdte.Number(7)},
 		},
 		{
-			disabled: true,
-			name:     "SortStable",
+			name: "SortStable",
 			script: `
 				let a => import 'arrays';
 				let s => import 'stream';
 				let str => import 'strings';
 
 				a.sortStable [
-						collect (
+						(|
 							let cat => 'two';
 							let val => 5;
-						);
-						collect (
+						|);
+						(|
 							let cat => 'one';
 							let val => 7;
-						);
-						collect (
+						|);
+						(|
 							let cat => 'two';
 							let val => 3;
-						);
+						|);
 					]
 					(@ s e1 e2 => < e1.cat e2.cat)
 				-> a.stream

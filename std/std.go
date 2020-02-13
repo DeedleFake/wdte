@@ -511,26 +511,6 @@ func Set(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return r
 }
 
-// Collect is a WDTE function with the following signature:
-//
-//    collect compound
-//
-// Collect takes a compound as its argument and returns the scope
-// collected from executing that compound. The argument must be a
-// compound literal or the function will fail. Assigning a compound to
-// an ID and then passing that ID will not work.
-func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	if len(args) == 0 {
-		return wdte.GoFunc(Collect)
-	}
-
-	frame = frame.Sub("collect")
-
-	sf := args[0].(*wdte.ScopedFunc)
-	s, _ := sf.Func.(wdte.Compound).Collect(frame.WithScope(sf.Scope))
-	return s
-}
-
 // Known is a WDTE function with the following signature:
 //
 //    known scope
@@ -601,7 +581,6 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 
 	"len":     wdte.GoFunc(Len),
 	"at":      wdte.GoFunc(At),
-	"collect": wdte.GoFunc(Collect),
 	"known":   wdte.GoFunc(Known),
 	"set":     wdte.GoFunc(Set),
 	"reflect": wdte.GoFunc(Reflect),
