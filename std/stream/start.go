@@ -12,7 +12,9 @@ import (
 //
 // It returns a new Stream that calls next in order to get the next
 // element in the stream, passing it first initial and then the
-// previous value on each call. The Stream ends when next returns end.
+// previous value on each call. The Stream yields initial before it
+// begins yielding the values returned from next. The Stream ends when
+// next returns end.
 func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("new")
 
@@ -28,12 +30,9 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			return nil, false
 		}
 
+		cur := prev
 		prev = next.Call(frame, prev)
-		if _, ok := prev.(end); ok {
-			return nil, false
-		}
-
-		return prev, true
+		return cur, true
 	})
 }
 
