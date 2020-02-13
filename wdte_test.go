@@ -515,7 +515,7 @@ func TestStream(t *testing.T) {
 		{
 			name:   "New",
 			script: `let s => import 'stream'; s.new 0 (@ f n => + n 1 {> 5 => s.end}) -> s.collect;`,
-			ret:    wdte.Array{wdte.Number(1), wdte.Number(2), wdte.Number(3), wdte.Number(4), wdte.Number(5)},
+			ret:    wdte.Array{wdte.Number(0), wdte.Number(1), wdte.Number(2), wdte.Number(3), wdte.Number(4), wdte.Number(5)},
 		},
 		{
 			name:   "Range/1",
