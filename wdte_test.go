@@ -443,9 +443,10 @@ func TestStd(t *testing.T) {
 			ret:    wdte.Number(math.Pi),
 		},
 		{
-			name:   "Set/Scope",
-			script: `let t => collect (let test => 3); let t => set t 'test2' 5; t.test2;`,
-			ret:    wdte.Number(5),
+			disabled: true,
+			name:     "Set/Scope",
+			script:   `let t => collect (let test => 3); let t => set t 'test2' 5; t.test2;`,
+			ret:      wdte.Number(5),
 		},
 		{
 			name:   "Set/Array",
@@ -453,14 +454,16 @@ func TestStd(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(1), wdte.Number(5), wdte.Number(3)},
 		},
 		{
-			name:   "Collect",
-			script: `let t => collect (let test => 3); t.test;`,
-			ret:    wdte.Number(3),
+			disabled: true,
+			name:     "Collect",
+			script:   `let t => collect (let test => 3); t.test;`,
+			ret:      wdte.Number(3),
 		},
 		{
-			name:   "Known",
-			script: `let t => collect (let test => 3; let other => 5); known t;`,
-			ret:    wdte.Array{wdte.String("other"), wdte.String("test")},
+			disabled: true,
+			name:     "Known",
+			script:   `let t => collect (let test => 3; let other => 5); known t;`,
+			ret:      wdte.Array{wdte.String("other"), wdte.String("test")},
 		},
 		{
 			name:   "Reflect",
@@ -655,6 +658,38 @@ func TestStream(t *testing.T) {
 			script: `let s => import 'stream'; let main => s.range 5 -> s.all (< 3);`,
 			ret:    wdte.Bool(false),
 		},
+		{
+			name: "FibLike",
+			script: `
+				let s => import 'stream';
+				let a => import 'arrays';
+
+				let pop array => a.stream array -> s.skip 1 -> s.collect;
+
+				let windows size stream => s.new
+						(stream -> s.limit size -> s.collect)
+						(@ next prev =>
+							let n => stream -> s.limit 1 -> s.collect;
+							len n {
+								== 0 => s.end;
+								true => a.concat (pop prev) n;
+							};
+						)
+					;
+
+				let isFibLike stream => stream
+					-> windows 3
+					-> s.all (@ all v => == (at v 2) (+ (at v 1) (at v 0)))
+					;
+
+				[
+					[1; 1; 2; 3; 5; 8] -> a.stream -> isFibLike;
+					[2; 2; 4; 6; 10] -> a.stream -> isFibLike;
+					[1; 1; 2; 3; 5; 7] -> a.stream -> isFibLike;
+				];
+			`,
+			ret: wdte.Array{wdte.Bool(true), wdte.Bool(true), wdte.Bool(false)},
+		},
 	})
 }
 
@@ -763,9 +798,10 @@ func TestStrings(t *testing.T) {
 			ret:    wdte.String(`[3; 5; 2]`),
 		},
 		{
-			name:   "Format/Scope",
-			script: `let str => import 'strings'; let test => collect (let x => 3; let a => 2); str.format '{}' test;`,
-			ret:    wdte.String(`scope(a: 2; x: 3)`),
+			disabled: true,
+			name:     "Format/Scope",
+			script:   `let str => import 'strings'; let test => collect (let x => 3; let a => 2); str.format '{}' test;`,
+			ret:      wdte.String(`scope(a: 2; x: 3)`),
 		},
 		{
 			name:   "Format/Lambda",
@@ -793,7 +829,8 @@ func TestArrays(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(3), wdte.Number(5), wdte.Number(7)},
 		},
 		{
-			name: "SortStable",
+			disabled: true,
+			name:     "SortStable",
 			script: `
 				let a => import 'arrays';
 				let s => import 'stream';
