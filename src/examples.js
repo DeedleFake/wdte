@@ -203,13 +203,14 @@ This example simulates this scenario, printing out the final state of the doors.
 
 	input: `let a => import 'arrays';
 let s => import 'stream';
+let str => import 'strings';
 
 let toggle doors m =>
 	a.stream doors
 	-> s.enumerate
 	-> s.map (@ s n => [+ (at n 0) 1; at n 1])
-	-> s.map (@ s n => n {
-			(@ s n => == (% (at n 0) m) 0) => ! (at n 1);
+	-> s.map (@ s n => % (at n 0) m {
+			== 0 => ! (at n 1);
 			true => at n 1;
 		})
 	-> s.collect
@@ -221,10 +222,15 @@ s.range 100
 -> s.range 1 100
 -> s.reduce doors toggle
 -> a.stream
--> s.map (@ s n => 0 {
-		n => 'Open';
-		true => 'Closed';
-	} -- io.writeln io.stdout)
+-> s.enumerate
+-> s.map (@ s n =>
+		0 {
+			at n 1 => 'Open';
+			true => 'Closed';
+		}
+		-> str.format '{}: {}' (at n 0 -> + 1)
+		-- io.writeln io.stdout;
+	)
 -> s.drain
 ;`,
 }
