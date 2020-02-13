@@ -579,6 +579,11 @@ func TestStream(t *testing.T) {
 			},
 		},
 		{
+			name:   "Skip",
+			script: `let s => import 'stream'; s.range 3 -> s.skip 2 -> s.collect;`,
+			ret:    wdte.Array{wdte.Number(2)},
+		},
+		{
 			name:   "Zip",
 			script: `let s => import 'stream'; s.zip (s.range 2) (s.range 1 2) -> s.collect;`,
 			ret: wdte.Array{

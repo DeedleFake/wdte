@@ -250,6 +250,43 @@ func Limit(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	})
 }
 
+// Skip is a WDTE function with the following signature:
+//
+//    (skip n) s
+//
+// Skip returns a Stream that skips the first n elements of s. In
+// other wotds, the first element of the returned stream will be
+// element n+1 of s.
+func Skip(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("skip")
+
+	if len(args) == 0 {
+		return wdte.GoFunc(Skip)
+	}
+
+	n := args[0].Call(frame).(wdte.Number)
+
+	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+		frame = frame.Sub("skip")
+
+		s := args[0].Call(frame).(Stream)
+
+		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
+			frame = frame.Sub("skip")
+
+			for n > 0 {
+				next, ok := s.Next(frame)
+				if !ok {
+					return next, ok
+				}
+				n--
+			}
+
+			return s.Next(frame)
+		})
+	})
+}
+
 // Zip is a WDTE function with the following signatures:
 //
 //    (zip s1) ...
