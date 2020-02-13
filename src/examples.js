@@ -24,6 +24,63 @@ fib 30
 ;`,
 }
 
+export const fibLike = {
+	name: 'Fibonacci-Like Sequence',
+
+	desc: `
+Fibonacci-Like Sequence
+=======================
+
+This example demonstrates an implementation of a function for determining whether or not a given sequence is similar to a Fibonacci sequence. In other words, it detects if every value in a sequence, starting from the third, is the result of the previous two added together. To accomplish this properly, it defines several extra functions as well:
+
+pop
+---
+
+Takes an array and returns a copy that doesn't have the first element of the original.
+
+windows
+-------
+
+Takes a size and a stream and returns a new stream that yields a moving window across the orginial stream as arrays of the given size. In other words, if a stream yields 1, then 2, then 3, a stream with windows of size 2 into that stream will yield \`[1; 2]\` and then \`[2; 3]\`
+
+isFibLike
+---------
+
+Takes either a stream or an array and returns true if that sequence is Fibonacci-like.`,
+
+	input: `let s => import 'stream';
+let a => import 'arrays';
+
+let pop array => a.stream array -> s.skip 1 -> s.collect;
+
+let windows size stream => s.new
+		(stream -> s.limit size -> s.collect)
+		(@ next prev =>
+			let n => stream -> s.limit 1 -> s.collect;
+			len n {
+				== 0 => s.end;
+				true => a.concat (pop prev) n;
+			};
+		)
+	;
+
+let isFibLike stream => stream {
+	reflect "Array" => a.stream stream -> isFibLike;
+	true => stream
+		-> windows 3
+		-> s.all (@ all v =>
+				let [p1 p2 n] => v;
+				== n (+ p1 p2);
+			)
+		;
+	};
+
+[1; 1; 2; 3; 5; 8]
+-> isFibLike
+-- io.writeln io.stdout
+;`,
+}
+
 export const stream = {
 	name: 'Stream',
 
