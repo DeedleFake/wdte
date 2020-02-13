@@ -160,9 +160,9 @@ func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Seek), args...)
 	}
 
-	s := args[0].Call(frame).(io.Seeker)
-	off := int64(args[1].Call(frame).(wdte.Number))
-	rel := args[2].Call(frame).(wdte.Number)
+	s := args[0].(io.Seeker)
+	off := int64(args[1].(wdte.Number))
+	rel := args[2].(wdte.Number)
 
 	var w int
 	switch {
@@ -193,7 +193,7 @@ func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Close)
 	}
 
-	c := args[0].Call(frame).(io.Closer)
+	c := args[0].(io.Closer)
 	err := c.Close()
 	if err != nil {
 		return wdte.Error{Err: err, Frame: frame}
@@ -220,12 +220,12 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgs(wdte.GoFunc(Combine), args...)
 	}
 
-	switch a0 := args[0].Call(frame).(type) {
+	switch a0 := args[0].(type) {
 	case reader:
 		r := make([]io.Reader, 1, len(args))
 		r[0] = a0
 		for _, a := range args[1:] {
-			r = append(r, a.Call(frame).(reader))
+			r = append(r, a.(reader))
 		}
 		return Reader{Reader: io.MultiReader(r...)}
 
@@ -233,7 +233,7 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		w := make([]io.Writer, 1, len(args))
 		w[0] = a0
 		for _, a := range args[1:] {
-			w = append(w, a.Call(frame).(writer))
+			w = append(w, a.(writer))
 		}
 		return Writer{Writer: io.MultiWriter(w...)}
 
@@ -268,14 +268,14 @@ func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	var w writer
 	var r reader
 	var a1 wdte.Func
-	switch a0 := args[0].Call(frame).(type) {
+	switch a0 := args[0].(type) {
 	case writer:
 		w = a0
-		r = args[1].Call(frame).(reader)
+		r = args[1].(reader)
 		a1 = r
 
 	case reader:
-		w = args[1].Call(frame).(writer)
+		w = args[1].(writer)
 		r = a0
 		a1 = w
 	}
@@ -300,7 +300,7 @@ func String(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(String)
 	}
 
-	r := args[0].Call(frame).(reader)
+	r := args[0].(reader)
 
 	var buf bytes.Buffer
 	_, err := io.Copy(&buf, r)
@@ -350,7 +350,7 @@ func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Lines)
 	}
 
-	r := args[0].Call(frame).(reader)
+	r := args[0].(reader)
 	return scanner{s: bufio.NewScanner(r)}
 }
 
@@ -367,7 +367,7 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Words)
 	}
 
-	r := args[0].Call(frame).(reader)
+	r := args[0].(reader)
 	s := bufio.NewScanner(r)
 	s.Split(bufio.ScanWords)
 	return scanner{s: s}
@@ -396,12 +396,12 @@ func Scan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	var r reader
 	var sep wdte.String
-	switch a0 := args[0].Call(frame).(type) {
+	switch a0 := args[0].(type) {
 	case reader:
 		r = a0
-		sep = args[1].Call(frame).(wdte.String)
+		sep = args[1].(wdte.String)
 	case wdte.String:
-		r = args[1].Call(frame).(reader)
+		r = args[1].(reader)
 		sep = a0
 	}
 
@@ -466,7 +466,7 @@ func Runes(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Runes)
 	}
 
-	a := args[0].Call(frame)
+	a := args[0]
 
 	var r io.RuneReader
 	switch a := a.(type) {
@@ -489,13 +489,13 @@ func write(f func(io.Writer, interface{}) error) (gf wdte.Func) {
 
 		var w writer
 		var d wdte.Func
-		switch a0 := args[0].Call(frame).(type) {
+		switch a0 := args[0].(type) {
 		case writer:
 			w = a0
-			d = args[1].Call(frame)
+			d = args[1]
 		case wdte.Func:
 			d = a0
-			w = args[1].Call(frame).(writer)
+			w = args[1].(writer)
 		}
 
 		err := f(w, d)
@@ -593,7 +593,7 @@ func Panic(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	for i, arg := range args[:n] {
-		args[i] = arg.Call(frame)
+		args[i] = arg
 		set(args[i])
 	}
 	if e == nil {

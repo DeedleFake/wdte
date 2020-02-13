@@ -64,7 +64,7 @@ func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	var i int
 	var out bytes.Buffer
-	s := strings.NewReader(string(args[0].Call(frame).(wdte.String)))
+	s := strings.NewReader(string(args[0].(wdte.String)))
 	for {
 		r, _, err := s.ReadRune()
 		if err != nil {
@@ -117,7 +117,7 @@ func Format(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			return wdteutil.SaveArgs(wdte.GoFunc(Format), args...)
 		}
 
-		out.WriteString(flags.Format(args[i].Call(frame)))
+		out.WriteString(flags.Format(args[i]))
 	}
 }
 

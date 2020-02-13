@@ -22,8 +22,8 @@ func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Contains), args...)
 	}
 
-	haystack := args[0].Call(frame).(wdte.String)
-	needle := args[1].Call(frame).(wdte.String)
+	haystack := args[0].(wdte.String)
+	needle := args[1].(wdte.String)
 
 	return wdte.Bool(strings.Contains(string(haystack), string(needle)))
 }
@@ -41,8 +41,8 @@ func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Prefix), args...)
 	}
 
-	haystack := args[0].Call(frame).(wdte.String)
-	needle := args[1].Call(frame).(wdte.String)
+	haystack := args[0].(wdte.String)
+	needle := args[1].(wdte.String)
 
 	return wdte.Bool(strings.HasPrefix(string(haystack), string(needle)))
 }
@@ -60,8 +60,8 @@ func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Suffix), args...)
 	}
 
-	haystack := args[0].Call(frame).(wdte.String)
-	needle := args[1].Call(frame).(wdte.String)
+	haystack := args[0].(wdte.String)
+	needle := args[1].(wdte.String)
 
 	return wdte.Bool(strings.HasSuffix(string(haystack), string(needle)))
 }
@@ -81,8 +81,8 @@ func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Index), args...)
 	}
 
-	haystack := args[0].Call(frame).(wdte.String)
-	needle := args[1].Call(frame).(wdte.String)
+	haystack := args[0].(wdte.String)
+	needle := args[1].(wdte.String)
 
 	return wdte.Number(strings.Index(string(haystack), string(needle)))
 }
@@ -100,7 +100,7 @@ func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Upper)
 	}
 
-	return wdte.String(strings.ToUpper(string(args[0].Call(frame).(wdte.String))))
+	return wdte.String(strings.ToUpper(string(args[0].(wdte.String))))
 }
 
 // Lower is a WDTE function with the following signature:
@@ -116,7 +116,7 @@ func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Lower)
 	}
 
-	return wdte.String(strings.ToLower(string(args[0].Call(frame).(wdte.String))))
+	return wdte.String(strings.ToLower(string(args[0].(wdte.String))))
 }
 
 // Repeat is a WDTE function with the following signatures:
@@ -137,14 +137,14 @@ func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	var str wdte.String
 	var times wdte.Number
-	switch a0 := args[0].Call(frame).(type) {
+	switch a0 := args[0].(type) {
 	case wdte.String:
 		str = a0
-		times = args[1].Call(frame).(wdte.Number)
+		times = args[1].(wdte.Number)
 
 	case wdte.Number:
 		times = a0
-		str = args[1].Call(frame).(wdte.String)
+		str = args[1].(wdte.String)
 	}
 
 	return wdte.String(strings.Repeat(string(str), int(times)))
@@ -171,15 +171,15 @@ func Split(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Split), args...)
 	}
 
-	str := args[0].Call(frame).(wdte.String)
+	str := args[0].(wdte.String)
 
 	var sep wdte.String
 	n := wdte.Number(-1)
-	switch arg := args[1].Call(frame).(type) {
+	switch arg := args[1].(type) {
 	case wdte.String:
 		sep = arg
 		if len(args) > 2 {
-			n = args[2].Call(frame).(wdte.Number)
+			n = args[2].(wdte.Number)
 		}
 
 	case wdte.Number:
@@ -189,7 +189,7 @@ func Split(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			})
 		}
 
-		sep = args[2].Call(frame).(wdte.String)
+		sep = args[2].(wdte.String)
 		n = arg
 	}
 	if n == 0 {
@@ -219,13 +219,13 @@ func Join(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Join), args...)
 	}
 
-	a := args[0].Call(frame).(wdte.Array)
+	a := args[0].(wdte.Array)
 	s := make([]string, 0, len(a))
 	for _, str := range a {
 		s = append(s, string(str.(wdte.String)))
 	}
 
-	return wdte.String(strings.Join(s, string(args[1].Call(frame).(wdte.String))))
+	return wdte.String(strings.Join(s, string(args[1].(wdte.String))))
 }
 
 type reader struct {
@@ -252,7 +252,7 @@ func Read(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Read)
 	}
 
-	s := args[0].Call(frame).(wdte.String)
+	s := args[0].(wdte.String)
 	return reader{Reader: strings.NewReader(string(s))}
 }
 

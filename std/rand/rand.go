@@ -35,7 +35,7 @@ func Next(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Next)
 	}
 
-	r := args[0].Call(frame).(Source)
+	r := args[0].(Source)
 	return r.Next()
 }
 
@@ -71,7 +71,7 @@ func Gen(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Gen)
 	}
 
-	seed := args[0].Call(frame).(wdte.Number)
+	seed := args[0].(wdte.Number)
 	return &source{rand: rand.New(rand.NewSource(int64(seed)))}
 }
 
@@ -112,8 +112,8 @@ func Stream(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Stream), args...)
 	}
 
-	r := args[0].Call(frame).(Source)
-	rem := int(args[1].Call(frame).(wdte.Number))
+	r := args[0].(Source)
+	rem := int(args[1].(wdte.Number))
 
 	return stream.NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
 		if rem <= 0 {
