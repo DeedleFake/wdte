@@ -3,6 +3,15 @@
 // license that can be found in the LICENSE file.
 
 ;(() => {
+	// Map multiple JavaScript environments to a single common API,
+	// preferring web standards over Node.js API.
+	//
+	// Environments considered:
+	// - Browsers
+	// - Node.js
+	// - Electron
+	// - Parcel
+
 	if (typeof global !== 'undefined') {
 		// global already exists
 	} else if (typeof window !== 'undefined') {
@@ -13,29 +22,11 @@
 		)
 	}
 
-	// Map web browser API and Node.js API to a single common API (preferring web standards over Node.js API).
-	const isNodeJS = global.process && global.process.title === 'node'
-	if (isNodeJS) {
+	if (!global.fs && global.require) {
 		global.fs = require('fs')
+	}
 
-		const nodeCrypto = require('crypto')
-		global.crypto = {
-			getRandomValues(b) {
-				nodeCrypto.randomFillSync(b)
-			},
-		}
-
-		global.performance = {
-			now() {
-				const [sec, nsec] = process.hrtime()
-				return sec * 1000 + nsec / 1000000
-			},
-		}
-
-		const util = require('util')
-		global.TextEncoder = util.TextEncoder
-		global.TextDecoder = util.TextDecoder
-	} else {
+	if (!global.fs) {
 		let outputBuf = ''
 		global.fs = {
 			constants: {
@@ -77,6 +68,34 @@
 			},
 		}
 	}
+
+	if (!global.crypto) {
+		const nodeCrypto = require('crypto')
+		global.crypto = {
+			getRandomValues(b) {
+				nodeCrypto.randomFillSync(b)
+			},
+		}
+	}
+
+	if (!global.performance) {
+		global.performance = {
+			now() {
+				const [sec, nsec] = process.hrtime()
+				return sec * 1000 + nsec / 1000000
+			},
+		}
+	}
+
+	if (!global.TextEncoder) {
+		global.TextEncoder = require('util').TextEncoder
+	}
+
+	if (!global.TextDecoder) {
+		global.TextDecoder = require('util').TextDecoder
+	}
+
+	// End of polyfills for common API.
 
 	const encoder = new TextEncoder('utf-8')
 	const decoder = new TextDecoder('utf-8')
@@ -160,7 +179,7 @@
 						mem().setUint32(addr + 4, nanHead, true)
 						mem().setUint32(addr, 4, true)
 						return
-						default:
+					default:
 						break
 				}
 
@@ -262,6 +281,12 @@
 							setTimeout(
 								() => {
 									this._resume()
+									while (this._scheduledTimeouts.has(id)) {
+										// for some reason Go failed to register the timeout event, log and try again
+										// (temporary workaround for https://github.com/golang/go/issues/28975)
+										console.warn('scheduleTimeoutEvent: missed timeout event')
+										this._resume()
+									}
 								},
 								getInt64(sp + 8) + 1, // setTimeout has been seen to fire up to 1 millisecond early
 							),
@@ -391,6 +416,34 @@
 						)
 					},
 
+					// func copyBytesToGo(dst []byte, src ref) (int, bool)
+					'syscall/js.copyBytesToGo': (sp) => {
+						const dst = loadSlice(sp + 8)
+						const src = loadValue(sp + 32)
+						if (!(src instanceof Uint8Array)) {
+							mem().setUint8(sp + 48, 0)
+							return
+						}
+						const toCopy = src.subarray(0, dst.length)
+						dst.set(toCopy)
+						setInt64(sp + 40, toCopy.length)
+						mem().setUint8(sp + 48, 1)
+					},
+
+					// func copyBytesToJS(dst ref, src []byte) (int, bool)
+					'syscall/js.copyBytesToJS': (sp) => {
+						const dst = loadValue(sp + 8)
+						const src = loadSlice(sp + 16)
+						if (!(dst instanceof Uint8Array)) {
+							mem().setUint8(sp + 48, 0)
+							return
+						}
+						const toCopy = src.subarray(0, dst.length)
+						dst.set(toCopy)
+						setInt64(sp + 40, toCopy.length)
+						mem().setUint8(sp + 48, 1)
+					},
+
 					debug: (value) => {
 						console.log(value)
 					},
@@ -408,7 +461,6 @@
 				true,
 				false,
 				global,
-				this._inst.exports.mem,
 				this,
 			]
 			this._refs = new Map()
@@ -420,11 +472,13 @@
 			let offset = 4096
 
 			const strPtr = (str) => {
-				let ptr = offset
-				new Uint8Array(mem.buffer, offset, str.length + 1).set(
-					encoder.encode(str + '\0'),
-				)
-				offset += str.length + (8 - (str.length % 8))
+				const ptr = offset
+				const bytes = encoder.encode(str + '\0')
+				new Uint8Array(mem.buffer, offset, bytes.length).set(bytes)
+				offset += bytes.length
+				if (offset % 8 !== 0) {
+					offset += 8 - (offset % 8)
+				}
 				return ptr
 			}
 
@@ -476,17 +530,26 @@
 		}
 	}
 
-	if (isNodeJS) {
+	if (
+		global.require &&
+		global.require.main === module &&
+		global.process &&
+		global.process.versions &&
+		!global.process.versions.electron
+	) {
 		if (process.argv.length < 3) {
-			process.stderr.write('usage: go_js_wasm_exec [wasm binary] [arguments]\n')
+			console.error('usage: go_js_wasm_exec [wasm binary] [arguments]')
 			process.exit(1)
 		}
 
-		const go = new global.Go()
+		const go = new window.Go()
 		go.argv = process.argv.slice(2)
 		go.env = Object.assign({ TMPDIR: require('os').tmpdir() }, process.env)
 		go.exit = process.exit
-		WebAssembly.instantiate(global.fs.readFileSync(process.argv[2]), go.importObject)
+		WebAssembly.instantiate(
+			window.fs.readFileSync(process.argv[2]),
+			go.importObject,
+		)
 			.then((result) => {
 				process.on('exit', (code) => {
 					// Node.js exits if no event handler is pending
@@ -499,7 +562,8 @@
 				return go.run(result.instance)
 			})
 			.catch((err) => {
-				throw err
+				console.error(err)
+				process.exit(1)
 			})
 	}
 })()
