@@ -53,7 +53,7 @@ func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Open)
 	}
 
-	path := args[0].Call(frame).(wdte.String)
+	path := args[0].(wdte.String)
 	file, err := os.Open(string(path))
 	if err != nil {
 		return wdte.Error{Err: err, Frame: frame}
@@ -74,7 +74,7 @@ func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Create)
 	}
 
-	path := args[0].Call(frame).(wdte.String)
+	path := args[0].(wdte.String)
 	file, err := os.Create(string(path))
 	if err != nil {
 		return wdte.Error{Err: err, Frame: frame}
@@ -95,7 +95,7 @@ func Append(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Append)
 	}
 
-	path := args[0].Call(frame).(wdte.String)
+	path := args[0].(wdte.String)
 	file, err := os.OpenFile(string(path), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return wdte.Error{Err: err, Frame: frame}

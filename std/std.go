@@ -23,7 +23,6 @@ func Plus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	var sum wdte.Number
 	for _, arg := range args {
-		arg = arg.Call(frame)
 		if _, ok := arg.(error); ok {
 			return arg
 		}
@@ -45,12 +44,12 @@ func Minus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.Sub("-")
 
-	a1 := args[0].Call(frame)
+	a1 := args[0]
 	if _, ok := a1.(error); ok {
 		return a1
 	}
 
-	a2 := args[1].Call(frame)
+	a2 := args[1]
 	if _, ok := a2.(error); ok {
 		return a2
 	}
@@ -73,7 +72,7 @@ func Times(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	p := wdte.Number(1)
 	for _, arg := range args {
-		arg = arg.Call(frame)
+		arg = arg
 		if _, ok := arg.(error); ok {
 			return arg
 		}
@@ -95,12 +94,12 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.Sub("/")
 
-	a1 := args[0].Call(frame)
+	a1 := args[0]
 	if _, ok := a1.(error); ok {
 		return a1
 	}
 
-	a2 := args[1].Call(frame)
+	a2 := args[1]
 	if _, ok := a2.(error); ok {
 		return a2
 	}
@@ -121,12 +120,12 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.Sub("%")
 
-	a1 := args[0].Call(frame)
+	a1 := args[0]
 	if _, ok := a1.(error); ok {
 		return a1
 	}
 
-	a2 := args[1].Call(frame)
+	a2 := args[1]
 	if _, ok := a2.(error); ok {
 		return a2
 	}
@@ -151,12 +150,12 @@ func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Equals), args...)
 	}
 
-	a1 := args[0].Call(frame)
+	a1 := args[0]
 	if _, ok := a1.(error); ok {
 		return a1
 	}
 
-	a2 := args[1].Call(frame)
+	a2 := args[1]
 	if _, ok := a2.(error); ok {
 		return a2
 	}
@@ -188,12 +187,12 @@ func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Less), args...)
 	}
 
-	a1 := args[0].Call(frame)
+	a1 := args[0]
 	if _, ok := a1.(error); ok {
 		return a1
 	}
 
-	a2 := args[1].Call(frame)
+	a2 := args[1]
 	if _, ok := a2.(error); ok {
 		return a2
 	}
@@ -232,12 +231,12 @@ func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Greater), args...)
 	}
 
-	a1 := args[0].Call(frame)
+	a1 := args[0]
 	if _, ok := a1.(error); ok {
 		return a1
 	}
 
-	a2 := args[1].Call(frame)
+	a2 := args[1]
 	if _, ok := a2.(error); ok {
 		return a2
 	}
@@ -276,12 +275,12 @@ func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(LessEqual), args...)
 	}
 
-	a1 := args[0].Call(frame)
+	a1 := args[0]
 	if _, ok := a1.(error); ok {
 		return a1
 	}
 
-	a2 := args[1].Call(frame)
+	a2 := args[1]
 	if _, ok := a2.(error); ok {
 		return a2
 	}
@@ -320,12 +319,12 @@ func GreaterEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(GreaterEqual), args...)
 	}
 
-	a1 := args[0].Call(frame)
+	a1 := args[0]
 	if _, ok := a1.(error); ok {
 		return a1
 	}
 
-	a2 := args[1].Call(frame)
+	a2 := args[1]
 	if _, ok := a2.(error); ok {
 		return a2
 	}
@@ -382,7 +381,7 @@ func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	for _, arg := range args {
-		arg = arg.Call(frame)
+		arg = arg
 		if arg != wdte.Bool(true) {
 			return wdte.Bool(false)
 		}
@@ -405,7 +404,7 @@ func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	for _, arg := range args {
-		arg = arg.Call(frame)
+		arg = arg
 		if arg == wdte.Bool(true) {
 			return wdte.Bool(true)
 		}
@@ -427,7 +426,7 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Not)
 	}
 
-	return wdte.Bool(args[0].Call(frame) != wdte.Bool(true))
+	return wdte.Bool(args[0] != wdte.Bool(true))
 }
 
 // Len is a WDTE function with the following signature:
@@ -444,7 +443,7 @@ func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Len)
 	}
 
-	if lenner, ok := args[0].Call(frame).(wdte.Lenner); ok {
+	if lenner, ok := args[0].(wdte.Lenner); ok {
 		return wdte.Number(lenner.Len())
 	}
 
@@ -464,8 +463,8 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.Sub("at")
 
-	at := args[0].Call(frame).(wdte.Atter)
-	i := args[1].Call(frame)
+	at := args[0].(wdte.Atter)
+	i := args[1]
 
 	ret, err := at.At(i)
 	if err != nil {
@@ -497,8 +496,8 @@ func Set(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Set), args...)
 	}
 
-	s := args[0].Call(frame).(wdte.Setter)
-	k := args[1].Call(frame)
+	s := args[0].(wdte.Setter)
+	k := args[1]
 	v := args[2]
 
 	r, err := s.Set(k, v)
@@ -509,26 +508,6 @@ func Set(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		}
 	}
 	return r
-}
-
-// Collect is a WDTE function with the following signature:
-//
-//    collect compound
-//
-// Collect takes a compound as its argument and returns the scope
-// collected from executing that compound. The argument must be a
-// compound literal or the function will fail. Assigning a compound to
-// an ID and then passing that ID will not work.
-func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-	if len(args) == 0 {
-		return wdte.GoFunc(Collect)
-	}
-
-	frame = frame.Sub("collect")
-
-	sf := args[0].(*wdte.ScopedFunc)
-	s, _ := sf.Func.(wdte.Compound).Collect(frame.WithScope(sf.Scope))
-	return s
 }
 
 // Known is a WDTE function with the following signature:
@@ -544,7 +523,7 @@ func Known(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	frame = frame.Sub("known")
 
-	s := args[0].Call(frame).(*wdte.Scope)
+	s := args[0].(*wdte.Scope)
 	k := s.Known()
 
 	ret := make(wdte.Array, 0, len(k))
@@ -569,8 +548,8 @@ func Reflect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Reflect), args...)
 	}
 
-	v := args[0].Call(frame)
-	t := args[1].Call(frame).(wdte.String)
+	v := args[0]
+	t := args[1].(wdte.String)
 
 	return wdte.Bool(wdte.Reflect(v, string(t)))
 }
@@ -601,7 +580,6 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 
 	"len":     wdte.GoFunc(Len),
 	"at":      wdte.GoFunc(At),
-	"collect": wdte.GoFunc(Collect),
 	"known":   wdte.GoFunc(Known),
 	"set":     wdte.GoFunc(Set),
 	"reflect": wdte.GoFunc(Reflect),

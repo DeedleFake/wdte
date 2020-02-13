@@ -28,9 +28,9 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgs(wdte.GoFunc(Concat), args...)
 	}
 
-	array := args[0].Call(frame).(wdte.Array)
+	array := args[0].(wdte.Array)
 	for _, arg := range args[1:] {
-		array = append(array[:len(array):len(array)], arg.Call(frame).(wdte.Array)...)
+		array = append(array[:len(array):len(array)], arg.(wdte.Array)...)
 	}
 	return array
 }
@@ -43,13 +43,13 @@ func sorter(sortFunc func(interface{}, func(int, int) bool)) (f wdte.GoFunc) {
 
 		var array wdte.Array
 		var less wdte.Func
-		switch a := args[0].Call(frame).(type) {
+		switch a := args[0].(type) {
 		case wdte.Array:
 			array = a
-			less = args[1].Call(frame)
+			less = args[1]
 		default:
 			less = a
-			array = args[1].Call(frame).(wdte.Array)
+			array = args[1].(wdte.Array)
 		}
 
 		type errorFunc interface {
@@ -134,7 +134,7 @@ func Stream(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Stream)
 	}
 
-	return &streamer{a: args[0].Call(frame).(wdte.Array)}
+	return &streamer{a: args[0].(wdte.Array)}
 }
 
 func (a *streamer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint

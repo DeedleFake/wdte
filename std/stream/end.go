@@ -42,7 +42,7 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Collect)
 	}
 
-	a, ok := args[0].Call(frame).(Stream)
+	a, ok := args[0].(Stream)
 	if !ok {
 		return args[0]
 	}
@@ -57,7 +57,7 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 			return n
 		}
 
-		r = append(r, n.Call(frame))
+		r = append(r, n)
 	}
 
 	return r
@@ -80,7 +80,7 @@ func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Drain)
 	}
 
-	s := args[0].Call(frame).(Stream)
+	s := args[0].(Stream)
 
 	last := End()
 	for {
@@ -124,9 +124,9 @@ func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Reduce), args...)
 	}
 
-	s := args[0].Call(frame).(Stream)
-	cur := args[1].Call(frame)
-	r := args[2].Call(frame)
+	s := args[0].(Stream)
+	cur := args[1]
+	r := args[2]
 
 	for {
 		n, ok := s.Next(frame)
@@ -153,7 +153,7 @@ func Fold(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Fold), args...)
 	}
 
-	s := args[0].Call(frame).(Stream)
+	s := args[0].(Stream)
 	cur, ok := s.Next(frame)
 	if !ok {
 		return End()
@@ -191,9 +191,9 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Extent), args...)
 	}
 
-	s := args[0].Call(frame).(Stream)
-	length := args[1].Call(frame).(wdte.Number)
-	less := args[2].Call(frame)
+	s := args[0].(Stream)
+	length := args[1].(wdte.Number)
+	less := args[2]
 
 	var c func(wdte.Array, int, wdte.Func) wdte.Array
 	c = func(extent wdte.Array, i int, f wdte.Func) wdte.Array {
@@ -223,7 +223,7 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if !ok {
 			return extent
 		}
-		n = n.Call(frame)
+		n = n
 
 		i := sort.Search(len(extent), func(i int) bool {
 			return less.Call(frame, n, extent[i]) == wdte.Bool(true)
@@ -253,7 +253,7 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //
 //	frame = frame.Sub("call")
 //
-//	a, ok := args[0].Call(frame).(Stream)
+//	a, ok := args[0].(Stream)
 //	if !ok {
 //		return args[0]
 //	}
@@ -269,7 +269,7 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 //		}
 //
 //		if prev != nil {
-//			n = n.Call(frame).Call(frame, prev.Call(frame))
+//			n = n.Call(frame, prev)
 //		}
 //
 //		prev = n
@@ -293,8 +293,8 @@ func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(Any), args...)
 	}
 
-	s := args[0].Call(frame).(Stream)
-	f := args[1].Call(frame)
+	s := args[0].(Stream)
+	f := args[1]
 
 	for {
 		n, ok := s.Next(frame)
@@ -323,8 +323,8 @@ func All(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdteutil.SaveArgsReverse(wdte.GoFunc(All), args...)
 	}
 
-	s := args[0].Call(frame).(Stream)
-	f := args[1].Call(frame)
+	s := args[0].(Stream)
+	f := args[1]
 
 	for {
 		n, ok := s.Next(frame)

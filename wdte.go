@@ -241,7 +241,7 @@ func (s *Scope) Add(id ID, val Func) *Scope {
 		},
 		getFunc: func(g ID) Func {
 			if g == id {
-				return s.Freeze(val)
+				return val
 			}
 
 			return s.Get(g)
@@ -263,7 +263,7 @@ func (s *Scope) Map(vars map[ID]Func) *Scope {
 		},
 		getFunc: func(g ID) Func {
 			if v, ok := vars[g]; ok {
-				return s.Freeze(v)
+				return v
 			}
 
 			return s.Get(g)
@@ -303,19 +303,6 @@ func (s *Scope) Parent() *Scope {
 	}
 
 	return s.p
-}
-
-// Freeze returns a new function which executes in the scope s
-// regardless of whatever Frame it is called with.
-func (s *Scope) Freeze(f Func) Func {
-	if sf, ok := f.(*ScopedFunc); ok {
-		return sf
-	}
-
-	return &ScopedFunc{
-		Func:  f,
-		Scope: s,
-	}
 }
 
 func (s *Scope) knownSet(vars map[ID]struct{}) {
@@ -456,7 +443,7 @@ func (f FuncCall) Call(frame Frame, args ...Func) Func { // nolint
 
 	next := make([]Func, len(f.Args))
 	for i := range f.Args {
-		next[i] = frame.Scope().Freeze(f.Args[i])
+		next[i] = f.Args[i].Call(frame)
 	}
 
 	return f.Func.Call(frame).Call(frame, next...)
@@ -610,6 +597,21 @@ func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Call(frame.WithScope(frame.Scope().Sub(s)), args...)
 }
 
+// Collector wraps a compound, causing it to return its collected
+// scope instead of the last result. If any expression in the compound
+// returns an error, however, then that error is returned instead.
+type Collector struct {
+	Compound Compound
+}
+
+func (c Collector) Call(frame Frame, args ...Func) Func {
+	s, f := c.Compound.Collect(frame)
+	if _, ok := f.(error); ok {
+		return f
+	}
+	return s
+}
+
 // Switch represents a switch expression.
 type Switch struct {
 	// Check is the condition at the front of the switch.
@@ -657,31 +659,6 @@ func (v Var) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	return f.Call(frame, args...)
-}
-
-// A ScopedFunc is an expression that uses a predefined scope instead
-// of the one that comes with its frame. This is to make sure that a
-// lazily evaluated expression has access to the correct scope. It
-// caches the result of its evaluation the first time it is evaluated,
-// preventing expressions that are being lazily evaluated from being
-// evaluated twice.
-type ScopedFunc struct {
-	Func  Func
-	Scope *Scope
-}
-
-func (f *ScopedFunc) Call(frame Frame, args ...Func) Func { // nolint
-	r := f.Func.Call(frame.WithScope(f.Scope), args...)
-	f.Func = r
-	return r
-}
-
-func (f ScopedFunc) String() string { // nolint
-	if inner, ok := f.Func.(fmt.Stringer); ok {
-		return inner.String()
-	}
-
-	return fmt.Sprint(f.Func)
 }
 
 // A Memo wraps another function, caching the results of calls with
@@ -858,7 +835,7 @@ type AssignFunc func(Frame, *Scope, []ID, Func) (*Scope, Func)
 func AssignSimple(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) {
 	frame = frame.WithScope(frame.Scope().Sub(scope))
 
-	f := frame.Scope().Freeze(val)
+	f := val.Call(frame)
 	return scope.Add(ids[0], f), f
 }
 
@@ -879,9 +856,9 @@ func AssignPattern(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func)
 				}
 			}
 
-			m[id] = frame.Scope().Freeze(v)
+			m[id] = v.Call(frame)
 		}
-		return scope.Map(m), frame.Scope().Freeze(f)
+		return scope.Map(m), f.Call(frame)
 	}
 
 	frame = frame.WithScope(frame.Scope().Sub(scope))

@@ -158,9 +158,13 @@ func (s *Scanner) setTok(t TokenType, v interface{}) {
 	switch t {
 	case Keyword:
 		switch v {
-		case ")", "]", "}":
+		case ")", "]", "}", "|)":
 			if (s.tok.Type != Keyword) || (s.tok.Val != ";") {
-				s.unread(rune(v.(string)[0]))
+				vs := v.(string)
+				for i := len(vs) - 1; i >= 0; i-- {
+					s.unread(rune(vs[i]))
+				}
+
 				v = ";"
 			}
 		}

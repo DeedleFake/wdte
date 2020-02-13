@@ -23,7 +23,7 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	prev := args[0]
-	next := args[1].Call(frame)
+	next := args[1]
 
 	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
 		if _, ok := prev.(end); ok {
@@ -69,20 +69,20 @@ func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	switch len(args) {
 	case 1:
-		m = args[0].Call(frame).(wdte.Number)
+		m = args[0].(wdte.Number)
 
 	case 2:
-		i = args[0].Call(frame).(wdte.Number)
-		m = args[1].Call(frame).(wdte.Number)
+		i = args[0].(wdte.Number)
+		m = args[1].(wdte.Number)
 
 		if i > m {
 			s = -1
 		}
 
 	default:
-		i = args[0].Call(frame).(wdte.Number)
-		m = args[1].Call(frame).(wdte.Number)
-		s = args[2].Call(frame).(wdte.Number)
+		i = args[0].(wdte.Number)
+		m = args[1].(wdte.Number)
+		s = args[2].(wdte.Number)
 	}
 
 	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
@@ -114,7 +114,7 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	var i int
-	cur := args[0].Call(frame).(Stream)
+	cur := args[0].(Stream)
 	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
 		if i >= len(args) {
 			return nil, false
@@ -128,7 +128,7 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 					return nil, false
 				}
 
-				cur = args[i].Call(frame).(Stream)
+				cur = args[i].(Stream)
 				continue
 			}
 			return n, ok

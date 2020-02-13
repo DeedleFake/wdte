@@ -17,7 +17,7 @@ func Map(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 		return wdte.GoFunc(Map)
 	}
 
-	f := args[0].Call(frame)
+	f := args[0]
 
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		switch len(args) {
@@ -25,7 +25,7 @@ func Map(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 			return mapper
 		}
 
-		s := args[0].Call(frame).(Stream)
+		s := args[0].(Stream)
 
 		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
 			n, ok := s.Next(frame)
@@ -50,7 +50,7 @@ func Filter(frame wdte.Frame, args ...wdte.Func) (filter wdte.Func) {
 		return wdte.GoFunc(Filter)
 	}
 
-	f := args[0].Call(frame)
+	f := args[0]
 
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		switch len(args) {
@@ -58,7 +58,7 @@ func Filter(frame wdte.Frame, args ...wdte.Func) (filter wdte.Func) {
 			return filter
 		}
 
-		s := args[0].Call(frame).(Stream)
+		s := args[0].(Stream)
 
 		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
 			for {
@@ -94,7 +94,7 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 		return wdte.GoFunc(FlatMap)
 	}
 
-	f := args[0].Call(frame)
+	f := args[0]
 
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		switch len(args) {
@@ -102,7 +102,7 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 			return mapper
 		}
 
-		s := args[0].Call(frame).(Stream)
+		s := args[0].(Stream)
 
 		var cur Stream
 		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
@@ -121,7 +121,7 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 					return nil, false
 				}
 
-				r := f.Call(frame, n).Call(frame)
+				r := f.Call(frame, n)
 				if r, ok := r.(Stream); ok {
 					cur = r
 					continue
@@ -148,7 +148,7 @@ func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Enumerate)
 	}
 
-	s := args[0].Call(frame).(Stream)
+	s := args[0].(Stream)
 
 	var i wdte.Number
 	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
@@ -189,7 +189,7 @@ func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Repeat)
 	}
 
-	s := args[0].Call(frame).(Stream)
+	s := args[0].(Stream)
 
 	var buf []wdte.Func
 	loop := -1
@@ -230,12 +230,12 @@ func Limit(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Limit)
 	}
 
-	n := args[0].Call(frame).(wdte.Number)
+	n := args[0].(wdte.Number)
 
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		frame = frame.Sub("limit")
 
-		s := args[0].Call(frame).(Stream)
+		s := args[0].(Stream)
 
 		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
 			frame = frame.Sub("limit")
@@ -264,12 +264,12 @@ func Skip(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return wdte.GoFunc(Skip)
 	}
 
-	n := args[0].Call(frame).(wdte.Number)
+	n := args[0].(wdte.Number)
 
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		frame = frame.Sub("skip")
 
-		s := args[0].Call(frame).(Stream)
+		s := args[0].(Stream)
 
 		return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {
 			frame = frame.Sub("skip")
@@ -315,7 +315,7 @@ func Zip(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	streams := make([]Stream, 0, len(args))
 	for _, arg := range args {
-		streams = append(streams, arg.Call(frame).(Stream))
+		streams = append(streams, arg.(Stream))
 	}
 
 	return NextFunc(func(frame wdte.Frame) (wdte.Func, bool) {

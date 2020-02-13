@@ -31,6 +31,7 @@
     <switch> -> { <switches> }
               | ε
   <compound> -> ( <cexprs> )
+              | (| <cexprs> |)
      <exprs> -> <expr> ; <exprs>
               | ε
   <switches> -> <expr> => <expr> ; <switches>
