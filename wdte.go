@@ -7,6 +7,7 @@ import (
 	"io"
 	"sort"
 	"strings"
+	"unsafe"
 
 	"github.com/DeedleFake/wdte/ast"
 	"github.com/DeedleFake/wdte/scanner"
@@ -469,9 +470,8 @@ const (
 type ChainPiece struct {
 	Expr Func
 
-	Flags      uint
-	Slots      []ID
-	AssignFunc AssignFunc
+	Flags uint
+	Slots Assigner
 }
 
 func (p ChainPiece) Call(frame Frame, args ...Func) Func {
@@ -502,7 +502,9 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 			tmp = tmp.Call(frame.WithScope(frame.Scope().Sub(slotScope)), prev)
 		}
 
-		slotScope, tmp = cur.AssignFunc(frame, slotScope, cur.Slots, tmp)
+		if cur.Slots != nil {
+			slotScope, tmp = cur.Slots.Assign(frame, slotScope, tmp)
+		}
 
 		if _, ok := tmp.(error); ok || (cur.Flags&IgnoredChain == 0) {
 			prev = tmp
@@ -578,8 +580,8 @@ type Compound []Func
 func (c Compound) Collect(frame Frame) (letScope *Scope, last Func) {
 	for _, f := range c {
 		switch f := f.(type) {
-		case *Assigner:
-			letScope, last = f.Assign(frame, letScope)
+		case Assigner:
+			letScope, last = f.Assign(frame, letScope, f)
 		default:
 			last = f.Call(frame.WithScope(frame.Scope().Sub(letScope)))
 		}
@@ -733,23 +735,16 @@ func (cache *memoCache) Set(args []Func, val Func) {
 // it will create a new subscope containing itself under the ID "ex",
 // and its first and second arguments under the IDs "x" and "y",
 // respectively. It will then evaluate `+ x y` in that new scope.
-//
-// The arguments in the subscope, not including the self-reference,
-// are contained in the boundary "args". The self-reference is contained
-// in the boundary "self".
 type Lambda struct {
 	ID   ID
 	Expr Func
-	Args []ID
+	Args []Assigner
 
-	Stored   []Func
 	Scope    *Scope
 	Original *Lambda
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
-	stored := lambda.Stored
-
 	scope := lambda.Scope
 	if scope == nil {
 		scope = frame.Scope()
@@ -761,9 +756,8 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	if len(args) < len(lambda.Args) {
-		vars := make(map[ID]Func, len(args))
 		for i := range args {
-			vars[lambda.Args[i]] = args[i]
+			scope, _ = lambda.Args[i].Assign(frame, scope, args[i])
 		}
 
 		return &Lambda{
@@ -771,18 +765,15 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 			Expr: lambda.Expr,
 			Args: lambda.Args[len(args):],
 
-			Stored:   append(stored, args...),
-			Scope:    scope.Map(vars),
+			Scope:    scope,
 			Original: original,
 		}
 	}
 
-	vars := make(map[ID]Func, len(args))
 	for i := range lambda.Args {
-		vars[lambda.Args[i]] = args[i]
+		scope, _ = lambda.Args[i].Assign(frame, scope, args[i])
 	}
 
-	scope = scope.Map(vars)
 	scope = scope.Add(original.ID, original)
 	return lambda.Expr.Call(frame.WithScope(scope))
 }
@@ -793,61 +784,88 @@ func (lambda *Lambda) String() string { // nolint
 	fmt.Fprintf(&buf, "(@ %v", lambda.ID)
 	for _, arg := range lambda.Args {
 		buf.WriteByte(' ')
-		buf.WriteString(string(arg))
+		fmt.Fprint(&buf, arg)
 	}
 	buf.WriteString(" => ...)")
 
 	return buf.String()
 }
 
-// An Assigner bundles a known list of IDs and an expression with an
-// AssignFunc.
-type Assigner struct {
-	AssignFunc AssignFunc
+// An Assigner places items into a scope. How exactly iy does this
+// differs, but the general idea is to produce a subscope from a combination of frame, an existing scope, and a function.
+type Assigner interface {
+	Func
 
-	IDs  []ID
-	Expr Func
+	// Assign produces a subscope from an existing frame, scope, and
+	// function, returning both the new subscope and a function. The
+	// returned function may or may not be related to the original
+	// function, but should be in most cases.
+	//
+	// In the event of an error, the returned scope should be nil to
+	// indicate that the error was not simply stored in the scope, as
+	// that is valid behavior.
+	Assign(frame Frame, scope *Scope, val Func) (*Scope, Func)
+
+	// IDs returns the list of IDs associated with the Assigner. This is
+	// generally the IDs that will be added to a scope via the Assign
+	// method.
+	IDs() []ID
 }
 
-func (a Assigner) Call(frame Frame, args ...Func) Func { // nolint
-	return a.Expr.Call(frame, args...)
+// SimpleAssigner is an Assigner that assigns a single variable to a
+// value.
+type SimpleAssigner ID
+
+func (a SimpleAssigner) Call(frame Frame, args ...Func) Func {
+	return a
 }
 
-func (a Assigner) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nolint
-	return a.AssignFunc(frame, scope, a.IDs, a.Expr)
-}
-
-// AssignFunc places items into a scope. How exactly it does this
-// differs, but the general idea is that it should return a scope
-// which contains the IDs given with data somehow gotten from the
-// provided Func, possibly involving calls using the given Frame. It
-// returns the new scope and a Func. Ideally, this should be the Func
-// that was originally provided, possibly wrapped in something, but it
-// may not be.
-//
-// In the event of an error, an AssignFunc should return a nil scope
-// alongside the returned Func to indicate that it didn't simply store
-// an error value in the scope, which would be completely valid.
-type AssignFunc func(Frame, *Scope, []ID, Func) (*Scope, Func)
-
-// AssignSimple is an AssignFunc which places a single value into the
-// scope with a single ID.
-func AssignSimple(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) {
+func (a SimpleAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) {
 	frame = frame.WithScope(frame.Scope().Sub(scope))
 
 	f := val.Call(frame)
-	return scope.Add(ids[0], f), f
+	return scope.Add(ID(a), f), f
 }
 
-// AssignPattern performs a pattern matching assignment, placing
-// values retrieved from an Atter into the corresponding provided IDs.
-func AssignPattern(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) {
+func (a SimpleAssigner) IDs() []ID {
+	return []ID{ID(a)}
+}
+
+func (a SimpleAssigner) String() string {
+	return string(a)
+}
+
+// PatternAssigner assigns variables to the corresponding indices of
+// an Atter under the assumption that the Atter uses integer indices.
+// For example, given
+//
+//    PatternAssigner{
+//      "a",
+//      "b",
+//      "c"
+//    }
+//
+// assiging with a value of
+//
+//    wdte.Array{wdte.Number(1), wdte.Number(5), wdte.Number(3)}
+//
+// will result in a subscope with
+//
+//    a = 1
+//    b = 5
+//    c = 3
+type PatternAssigner []Assigner
+
+func (a PatternAssigner) Call(frame Frame, args ...Func) Func {
+	return a
+}
+
+func (a PatternAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) {
 	assignAtter := func(frame Frame, f interface {
 		Func
 		Atter
 	}) (*Scope, Func) {
-		m := make(map[ID]Func, len(ids))
-		for i, id := range ids {
+		for i := range a {
 			v, err := f.At(Number(i))
 			if err != nil {
 				return nil, &Error{
@@ -856,9 +874,10 @@ func AssignPattern(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func)
 				}
 			}
 
-			m[id] = v.Call(frame)
+			scope, _ = a[i].Assign(frame, scope, v)
 		}
-		return scope.Map(m), f.Call(frame)
+
+		return scope, f
 	}
 
 	frame = frame.WithScope(frame.Scope().Sub(scope))
@@ -869,7 +888,7 @@ func AssignPattern(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func)
 		Atter
 		Lenner
 	}:
-		if f.Len() < len(ids) {
+		if f.Len() < len(a) {
 			return nil, &Error{
 				Err:   errors.New("Lenner shorter than pattern"),
 				Frame: frame,
@@ -890,4 +909,36 @@ func AssignPattern(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func)
 			Frame: frame,
 		}
 	}
+}
+
+func (a PatternAssigner) IDs() []ID {
+	ids := make([]ID, 0, len(a))
+	for _, s := range a {
+		ids = append(ids, s.IDs()...)
+	}
+	return ids
+}
+
+func (a PatternAssigner) String() string {
+	return "[" + strings.Join(*(*[]string)(unsafe.Pointer(&a)), " ") + "]"
+}
+
+// A LetAssigner assigns a pre-defined expression using an Assigner.
+// Unlike other Assigners, it completely ignores the val argument of
+// its Assign method.
+type LetAssigner struct {
+	Assigner
+	Expr Func
+}
+
+func (a LetAssigner) Call(frame Frame, args ...Func) Func {
+	return a.Expr.Call(frame, args...)
+}
+
+func (a LetAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) {
+	return a.Assigner.Assign(frame, scope, a.Expr)
+}
+
+func (a LetAssigner) String() string {
+	return fmt.Sprint(a.Assigner)
 }

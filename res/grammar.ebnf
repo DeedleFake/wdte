@@ -2,8 +2,10 @@
   <funcmods> -> <funcmod> <funcmods>
               | ε
    <funcmod> -> memo
-  <argdecls> -> id <argdecls>
+  <argdecls> -> <argdecl> <argdecls>
               | ε
+   <argdecl> -> id
+              | [ <argdecls> ; ]
       <expr> -> <single> <args> <switch> <slot> <chain>
       <args> -> <single> <args>
               | ε
@@ -11,10 +13,8 @@
               | -- <expr>
               | -| <expr>
               | ε
-      <slot> -> : <slotassign>
+      <slot> -> : <argdecl>
               | ε
-<slotassign> -> id
-              | [ id <argdecls> ; ]
     <single> -> number
               | string
               | <import>
@@ -42,7 +42,7 @@
     <lambda> -> (@ <funcmods> id <argdecls> => <cexprs> )
    <letexpr> -> let <letassign>
  <letassign> -> <funcmods> id <argdecls> => <expr>
-              | [ id <argdecls> ; ] => <expr>
+              | <argdecl> => <expr>
     <import> -> import string
 
 # vim: ts=2 sw=2 et

@@ -54,24 +54,37 @@ func (m *translator) fromFuncMod(funcMod *ast.NTerm) funcMod {
 	}
 }
 
-func (m *translator) fromArgDecls(argdecls *ast.NTerm, ids []ID) []ID {
+func (m *translator) fromArgDecls(argdecls *ast.NTerm, args []Assigner) []Assigner {
 	switch arg := argdecls.Children()[0].(type) {
-	case *ast.Term:
-		ids = append(ids, ID(arg.Tok().Val.(string)))
-		return m.fromArgDecls(argdecls.Children()[1].(*ast.NTerm), ids)
+	case *ast.NTerm:
+		args = append(args, m.fromArgDecl(arg))
+		return m.fromArgDecls(argdecls.Children()[1].(*ast.NTerm), args)
 
 	case *ast.Epsilon:
-		return ids
+		return args
 
 	default:
 		panic(fmt.Errorf("Malformed AST with bad <argdecls>: %T", arg))
 	}
 }
 
+func (m *translator) fromArgDecl(argdecl *ast.NTerm) Assigner {
+	switch len(argdecl.Children()) {
+	case 1:
+		return SimpleAssigner(argdecl.Children()[0].(*ast.Term).Tok().Val.(string))
+
+	case 4:
+		return PatternAssigner(m.fromArgDecls(argdecl.Children()[1].(*ast.NTerm), nil))
+
+	default:
+		panic(fmt.Errorf("Malformed AST with bad <argdecl>: len == %v", len(argdecl.Children())))
+	}
+}
+
 func (m *translator) fromExpr(expr *ast.NTerm, flags uint, chain Chain) (r Func) {
 	first := m.fromSingle(expr.Children()[0].(*ast.NTerm))
 	in := m.fromArgs(expr.Children()[1].(*ast.NTerm), nil)
-	slots, assignFunc := m.fromSlot(expr.Children()[3].(*ast.NTerm))
+	slots := m.fromSlot(expr.Children()[3].(*ast.NTerm))
 
 	r = &FuncCall{
 		Func: first,
@@ -82,9 +95,8 @@ func (m *translator) fromExpr(expr *ast.NTerm, flags uint, chain Chain) (r Func)
 	piece := &ChainPiece{
 		Expr: r,
 
-		Flags:      flags,
-		Slots:      slots,
-		AssignFunc: assignFunc,
+		Flags: flags,
+		Slots: slots,
 	}
 
 	fc := m.fromChain(expr.Children()[4].(*ast.NTerm), append(chain, piece))
@@ -97,26 +109,27 @@ func (m *translator) fromExpr(expr *ast.NTerm, flags uint, chain Chain) (r Func)
 func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 	assign := expr.Children()[1].(*ast.NTerm)
 
-	switch first := assign.Children()[0].(type) {
-	case *ast.NTerm:
+	switch first := assign.Children()[0].(*ast.NTerm); first.Name() {
+	case "funcmods":
 		mods := m.fromFuncMods(first)
 		id := ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))
 		args := m.fromArgDecls(assign.Children()[2].(*ast.NTerm), nil)
 		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm), 0, nil)
 
+		argIDs := make([]ID, 0, len(args))
+		for _, arg := range args {
+			argIDs = append(argIDs, arg.IDs()...)
+		}
+
 		if mods&funcModMemo != 0 {
 			inner = &Memo{
 				Func: inner,
-				Args: args,
+				Args: argIDs,
 			}
 		}
 
-		var right Func
-		switch len(args) {
-		case 0:
-			right = inner
-
-		default:
+		right := inner
+		if len(args) > 0 {
 			right = &Lambda{
 				ID:   id,
 				Expr: inner,
@@ -124,46 +137,28 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 			}
 		}
 
-		return &Assigner{
-			AssignFunc: AssignSimple,
-
-			IDs:  []ID{id},
-			Expr: right,
+		return &LetAssigner{
+			Assigner: SimpleAssigner(id),
+			Expr:     right,
 		}
 
-	case *ast.Term:
-		return &Assigner{
-			AssignFunc: AssignPattern,
-
-			IDs: m.fromArgDecls(
-				assign.Children()[2].(*ast.NTerm),
-				[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))},
-			),
-			Expr: m.fromExpr(assign.Children()[6].(*ast.NTerm), 0, nil),
+	case "argdecl":
+		return &LetAssigner{
+			Assigner: m.fromArgDecl(first),
+			Expr:     m.fromExpr(assign.Children()[2].(*ast.NTerm), 0, nil),
 		}
 	}
 
-	panic(fmt.Errorf("Malformed AST with bad <assign>: %#v", assign))
+	panic(fmt.Errorf("Malformed AST with bad <letassign>: %#v", assign))
 }
 
-func (m *translator) fromSlot(expr *ast.NTerm) ([]ID, AssignFunc) {
+func (m *translator) fromSlot(expr *ast.NTerm) Assigner {
 	if _, ok := expr.Children()[0].(*ast.Epsilon); ok {
-		return nil, func(frame Frame, scope *Scope, ids []ID, val Func) (*Scope, Func) {
-			return scope, val
-		}
+		return nil
+
 	}
 
-	assign := expr.Children()[1].(*ast.NTerm)
-
-	first := assign.Children()[0].(*ast.Term)
-	if first.Tok().Type == scanner.ID {
-		return []ID{ID(first.Tok().Val.(string))}, AssignSimple
-	}
-
-	return m.fromArgDecls(
-		assign.Children()[2].(*ast.NTerm),
-		[]ID{ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))},
-	), AssignPattern
+	return m.fromArgDecl(expr.Children()[1].(*ast.NTerm))
 }
 
 func (m *translator) fromSingle(single *ast.NTerm) Func {
@@ -275,7 +270,7 @@ func (m *translator) fromCompound(compound *ast.NTerm) Func {
 	mode := compound.Children()[0].(*ast.Term).Tok().Val.(string)
 	c := Compound(m.fromExprs(compound.Children()[1].(*ast.NTerm), nil))
 	if (len(c) == 1) && (mode != "(|") {
-		if _, ok := c[0].(*Assigner); !ok {
+		if _, ok := c[0].(Assigner); !ok {
 			return c[0]
 		}
 	}
@@ -296,15 +291,20 @@ func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 
 	inner := Func(expr)
 	if len(expr) == 1 {
-		if _, ok := expr[0].(*Assigner); !ok {
+		if _, ok := expr[0].(Assigner); !ok {
 			inner = expr[0]
 		}
+	}
+
+	argIDs := make([]ID, 0, len(args))
+	for _, arg := range args {
+		argIDs = append(argIDs, arg.IDs()...)
 	}
 
 	if mods&funcModMemo != 0 {
 		inner = &Memo{
 			Func: inner,
-			Args: args,
+			Args: argIDs,
 		}
 	}
 

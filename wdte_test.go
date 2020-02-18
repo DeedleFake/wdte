@@ -171,9 +171,24 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Array{wdte.Number(5), wdte.Number(3)},
 		},
 		{
+			name:   "Simple/Pattern/Complex",
+			script: `let [a [b c]] => [3; [5; 2]]; [c; b; a];`,
+			ret:    wdte.Array{wdte.Number(2), wdte.Number(5), wdte.Number(3)},
+		},
+		{
 			name:   "Simple/Args",
 			script: `let test n => + n 3; test 5;`,
 			ret:    wdte.Number(8),
+		},
+		{
+			name:   "Simple/Args/Pattern",
+			script: `let test [a b] => + a b; test [3; 6];`,
+			ret:    wdte.Number(9),
+		},
+		{
+			name:   "Simple/Args/Pattern/Complex",
+			script: `let test [a [b c]] => + a b c; test [3; [6; 2]];`,
+			ret:    wdte.Number(11),
 		},
 		{
 			name:   "Simple/Compound/Args",
@@ -181,9 +196,29 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(8),
 		},
 		{
+			name:   "Simple/Compound/Args/Pattern",
+			script: `let test [a b] c => + a b c; (test [3; 5]) 2;`,
+			ret:    wdte.Number(10),
+		},
+		{
+			name:   "Simple/Compound/Args/Pattern/Complex",
+			script: `let test [a [b]] c => + a b c; (test [3; [5]]) 2;`,
+			ret:    wdte.Number(10),
+		},
+		{
 			name:   "Simple/Memo",
 			script: `let memo test n => + n 3; let main => (test 5; test 5); main;`,
 			ret:    wdte.Number(8),
+		},
+		{
+			name:   "Simple/Memo/Pattern",
+			script: `let memo test [a b] c => + a b c; (test [1; 2] 3; test [1; 2] 3);`,
+			ret:    wdte.Number(6),
+		},
+		{
+			name:   "Simple/Memo/Patter/Complex",
+			script: `let memo test [a [b]] c => + a b c; (test [1; [2]] 3; test [1; [2]] 3);`,
+			ret:    wdte.Number(6),
 		},
 		{
 			name:   "Simple/VariableArgs",
