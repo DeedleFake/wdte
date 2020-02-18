@@ -7,6 +7,7 @@ import (
 	"io"
 	"sort"
 	"strings"
+	"unsafe"
 
 	"github.com/DeedleFake/wdte/ast"
 	"github.com/DeedleFake/wdte/scanner"
@@ -469,9 +470,8 @@ const (
 type ChainPiece struct {
 	Expr Func
 
-	Flags      uint
-	Slots      []ID
-	AssignFunc AssignFunc
+	Flags uint
+	Slots *Assigner
 }
 
 func (p ChainPiece) Call(frame Frame, args ...Func) Func {
@@ -502,7 +502,9 @@ func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
 			tmp = tmp.Call(frame.WithScope(frame.Scope().Sub(slotScope)), prev)
 		}
 
-		slotScope, tmp = cur.AssignFunc(frame, slotScope, cur.Slots, tmp)
+		if cur.Slots != nil {
+			slotScope, tmp = cur.Slots.AssignFunc(frame, slotScope, cur.Slots.IDs, tmp)
+		}
 
 		if _, ok := tmp.(error); ok || (cur.Flags&IgnoredChain == 0) {
 			prev = tmp
@@ -733,23 +735,16 @@ func (cache *memoCache) Set(args []Func, val Func) {
 // it will create a new subscope containing itself under the ID "ex",
 // and its first and second arguments under the IDs "x" and "y",
 // respectively. It will then evaluate `+ x y` in that new scope.
-//
-// The arguments in the subscope, not including the self-reference,
-// are contained in the boundary "args". The self-reference is contained
-// in the boundary "self".
 type Lambda struct {
 	ID   ID
 	Expr Func
-	Args []ID
+	Args []*Assigner
 
-	Stored   []Func
 	Scope    *Scope
 	Original *Lambda
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
-	stored := lambda.Stored
-
 	scope := lambda.Scope
 	if scope == nil {
 		scope = frame.Scope()
@@ -761,9 +756,8 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	if len(args) < len(lambda.Args) {
-		vars := make(map[ID]Func, len(args))
 		for i := range args {
-			vars[lambda.Args[i]] = args[i]
+			scope, _ = lambda.Args[i].AssignFunc(frame, scope, lambda.Args[i].IDs, args[i])
 		}
 
 		return &Lambda{
@@ -771,18 +765,15 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 			Expr: lambda.Expr,
 			Args: lambda.Args[len(args):],
 
-			Stored:   append(stored, args...),
-			Scope:    scope.Map(vars),
+			Scope:    scope,
 			Original: original,
 		}
 	}
 
-	vars := make(map[ID]Func, len(args))
 	for i := range lambda.Args {
-		vars[lambda.Args[i]] = args[i]
+		scope, _ = lambda.Args[i].AssignFunc(frame, scope, lambda.Args[i].IDs, args[i])
 	}
 
-	scope = scope.Map(vars)
 	scope = scope.Add(original.ID, original)
 	return lambda.Expr.Call(frame.WithScope(scope))
 }
@@ -793,7 +784,7 @@ func (lambda *Lambda) String() string { // nolint
 	fmt.Fprintf(&buf, "(@ %v", lambda.ID)
 	for _, arg := range lambda.Args {
 		buf.WriteByte(' ')
-		buf.WriteString(string(arg))
+		fmt.Fprint(&buf, arg)
 	}
 	buf.WriteString(" => ...)")
 
@@ -815,6 +806,24 @@ func (a Assigner) Call(frame Frame, args ...Func) Func { // nolint
 
 func (a Assigner) Assign(frame Frame, scope *Scope) (*Scope, Func) { // nolint
 	return a.AssignFunc(frame, scope, a.IDs, a.Expr)
+}
+
+func (a Assigner) String() string {
+	funcPtr := func(ptr *AssignFunc) uintptr {
+		return *(*uintptr)(unsafe.Pointer(ptr))
+	}
+	simple := AssignFunc(AssignSimple)
+	pattern := AssignFunc(AssignPattern)
+
+	switch funcPtr(&a.AssignFunc) {
+	case funcPtr(&simple):
+		return string(a.IDs[0])
+
+	case funcPtr(&pattern):
+		return "[" + strings.Join(*(*[]string)(unsafe.Pointer(&a.IDs)), " ") + "]"
+	}
+
+	panic(fmt.Errorf("Invalid AssignFunc: %v", a.AssignFunc))
 }
 
 // AssignFunc places items into a scope. How exactly it does this
