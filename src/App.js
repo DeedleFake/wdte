@@ -118,8 +118,27 @@ const useStyles = makeStyles((theme) => ({
 const App = (props) => {
 	const classes = useStyles()
 
-	const [description, setDescription] = useState(initial.desc)
+	const [description, setDescription] = useState(() => {
+		if (window.location.hash[1] === '$') {
+			let ex = examples[window.location.hash.substr(2)]
+			if (ex != null) {
+				return ex.desc
+			}
+		}
+
+		return initial.desc
+	})
+
 	const [input, setInput] = useState(() => {
+		if (window.location.hash[1] === '$') {
+			let ex = examples[window.location.hash.substr(2)]
+			if (ex != null) {
+				return ex.input
+			}
+
+			return initial.input
+		}
+
 		try {
 			return pako.inflate(
 				Buffer.from(window.location.hash.substr(1), 'base64'),
@@ -127,8 +146,9 @@ const App = (props) => {
 			)
 		} catch (err) {
 			console.warn(err)
-			return initial.input
 		}
+
+		return initial.input
 	})
 	const [output, setOutput] = useState('')
 
@@ -180,12 +200,27 @@ const App = (props) => {
 
 	const share = useCallback(() => {
 		try {
+			let ex = Object.entries(examples).find(
+				([name, example]) => example.input === input,
+			)
+			if (ex != null) {
+				clipboard.copy(
+					`${window.location.origin}${window.location.pathname}#$${ex[0]}`,
+				)
+				window.location.href = `#$${ex[0]}`
+
+				addMessage('success', 'Link successfully copied to clipboard.')
+
+				return
+			}
+
 			let encodedInput = Buffer.from(pako.deflate(input)).toString('base64')
 
 			clipboard.copy(
 				`${window.location.origin}${window.location.pathname}#${encodedInput}`,
 			)
 			window.location.href = `#${encodedInput}`
+
 			addMessage('success', 'Link successfully copied to clipboard.')
 		} catch (err) {
 			addMessage('error', `Failed to copy to clipboard: ${err.toString()}`)
@@ -240,8 +275,8 @@ const App = (props) => {
 									key={id}
 									value={id}
 									onClick={(ev, data) => {
-										setDescription(examples[data.value].desc)
-										setInput(examples[data.value].input)
+										setDescription(example.desc)
+										setInput(example.input)
 									}}
 								>
 									{example.name}
