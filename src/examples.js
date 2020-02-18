@@ -68,10 +68,7 @@ let isFibLike stream => stream {
 	reflect "Array" => a.stream stream -> isFibLike;
 	true => stream
 		-> windows 3
-		-> s.all (@ all v =>
-				let [p1 p2 n] => v;
-				== n (+ p1 p2);
-			)
+		-> s.all (@ all [p1 p2 n] => == n (+ p1 p2))
 		;
 	};
 
@@ -157,13 +154,10 @@ This example demonstrates lambdas by implementing an iterative Fibonacci number 
 let a => import 'arrays';
 
 let fib n => s.range 1 n
-	-> s.reduce [0; 1] (@ self p n =>
-		let [a b] => p;
-		[
-			b;
-			+ a b;
-		];
-	)
+	-> s.reduce [0; 1] (@ self [a b] n => [
+		b;
+		+ a b;
+	])
 	-> at 1
 	;
 
@@ -208,10 +202,10 @@ let str => import 'strings';
 let toggle doors m =>
 	a.stream doors
 	-> s.enumerate
-	-> s.map (@ s n => [+ (at n 0) 1; at n 1])
-	-> s.map (@ s n => % (at n 0) m {
-			== 0 => ! (at n 1);
-			true => at n 1;
+	-> s.map (@ s [i v] => [+ i 1; v])
+	-> s.map (@ s [i v] => % i m {
+			== 0 => ! v;
+			true => v;
 		})
 	-> s.collect
 	;
@@ -223,12 +217,12 @@ s.range 100
 -> s.reduce doors toggle
 -> a.stream
 -> s.enumerate
--> s.map (@ s n =>
+-> s.map (@ s [i v] =>
 		0 {
-			at n 1 => 'Open';
+			v => 'Open';
 			true => 'Closed';
 		}
-		-> str.format '{}: {}' (at n 0 -> + 1)
+		-> str.format '{}: {}' (+ i 1)
 		-- io.writeln io.stdout;
 	)
 -> s.drain
