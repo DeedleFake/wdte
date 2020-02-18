@@ -839,7 +839,11 @@ func (a SimpleAssigner) String() string {
 // an Atter under the assumption that the Atter uses integer indices.
 // For example, given
 //
-//    PatternAssigner{"a", "b", "c"}
+//    PatternAssigner{
+//      "a",
+//      "b",
+//      "c"
+//    }
 //
 // assiging with a value of
 //
@@ -850,21 +854,18 @@ func (a SimpleAssigner) String() string {
 //    a = 1
 //    b = 5
 //    c = 3
-type PatternAssigner []ID
+type PatternAssigner []Assigner
 
 func (a PatternAssigner) Call(frame Frame, args ...Func) Func {
 	return a
 }
 
 func (a PatternAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) {
-	ids := []ID(a)
-
 	assignAtter := func(frame Frame, f interface {
 		Func
 		Atter
 	}) (*Scope, Func) {
-		m := make(map[ID]Func, len(ids))
-		for i, id := range ids {
+		for i := range a {
 			v, err := f.At(Number(i))
 			if err != nil {
 				return nil, &Error{
@@ -873,9 +874,10 @@ func (a PatternAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Fu
 				}
 			}
 
-			m[id] = v.Call(frame)
+			scope, _ = a[i].Assign(frame, scope, v)
 		}
-		return scope.Map(m), f.Call(frame)
+
+		return scope, f
 	}
 
 	frame = frame.WithScope(frame.Scope().Sub(scope))
@@ -886,7 +888,7 @@ func (a PatternAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Fu
 		Atter
 		Lenner
 	}:
-		if f.Len() < len(ids) {
+		if f.Len() < len(a) {
 			return nil, &Error{
 				Err:   errors.New("Lenner shorter than pattern"),
 				Frame: frame,
@@ -910,7 +912,11 @@ func (a PatternAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Fu
 }
 
 func (a PatternAssigner) IDs() []ID {
-	return []ID(a)
+	ids := make([]ID, 0, len(a))
+	for _, s := range a {
+		ids = append(ids, s.IDs()...)
+	}
+	return ids
 }
 
 func (a PatternAssigner) String() string {

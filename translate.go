@@ -54,37 +54,10 @@ func (m *translator) fromFuncMod(funcMod *ast.NTerm) funcMod {
 	}
 }
 
-func (m *translator) fromPatDecls(patdecls *ast.NTerm, pats []Assigner) []Assigner {
-	switch decl := patdecls.Children()[0].(type) {
-	case *ast.NTerm:
-		pats = append(pats, m.fromPatDecl(decl))
-		return m.fromPatDecls(patdecls.Children()[1].(*ast.NTerm), pats)
-
-	case *ast.Epsilon:
-		return pats
-
-	default:
-		panic(fmt.Errorf("Malformed AST with bad <patdecls>: %T", decl))
-	}
-}
-
-func (m *translator) fromPatDecl(patdecl *ast.NTerm) Assigner {
-	switch len(patdecl.Children()) {
-	case 1:
-		return SimpleAssigner(patdecl.Children()[0].(*ast.Term).Tok().Val.(string))
-
-	case 4:
-		return PatternAssigner(m.fromArgDecls(patdecl.Children()[1].(*ast.NTerm), nil))
-
-	default:
-		panic(fmt.Errorf("Malformed AST with bad <patdecl>: len == %v", len(patdecl.Children())))
-	}
-}
-
-func (m *translator) fromArgDecls(argdecls *ast.NTerm, args []ID) []ID {
+func (m *translator) fromArgDecls(argdecls *ast.NTerm, args []Assigner) []Assigner {
 	switch arg := argdecls.Children()[0].(type) {
-	case *ast.Term:
-		args = append(args, ID(arg.Tok().Val.(string)))
+	case *ast.NTerm:
+		args = append(args, m.fromArgDecl(arg))
 		return m.fromArgDecls(argdecls.Children()[1].(*ast.NTerm), args)
 
 	case *ast.Epsilon:
@@ -92,6 +65,19 @@ func (m *translator) fromArgDecls(argdecls *ast.NTerm, args []ID) []ID {
 
 	default:
 		panic(fmt.Errorf("Malformed AST with bad <argdecls>: %T", arg))
+	}
+}
+
+func (m *translator) fromArgDecl(argdecl *ast.NTerm) Assigner {
+	switch len(argdecl.Children()) {
+	case 1:
+		return SimpleAssigner(argdecl.Children()[0].(*ast.Term).Tok().Val.(string))
+
+	case 4:
+		return PatternAssigner(m.fromArgDecls(argdecl.Children()[1].(*ast.NTerm), nil))
+
+	default:
+		panic(fmt.Errorf("Malformed AST with bad <argdecl>: len == %v", len(argdecl.Children())))
 	}
 }
 
@@ -127,7 +113,7 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 	case "funcmods":
 		mods := m.fromFuncMods(first)
 		id := ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))
-		args := m.fromPatDecls(assign.Children()[2].(*ast.NTerm), nil)
+		args := m.fromArgDecls(assign.Children()[2].(*ast.NTerm), nil)
 		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm), 0, nil)
 
 		argIDs := make([]ID, 0, len(args))
@@ -156,14 +142,14 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 			Expr:     right,
 		}
 
-	case "patdecl":
+	case "argdecl":
 		return &LetAssigner{
-			Assigner: m.fromPatDecl(first),
+			Assigner: m.fromArgDecl(first),
 			Expr:     m.fromExpr(assign.Children()[2].(*ast.NTerm), 0, nil),
 		}
 	}
 
-	panic(fmt.Errorf("Malformed AST with bad <assign>: %#v", assign))
+	panic(fmt.Errorf("Malformed AST with bad <letassign>: %#v", assign))
 }
 
 func (m *translator) fromSlot(expr *ast.NTerm) Assigner {
@@ -172,7 +158,7 @@ func (m *translator) fromSlot(expr *ast.NTerm) Assigner {
 
 	}
 
-	return m.fromPatDecl(expr.Children()[1].(*ast.NTerm))
+	return m.fromArgDecl(expr.Children()[1].(*ast.NTerm))
 }
 
 func (m *translator) fromSingle(single *ast.NTerm) Func {
@@ -300,7 +286,7 @@ func (m *translator) fromCompound(compound *ast.NTerm) Func {
 func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm))
 	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(string))
-	args := m.fromPatDecls(lambda.Children()[3].(*ast.NTerm), nil)
+	args := m.fromArgDecls(lambda.Children()[3].(*ast.NTerm), nil)
 	expr := Compound(m.fromExprs(lambda.Children()[5].(*ast.NTerm), nil))
 
 	inner := Func(expr)
