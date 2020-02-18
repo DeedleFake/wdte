@@ -7,7 +7,6 @@ import (
 	"io"
 	"sort"
 	"strings"
-	"unsafe"
 
 	"github.com/DeedleFake/wdte/ast"
 	"github.com/DeedleFake/wdte/scanner"
@@ -920,7 +919,21 @@ func (a PatternAssigner) IDs() []ID {
 }
 
 func (a PatternAssigner) String() string {
-	return "[" + strings.Join(*(*[]string)(unsafe.Pointer(&a)), " ") + "]"
+	var buf strings.Builder
+
+	buf.WriteByte('[')
+
+	sep := ""
+	for _, a := range a {
+		buf.WriteString(sep)
+		buf.WriteString(fmt.Sprint(a))
+
+		sep = " "
+	}
+
+	buf.WriteByte(']')
+
+	return buf.String()
 }
 
 // A LetAssigner assigns a pre-defined expression using an Assigner.
