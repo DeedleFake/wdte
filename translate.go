@@ -278,22 +278,39 @@ func (m *translator) fromFuncDecl(mods funcMod, id ID, args []Assigner, expr Fun
 		return expr
 	}
 
-	argIDs := make([]ID, 0, len(args))
-	for _, arg := range args {
-		argIDs = append(argIDs, arg.IDs()...)
-	}
-
 	if mods&funcModMemo != 0 {
+		argIDs := make([]ID, 0, len(args))
+		for _, arg := range args {
+			argIDs = append(argIDs, arg.IDs()...)
+		}
+
 		expr = &Memo{
 			Func: expr,
 			Args: argIDs,
 		}
 	}
 
+	argSplit := func(assigners []Assigner, args []Func) ([]Assigner, []Assigner) {
+		return assigners[:len(args)], assigners[len(args):]
+	}
+	if mods&funcModRev != 0 {
+		argSplit = func(assigners []Assigner, args []Func) ([]Assigner, []Assigner) {
+			return assigners[len(assigners)-len(args):], assigners[:len(assigners)-len(args)]
+		}
+	}
+
+	var method Assigner
+	if mods&funcModMethod != 0 {
+		method = args[0]
+		args = args[1:]
+	}
+
 	return &Lambda{
-		ID:   id,
-		Expr: expr,
-		Args: args,
+		ID:       id,
+		Expr:     expr,
+		Args:     args,
+		ArgSplit: argSplit,
+		Method:   method,
 	}
 }
 

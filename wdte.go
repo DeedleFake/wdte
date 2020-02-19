@@ -735,12 +735,22 @@ func (cache *memoCache) Set(args []Func, val Func) {
 // and its first and second arguments under the IDs "x" and "y",
 // respectively. It will then evaluate `+ x y` in that new scope.
 type Lambda struct {
-	ID   ID
-	Expr Func
-	Args []Assigner
+	ID       ID
+	Expr     Func
+	Args     []Assigner
+	ArgSplit func([]Assigner, []Func) ([]Assigner, []Assigner)
+	Method   Assigner
 
 	Scope    *Scope
 	Original *Lambda
+}
+
+func (lambda *Lambda) original() *Lambda {
+	if lambda.Original == nil {
+		return lambda
+	}
+
+	return lambda.Original
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
@@ -749,23 +759,21 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		scope = frame.Scope()
 	}
 
-	original := lambda.Original
-	if original == nil {
-		original = lambda
-	}
-
 	if len(args) < len(lambda.Args) {
+		assigners, rem := lambda.ArgSplit(lambda.Args, args)
 		for i := range args {
-			scope, _ = lambda.Args[i].Assign(frame, scope, args[i])
+			scope, _ = assigners[i].Assign(frame, scope, args[i])
 		}
 
 		return &Lambda{
-			ID:   lambda.ID,
-			Expr: lambda.Expr,
-			Args: lambda.Args[len(args):],
+			ID:       lambda.ID,
+			Expr:     lambda.Expr,
+			Args:     rem,
+			ArgSplit: lambda.ArgSplit,
+			Method:   lambda.Method,
 
 			Scope:    scope,
-			Original: original,
+			Original: lambda.original(),
 		}
 	}
 
@@ -773,6 +781,19 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		scope, _ = lambda.Args[i].Assign(frame, scope, args[i])
 	}
 
+	if lambda.Method != nil {
+		return &Lambda{
+			ID:       lambda.ID,
+			Expr:     lambda.Expr,
+			Args:     []Assigner{lambda.Method},
+			ArgSplit: lambda.ArgSplit,
+
+			Scope:    scope,
+			Original: lambda.original(),
+		}
+	}
+
+	original := lambda.original()
 	scope = scope.Add(original.ID, original)
 	return lambda.Expr.Call(frame.WithScope(scope))
 }
