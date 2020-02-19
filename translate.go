@@ -49,6 +49,12 @@ func (m *translator) fromFuncMod(funcMod *ast.NTerm) funcMod {
 	case "memo":
 		return funcModMemo
 
+	case "rev":
+		return funcModRev
+
+	case "method":
+		return funcModMethod
+
 	default:
 		panic(fmt.Errorf("Malformed AST with bad <funcmod>: %v", mod))
 	}
@@ -121,25 +127,9 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 			argIDs = append(argIDs, arg.IDs()...)
 		}
 
-		if mods&funcModMemo != 0 {
-			inner = &Memo{
-				Func: inner,
-				Args: argIDs,
-			}
-		}
-
-		right := inner
-		if len(args) > 0 {
-			right = &Lambda{
-				ID:   id,
-				Expr: inner,
-				Args: args,
-			}
-		}
-
 		return &LetAssigner{
 			Assigner: SimpleAssigner(id),
-			Expr:     right,
+			Expr:     m.fromFuncDecl(mods, id, args, inner),
 		}
 
 	case "argdecl":
@@ -283,6 +273,47 @@ func (m *translator) fromCompound(compound *ast.NTerm) Func {
 	return r
 }
 
+func (m *translator) fromFuncDecl(mods funcMod, id ID, args []Assigner, expr Func) Func {
+	if (mods == 0) && (len(args) == 0) {
+		return expr
+	}
+
+	if mods&funcModMemo != 0 {
+		argIDs := make([]ID, 0, len(args))
+		for _, arg := range args {
+			argIDs = append(argIDs, arg.IDs()...)
+		}
+
+		expr = &Memo{
+			Func: expr,
+			Args: argIDs,
+		}
+	}
+
+	argSplit := func(assigners []Assigner, args []Func) ([]Assigner, []Assigner) {
+		return assigners[:len(args)], assigners[len(args):]
+	}
+	if mods&funcModRev != 0 {
+		argSplit = func(assigners []Assigner, args []Func) ([]Assigner, []Assigner) {
+			return assigners[len(assigners)-len(args):], assigners[:len(assigners)-len(args)]
+		}
+	}
+
+	var method Assigner
+	if mods&funcModMethod != 0 {
+		method = args[0]
+		args = args[1:]
+	}
+
+	return &Lambda{
+		ID:       id,
+		Expr:     expr,
+		Args:     args,
+		ArgSplit: argSplit,
+		Method:   method,
+	}
+}
+
 func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm))
 	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(string))
@@ -296,23 +327,7 @@ func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
 		}
 	}
 
-	argIDs := make([]ID, 0, len(args))
-	for _, arg := range args {
-		argIDs = append(argIDs, arg.IDs()...)
-	}
-
-	if mods&funcModMemo != 0 {
-		inner = &Memo{
-			Func: inner,
-			Args: argIDs,
-		}
-	}
-
-	return &Lambda{
-		ID:   id,
-		Expr: inner,
-		Args: args,
-	}
+	return m.fromFuncDecl(mods, id, args, inner)
 }
 
 func (m *translator) fromImport(im *ast.NTerm) Func {
@@ -380,4 +395,6 @@ type funcMod uint
 
 const (
 	funcModMemo funcMod = 1 << iota
+	funcModRev
+	funcModMethod
 )

@@ -221,6 +221,21 @@ func TestBasics(t *testing.T) {
 			ret:    wdte.Number(6),
 		},
 		{
+			name:   "Simple/Rev",
+			script: `let rev test a b c => [a; b; c]; (test 1 2) 3;`,
+			ret:    wdte.Array{wdte.Number(3), wdte.Number(1), wdte.Number(2)},
+		},
+		{
+			name:   "Simple/Method",
+			script: `let method test r a b => [r; a; b]; 3 -> test 1 2;`,
+			ret:    wdte.Array{wdte.Number(3), wdte.Number(1), wdte.Number(2)},
+		},
+		{
+			name:   "Simple/RevMethod",
+			script: `let method rev test r a b c => [r; a; b; c]; 0 -> (test 1 2) 3;`,
+			ret:    wdte.Array{wdte.Number(0), wdte.Number(3), wdte.Number(1), wdte.Number(2)},
+		},
+		{
 			name:   "Simple/VariableArgs",
 			script: `let test => +; test 3 5;`,
 			ret:    wdte.Number(8),

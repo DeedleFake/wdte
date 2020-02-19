@@ -580,7 +580,7 @@ func (c Compound) Collect(frame Frame) (letScope *Scope, last Func) {
 	for _, f := range c {
 		switch f := f.(type) {
 		case Assigner:
-			letScope, last = f.Assign(frame, letScope, f)
+			letScope, last = f.Assign(frame, letScope, last)
 		default:
 			last = f.Call(frame.WithScope(frame.Scope().Sub(letScope)))
 		}
@@ -735,12 +735,22 @@ func (cache *memoCache) Set(args []Func, val Func) {
 // and its first and second arguments under the IDs "x" and "y",
 // respectively. It will then evaluate `+ x y` in that new scope.
 type Lambda struct {
-	ID   ID
-	Expr Func
-	Args []Assigner
+	ID       ID
+	Expr     Func
+	Args     []Assigner
+	ArgSplit func([]Assigner, []Func) ([]Assigner, []Assigner)
+	Method   Assigner
 
 	Scope    *Scope
 	Original *Lambda
+}
+
+func (lambda *Lambda) original() *Lambda {
+	if lambda.Original == nil {
+		return lambda
+	}
+
+	return lambda.Original
 }
 
 func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
@@ -749,23 +759,21 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		scope = frame.Scope()
 	}
 
-	original := lambda.Original
-	if original == nil {
-		original = lambda
-	}
-
 	if len(args) < len(lambda.Args) {
+		assigners, rem := lambda.ArgSplit(lambda.Args, args)
 		for i := range args {
-			scope, _ = lambda.Args[i].Assign(frame, scope, args[i])
+			scope, _ = assigners[i].Assign(frame, scope, args[i])
 		}
 
 		return &Lambda{
-			ID:   lambda.ID,
-			Expr: lambda.Expr,
-			Args: lambda.Args[len(args):],
+			ID:       lambda.ID,
+			Expr:     lambda.Expr,
+			Args:     rem,
+			ArgSplit: lambda.ArgSplit,
+			Method:   lambda.Method,
 
 			Scope:    scope,
-			Original: original,
+			Original: lambda.original(),
 		}
 	}
 
@@ -773,6 +781,19 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 		scope, _ = lambda.Args[i].Assign(frame, scope, args[i])
 	}
 
+	if lambda.Method != nil {
+		return &Lambda{
+			ID:       lambda.ID,
+			Expr:     lambda.Expr,
+			Args:     []Assigner{lambda.Method},
+			ArgSplit: lambda.ArgSplit,
+
+			Scope:    scope,
+			Original: lambda.original(),
+		}
+	}
+
+	original := lambda.original()
 	scope = scope.Add(original.ID, original)
 	return lambda.Expr.Call(frame.WithScope(scope))
 }
@@ -791,10 +812,9 @@ func (lambda *Lambda) String() string { // nolint
 }
 
 // An Assigner places items into a scope. How exactly iy does this
-// differs, but the general idea is to produce a subscope from a combination of frame, an existing scope, and a function.
+// differs, but the general idea is to produce a subscope from a
+// combination of frame, an existing scope, and a function.
 type Assigner interface {
-	Func
-
 	// Assign produces a subscope from an existing frame, scope, and
 	// function, returning both the new subscope and a function. The
 	// returned function may or may not be related to the original
@@ -814,10 +834,6 @@ type Assigner interface {
 // SimpleAssigner is an Assigner that assigns a single variable to a
 // value.
 type SimpleAssigner ID
-
-func (a SimpleAssigner) Call(frame Frame, args ...Func) Func {
-	return a
-}
 
 func (a SimpleAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) {
 	frame = frame.WithScope(frame.Scope().Sub(scope))
@@ -854,10 +870,6 @@ func (a SimpleAssigner) String() string {
 //    b = 5
 //    c = 3
 type PatternAssigner []Assigner
-
-func (a PatternAssigner) Call(frame Frame, args ...Func) Func {
-	return a
-}
 
 func (a PatternAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) {
 	assignAtter := func(frame Frame, f interface {
@@ -926,7 +938,7 @@ func (a PatternAssigner) String() string {
 	sep := ""
 	for _, a := range a {
 		buf.WriteString(sep)
-		buf.WriteString(fmt.Sprint(a))
+		fmt.Fprint(&buf, a)
 
 		sep = " "
 	}
