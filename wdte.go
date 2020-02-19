@@ -938,7 +938,7 @@ func (a PatternAssigner) String() string {
 	sep := ""
 	for _, a := range a {
 		buf.WriteString(sep)
-		buf.WriteString(fmt.Sprint(a))
+		fmt.Fprint(&buf, a)
 
 		sep = " "
 	}
