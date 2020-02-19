@@ -2,6 +2,8 @@
   <funcmods> -> <funcmod> <funcmods>
               | ε
    <funcmod> -> memo
+              | rev
+              | method
   <argdecls> -> <argdecl> <argdecls>
               | ε
    <argdecl> -> id
