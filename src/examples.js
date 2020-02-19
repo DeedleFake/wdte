@@ -53,7 +53,7 @@ let a => import 'arrays';
 
 let pop array => a.stream array -> s.skip 1 -> s.collect;
 
-let windows size stream => s.new
+let method windows stream size => s.new
 		(stream -> s.limit size -> s.collect)
 		(@ next prev =>
 			let n => stream -> s.limit 1 -> s.collect;
