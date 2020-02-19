@@ -580,7 +580,7 @@ func (c Compound) Collect(frame Frame) (letScope *Scope, last Func) {
 	for _, f := range c {
 		switch f := f.(type) {
 		case Assigner:
-			letScope, last = f.Assign(frame, letScope, f)
+			letScope, last = f.Assign(frame, letScope, last)
 		default:
 			last = f.Call(frame.WithScope(frame.Scope().Sub(letScope)))
 		}
@@ -791,10 +791,9 @@ func (lambda *Lambda) String() string { // nolint
 }
 
 // An Assigner places items into a scope. How exactly iy does this
-// differs, but the general idea is to produce a subscope from a combination of frame, an existing scope, and a function.
+// differs, but the general idea is to produce a subscope from a
+// combination of frame, an existing scope, and a function.
 type Assigner interface {
-	Func
-
 	// Assign produces a subscope from an existing frame, scope, and
 	// function, returning both the new subscope and a function. The
 	// returned function may or may not be related to the original
@@ -814,10 +813,6 @@ type Assigner interface {
 // SimpleAssigner is an Assigner that assigns a single variable to a
 // value.
 type SimpleAssigner ID
-
-func (a SimpleAssigner) Call(frame Frame, args ...Func) Func {
-	return a
-}
 
 func (a SimpleAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) {
 	frame = frame.WithScope(frame.Scope().Sub(scope))
@@ -854,10 +849,6 @@ func (a SimpleAssigner) String() string {
 //    b = 5
 //    c = 3
 type PatternAssigner []Assigner
-
-func (a PatternAssigner) Call(frame Frame, args ...Func) Func {
-	return a
-}
 
 func (a PatternAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) {
 	assignAtter := func(frame Frame, f interface {
