@@ -69,11 +69,11 @@
 // nature so with some practice.
 //
 // A chain is a series of expressions separated by either the chain
-// operator, "->", or the ignored chain operator, "--". Each piece of
-// the chain is executed in turn, and the output of the previous
-// section is passed as an argument to the output of the current
-// section. In other words, in the previous example, the chain's
-// execution matches the following pseudocode
+// operator, "->", the ignored chain operator, "--", or the error
+// chain operator, "-|". Each piece of the chain is executed in turn,
+// and the output of the previous section is passed as an argument to
+// the output of the current section. In other words, in the previous
+// example, the chain's execution matches the following pseudocode
 //    r1 = a.stream(array)
 //    r2 = s.flatMap(<lambda>)
 //    r1 = r2(r1)
@@ -83,6 +83,17 @@
 // A chain with a use of "--" operates in much the same way, but the
 // output of the piece of the chain immediately following the operator
 // is ignored, meaning that it doesn't affect the remainder of the
+// chain.
+//
+// The "-|" chain operator is used for error handling. During the
+// evaluation of a chain, if no errors have occurred, chain segements
+// using "-|" are ignored completely. Unlike with "--", they are
+// completely not executed. If, however, an error occurs, all chain
+// segments that don't use "-|" are ignored instead. If a "-|" segment
+// exists in the chain after the location that the error occurred,
+// then that segment is executed next, following which normal
+// execution continues, unless that segment itself returned an error.
+// If no "-|" segment exists, the error is returned from the entire
 // chain.
 //
 // Chains can also have "slots" assigned to each piece. This is an
@@ -202,14 +213,4 @@
 // required, possibly at the cost of some runtime performance,
 // functions for automatically wrapping Go functions are provided in
 // the wdteutil package.
-//
-// One final note: WDTE is lazily-evaluated. Very, very
-// lazily-evaluated. Until Go code manually calls a Func
-// implementation, most WDTE code is never evaluated at all past the
-// initial parsing. In some cases some code may get called more times
-// than expected as well. Because of this, it is highly recommended
-// that any Go code that is expected to be directly called by WDTE
-// provide a purely functional interface, deterministically returning
-// the same thing for the same arguments. If code does not follow this
-// guideline, expect occasional odd behavior for seemingly no reason.
 package wdte

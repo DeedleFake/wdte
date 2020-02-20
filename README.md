@@ -17,7 +17,7 @@ I had a number of design goals in mind when I started working on this project:
 * Extremely simple. Entire grammar is less than 20-30 lines of specification.
 * Grammar is LL(1) parseable.
 * Functional-ish, but not particularly strict about it.
-* Designed primarily for embedding. No command-line interpreter by default.
+* Designed primarily for embedding.
 * Extremely easy to use from the binding side. In this case, that's primarily Go.
 
 If you want to try the language yourself, feel free to take a look at [the playground][playground]. It shows not only some of the features of the language in terms of actually writing code in it, but also how embeddable it is. The playground runs entirely in the browser *on the client's end* thanks to WebAssembly.
@@ -34,6 +34,7 @@ import (
 	"strings"
 
 	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/wdteutil"
 )
 
 const src = `
@@ -41,41 +42,46 @@ let i => import 'some/import/path/or/another';
 
 i.print 3;
 + 5 2 -> i.print;
+7 -> + 5 -> i.print;
 `
 
 func im(from string) (*wdte.Scope, error) {
-	var print wdte.GoFunc
-	print = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		if len(args) < 1 {
-			return print
-		}
-
-		a := args[0].Call(frame)
-		fmt.Println(a)
-		return a
-	})
-
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
-		"print": print,
+		"print": wdteutil.Func("print", func(v interface{}) interface{} {
+		fmt.Println(v)
+		return v
+	}),
 	}), nil
 }
 
+func Sum(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+	frame = frame.Sub("+")
+
+	if len(args) < 2 {
+		return wdteutil.SaveArgs(wdte.GoFunc(Sum), args...)
+	}
+
+	var sum wdte.Number
+	for _, arg := range args {
+		sum += arg.(wdte.Number)
+	}
+	return sum
+}
+
 func main() {
-	m, err := wdte.Parse(strings.NewReader(src), wdte.ImportFunc(im))
+	m, err := wdte.Parse(strings.NewReader(src), wdte.ImportFunc(im), nil)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing module: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error parsing script: %v\n", err)
 		os.Exit(1)
 	}
 
-	scope := wdte.S().Sub("+", wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-		var sum wdte.Number
-		for _, arg := range args {
-			sum += arg.Call(frame).(wdte.Number)
-		}
-		return sum
-	}))
+	scope := wdte.S().Add("+", wdte.GoFunc(Sum))
 
-	m.Call(wdte.F().WithScope(scope))
+	r := m.Call(wdte.F().WithScope(scope))
+	if err, ok := r.(error); ok {
+		fmt.Fprintf(os.Stderr, "Error running script: %v\n", err)
+		os.Exit(1)
+	}
 }
 ```
 
@@ -84,6 +90,7 @@ func main() {
 ```
 3
 7
+12
 ```
 
 Documentation
