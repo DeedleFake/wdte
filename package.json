@@ -5,13 +5,13 @@
   "private": true,
   "scripts": {
     "build": "run-s -l go:build react:build",
-    "deploy": "gh-pages -d build",
+    "gh-pages": "gh-pages -d build",
+		"deploy": "run-s -l build gh-pages",
     "clean": "rimraf build public/wdte.wasm",
     "go:build": "GOOS=js GOARCH=wasm go build -v -o public/wdte.wasm ./go",
     "react:start": "BROWSER=none react-scripts start",
     "react:build": "react-scripts build",
-    "prettier": "find src public -iname '*.js' -exec prettier --write {} +",
-    "predeploy": "run-s build"
+    "prettier": "find src public -iname '*.js' -exec prettier --write \\{\\} +"
   },
   "repository": {
     "type": "git",
