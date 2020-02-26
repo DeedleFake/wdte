@@ -145,7 +145,7 @@ const App = (props) => {
 				{ to: 'string' },
 			)
 		} catch (err) {
-			console.warn(err)
+			console.warn(`Error while inflating hash: ${err}`)
 		}
 
 		return initial.input
