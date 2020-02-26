@@ -6,7 +6,7 @@
   "scripts": {
     "build": "run-s -l go:build react:build",
     "gh-pages": "gh-pages -d build",
-		"deploy": "run-s -l build gh-pages",
+    "deploy": "run-s -l build gh-pages",
     "clean": "rimraf build public/wdte.wasm",
     "go:build": "GOOS=js GOARCH=wasm go build -v -o public/wdte.wasm ./go",
     "react:start": "BROWSER=none react-scripts start",
@@ -54,5 +54,10 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "dependenciesMeta": {
+    "gh-pages": {
+      "unplugged": true
+    }
+  }
 }

@@ -7875,7 +7875,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ]],
       ["gh-pages", [
         ["npm:2.2.0", {
-          "packageLocation": "./.yarn/cache/gh-pages-npm-2.2.0-7dddbcd165-2.zip/node_modules/gh-pages/",
+          "packageLocation": "./.yarn/unplugged/gh-pages-npm-2.2.0-7dddbcd165/node_modules/gh-pages/",
           "packageDependencies": [
             ["gh-pages", "npm:2.2.0"],
             ["async", "npm:2.6.3"],
