@@ -662,69 +662,6 @@ func (v Var) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Call(frame, args...)
 }
 
-// A Memo wraps another function, caching the results of calls with
-// the same arguments.
-type Memo struct {
-	Func Func
-	Args []ID
-
-	cache memoCache
-}
-
-func (m *Memo) Call(frame Frame, args ...Func) Func { // nolint
-	s := frame.Scope()
-
-	check := make([]Func, 0, len(m.Args))
-	for _, id := range m.Args {
-		check = append(check, s.Get(id).Call(frame))
-	}
-
-	cached, ok := m.cache.Get(check)
-	if ok {
-		return cached
-	}
-
-	r := m.Func.Call(frame, check...)
-	m.cache.Set(check, r)
-	return r
-}
-
-type memoCache struct {
-	val  Func
-	next map[Func]*memoCache
-}
-
-func (cache *memoCache) Get(args []Func) (Func, bool) {
-	if cache == nil {
-		return nil, false
-	}
-
-	if len(args) == 0 {
-		return cache.val, true
-	}
-
-	if cache.next == nil {
-		return nil, false
-	}
-
-	return cache.next[args[0]].Get(args[1:])
-}
-
-func (cache *memoCache) Set(args []Func, val Func) {
-	if len(args) == 0 {
-		cache.val = val
-		return
-	}
-
-	if cache.next == nil {
-		cache.next = make(map[Func]*memoCache)
-	}
-
-	n := new(memoCache)
-	n.Set(args[1:], val)
-	cache.next[args[0]] = n
-}
-
 // A Lambda is a closure. When called, it calls its inner expression
 // with itself and its own arguments placed into the scope. In other
 // words, given the lambda
@@ -735,11 +672,9 @@ func (cache *memoCache) Set(args []Func, val Func) {
 // and its first and second arguments under the IDs "x" and "y",
 // respectively. It will then evaluate `+ x y` in that new scope.
 type Lambda struct {
-	ID       ID
-	Expr     Func
-	Args     []Assigner
-	ArgSplit func([]Assigner, []Func) ([]Assigner, []Assigner)
-	Method   Assigner
+	ID   ID
+	Expr Func
+	Args []Assigner
 
 	Scope    *Scope
 	Original *Lambda
@@ -760,17 +695,14 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	}
 
 	if len(args) < len(lambda.Args) {
-		assigners, rem := lambda.ArgSplit(lambda.Args, args)
 		for i := range args {
-			scope, _ = assigners[i].Assign(frame, scope, args[i])
+			scope, _ = lambda.Args[i].Assign(frame, scope, args[i])
 		}
 
 		return &Lambda{
-			ID:       lambda.ID,
-			Expr:     lambda.Expr,
-			Args:     rem,
-			ArgSplit: lambda.ArgSplit,
-			Method:   lambda.Method,
+			ID:   lambda.ID,
+			Expr: lambda.Expr,
+			Args: lambda.Args[len(args):],
 
 			Scope:    scope,
 			Original: lambda.original(),
@@ -779,18 +711,6 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 
 	for i := range lambda.Args {
 		scope, _ = lambda.Args[i].Assign(frame, scope, args[i])
-	}
-
-	if lambda.Method != nil {
-		return &Lambda{
-			ID:       lambda.ID,
-			Expr:     lambda.Expr,
-			Args:     []Assigner{lambda.Method},
-			ArgSplit: lambda.ArgSplit,
-
-			Scope:    scope,
-			Original: lambda.original(),
-		}
 	}
 
 	original := lambda.original()
@@ -966,4 +886,42 @@ func (a LetAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) 
 
 func (a LetAssigner) String() string {
 	return fmt.Sprint(a.Assigner)
+}
+
+// Composite represents a composite function. When called, it calls
+// its components in reverse order on their previous results. In other
+// words,
+//
+//    Composite{func1, func2, func3}.Call(frame, arg1, arg2)
+//
+// is the equivalent of
+//
+//    func1 (func2 (func3 arg1 arg2))
+type Composite []Func
+
+func (c Composite) Call(frame Frame, args ...Func) Func {
+	r := Func(c)
+	prev := args
+	for i := len(c) - 1; i >= 0; i-- {
+		n := r
+		r = c[i].Call(frame).Call(frame, prev...)
+		prev = []Func{n}
+
+		if _, ok := r.(error); ok {
+			return r
+		}
+	}
+
+	return r
+}
+
+// Modifier applies modifications to a function before passing it its
+// own arguments by calling Mods and passing it Func.
+type Modifier struct {
+	Mods Func
+	Func Func
+}
+
+func (m Modifier) Call(frame Frame, args ...Func) Func {
+	return m.Mods.Call(frame, m.Func).Call(frame, args...)
 }
