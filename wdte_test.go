@@ -228,13 +228,13 @@ func TestBasics(t *testing.T) {
 		{
 			disabled: true,
 			name:     "Simple/Method",
-			script:   `let (method) test r a b => [r; a; b]; 3 -> test 1 2;`,
+			script:   `let (method 'r') test a b => [r; a; b]; 3 -> test 1 2;`,
 			ret:      wdte.Array{wdte.Number(3), wdte.Number(1), wdte.Number(2)},
 		},
 		{
 			disabled: true,
 			name:     "Simple/RevMethod",
-			script:   `let (method) (rev) test r a b c => [r; a; b; c]; 0 -> (test 1 2) 3;`,
+			script:   `let (method 'r') (rev) test a b c => [r; a; b; c]; 0 -> (test 1 2) 3;`,
 			ret:      wdte.Array{wdte.Number(0), wdte.Number(3), wdte.Number(1), wdte.Number(2)},
 		},
 		{

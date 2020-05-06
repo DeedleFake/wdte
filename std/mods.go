@@ -109,3 +109,29 @@ func ModRev(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	})
 	return reverser
 }
+
+// TODO: Figure out if this is even useful enough to reimplement.
+//func ModMethod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+//	if len(args) < 2 {
+//		return wdteutil.SaveArgs(wdte.GoFunc(ModMethod), args...)
+//	}
+//
+//	frame = frame.Sub("method")
+//
+//	recv := wdte.ID(args[0].(wdte.String))
+//	f := args[1]
+//
+//	var methodizer wdte.Func
+//	methodizer = wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+//		if len(args) == 0 {
+//			return methodizer
+//		}
+//
+//		return wdte.GoFunc(func(frame wdte.Frame, margs ...wdte.Func) wdte.Func {
+//			frame = frame.WithScope(frame.Scope().Add(recv, margs[0]))
+//
+//			return f.Call(frame, args...)
+//		})
+//	})
+//	return methodizer
+//}

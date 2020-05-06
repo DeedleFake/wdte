@@ -586,6 +586,7 @@ var Scope = wdte.S().Map(map[wdte.ID]wdte.Func{
 
 	"memo": wdte.GoFunc(ModMemo),
 	"rev":  wdte.GoFunc(ModRev),
+	//"method": wdte.GoFunc(ModMethod),
 })
 
 // F returns a top-level frame that has S as its scope.
