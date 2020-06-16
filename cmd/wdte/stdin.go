@@ -18,10 +18,6 @@ func printRet(ret wdte.Func) {
 	case error, fmt.Stringer:
 		fmt.Printf(": %v\n", ret)
 		return
-
-	case wdte.GoFunc:
-		fmt.Println(": complex value (GoFunc)")
-		return
 	}
 
 	switch k := reflect.Indirect(reflect.ValueOf(ret)).Kind(); k {

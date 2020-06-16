@@ -114,11 +114,6 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 		args := m.fromArgDecls(assign.Children()[2].(*ast.NTerm), nil)
 		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm), 0, nil)
 
-		argIDs := make([]ID, 0, len(args))
-		for _, arg := range args {
-			argIDs = append(argIDs, arg.IDs()...)
-		}
-
 		return &LetAssigner{
 			Assigner: SimpleAssigner(id),
 			Expr:     m.fromFuncDecl(mods, id, args, inner),

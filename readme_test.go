@@ -40,7 +40,7 @@ func Sum(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return sum
 }
 
-func ExampleREADME() {
+func Example() {
 	m, err := wdte.Parse(strings.NewReader(src), wdte.ImportFunc(im), nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing script: %v\n", err)

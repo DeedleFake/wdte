@@ -72,7 +72,6 @@ func Times(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	p := wdte.Number(1)
 	for _, arg := range args {
-		arg = arg
 		if _, ok := arg.(error); ok {
 			return arg
 		}
@@ -381,7 +380,6 @@ func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	for _, arg := range args {
-		arg = arg
 		if arg != wdte.Bool(true) {
 			return wdte.Bool(false)
 		}
@@ -404,7 +402,6 @@ func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	}
 
 	for _, arg := range args {
-		arg = arg
 		if arg == wdte.Bool(true) {
 			return wdte.Bool(true)
 		}
