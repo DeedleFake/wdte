@@ -27,15 +27,15 @@ type File struct {
 	mode int
 }
 
-func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+func (f File) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return f
 }
 
-func (f File) String() string { // nolint
+func (f File) String() string {
 	return fmt.Sprintf("<file %q>", f.Name())
 }
 
-func (f File) Reflect(name string) bool { // nolint
+func (f File) Reflect(name string) bool {
 	return name == "File" ||
 		(((f.mode == 0) || (f.mode&modeReader != 0)) && (name == "Reader")) ||
 		(((f.mode == 0) || (f.mode&modeWriter != 0)) && (name == "Writer"))

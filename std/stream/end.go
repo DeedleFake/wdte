@@ -14,7 +14,7 @@ func (end) Call(wdte.Frame, ...wdte.Func) wdte.Func {
 	return end{}
 }
 
-func (end) Reflect(name string) bool { // nolint
+func (end) Reflect(name string) bool {
 	return name == "End"
 }
 

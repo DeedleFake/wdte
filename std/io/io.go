@@ -37,7 +37,7 @@ func (stdin) String() string {
 	return "<reader(stdin)>"
 }
 
-func (stdin) Reflect(name string) bool { // nolint
+func (stdin) Reflect(name string) bool {
 	return name == "Reader"
 }
 
@@ -55,7 +55,7 @@ func (stdout) String() string {
 	return "<writer(stdout)>"
 }
 
-func (stdout) Reflect(name string) bool { // nolint
+func (stdout) Reflect(name string) bool {
 	return name == "Writer"
 }
 
@@ -73,7 +73,7 @@ func (stderr) String() string {
 	return "<writer(stderr)>"
 }
 
-func (stderr) Reflect(name string) bool { // nolint
+func (stderr) Reflect(name string) bool {
 	return name == "Writer"
 }
 
@@ -92,11 +92,11 @@ type Reader struct {
 	io.Reader
 }
 
-func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+func (r Reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return r
 }
 
-func (r Reader) String() string { // nolint
+func (r Reader) String() string {
 	if inner, ok := r.Reader.(fmt.Stringer); ok {
 		return inner.String()
 	}
@@ -104,7 +104,7 @@ func (r Reader) String() string { // nolint
 	return "<reader>"
 }
 
-func (r Reader) Reflect(name string) bool { // nolint
+func (r Reader) Reflect(name string) bool {
 	return name == "Reader"
 }
 
@@ -123,11 +123,11 @@ type Writer struct {
 	io.Writer
 }
 
-func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+func (w Writer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return w
 }
 
-func (w Writer) String() string { // nolint
+func (w Writer) String() string {
 	if inner, ok := w.Writer.(fmt.Stringer); ok {
 		return inner.String()
 	}
@@ -135,7 +135,7 @@ func (w Writer) String() string { // nolint
 	return "<writer>"
 }
 
-func (w Writer) Reflect(name string) bool { // nolint
+func (w Writer) Reflect(name string) bool {
 	return name == "Writer"
 }
 
@@ -316,11 +316,11 @@ type scanner struct {
 	s *bufio.Scanner
 }
 
-func (s scanner) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+func (s scanner) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return s
 }
 
-func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
+func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) {
 	ok := s.s.Scan()
 	if !ok {
 		err := s.s.Err()
@@ -333,7 +333,7 @@ func (s scanner) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return wdte.String(s.s.Text()), true
 }
 
-func (s scanner) Reflect(name string) bool { // nolint
+func (s scanner) Reflect(name string) bool {
 	return name == "Stream"
 }
 
@@ -431,11 +431,11 @@ type runeStream struct {
 	r io.RuneReader
 }
 
-func (r runeStream) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+func (r runeStream) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return r
 }
 
-func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
+func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) {
 	c, _, err := r.r.ReadRune()
 	if err != nil {
 		if err == io.EOF {
@@ -446,7 +446,7 @@ func (r runeStream) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return wdte.Number(c), true
 }
 
-func (r runeStream) Reflect(name string) bool { // nolint
+func (r runeStream) Reflect(name string) bool {
 	return name == "Stream"
 }
 

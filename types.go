@@ -66,12 +66,12 @@ func Reflect(f Func, name string) bool {
 // when called.
 type String string
 
-func (s String) Call(frame Frame, args ...Func) Func { // nolint
+func (s String) Call(frame Frame, args ...Func) Func {
 	// TODO: Use the arguments for something. Probably concatenation.
 	return s
 }
 
-func (s String) Compare(other Func) (int, bool) { // nolint
+func (s String) Compare(other Func) (int, bool) {
 	o, ok := other.(String)
 	if !ok {
 		return -1, false
@@ -87,11 +87,11 @@ func (s String) Compare(other Func) (int, bool) { // nolint
 	return 0, true
 }
 
-func (s String) Len() int { // nolint
+func (s String) Len() int {
 	return len(s)
 }
 
-func (s String) At(index Func) (Func, error) { // nolint
+func (s String) At(index Func) (Func, error) {
 	i := int(index.(Number))
 	if (i < 0) || (i >= len(s)) {
 		return nil, fmt.Errorf("index %v is out of range [0,%v)", i, len(s))
@@ -100,7 +100,7 @@ func (s String) At(index Func) (Func, error) { // nolint
 	return String(s[i]), nil
 }
 
-func (s String) Reflect(name string) bool { // nolint
+func (s String) Reflect(name string) bool {
 	return name == "String"
 }
 
@@ -109,12 +109,12 @@ func (s String) Reflect(name string) bool { // nolint
 // when called.
 type Number float64
 
-func (n Number) Call(frame Frame, args ...Func) Func { // nolint
+func (n Number) Call(frame Frame, args ...Func) Func {
 	// TODO: Use the arguments for something, perhaps.
 	return n
 }
 
-func (n Number) Compare(other Func) (int, bool) { // nolint
+func (n Number) Compare(other Func) (int, bool) {
 	o, ok := other.(Number)
 
 	switch {
@@ -130,7 +130,7 @@ func (n Number) Compare(other Func) (int, bool) { // nolint
 	}
 }
 
-func (n Number) String() string { // nolint
+func (n Number) String() string {
 	bn := big.NewFloat(float64(n))
 	if bn.IsInt() {
 		return bn.Text('f', -1)
@@ -139,7 +139,7 @@ func (n Number) String() string { // nolint
 	return bn.Text('g', 10)
 }
 
-func (n Number) Reflect(name string) bool { // nolint
+func (n Number) Reflect(name string) bool {
 	return name == "Number"
 }
 
@@ -149,7 +149,7 @@ func (n Number) Reflect(name string) bool { // nolint
 // value in the same way as strings and numbers.
 type Array []Func
 
-func (a Array) Call(frame Frame, args ...Func) Func { // nolint
+func (a Array) Call(frame Frame, args ...Func) Func {
 	n := make(Array, 0, len(a))
 	for i := range a {
 		n = append(n, a[i].Call(frame))
@@ -157,11 +157,11 @@ func (a Array) Call(frame Frame, args ...Func) Func { // nolint
 	return n
 }
 
-func (a Array) Len() int { // nolint
+func (a Array) Len() int {
 	return len(a)
 }
 
-func (a Array) At(index Func) (Func, error) { // nolint
+func (a Array) At(index Func) (Func, error) {
 	i := int(index.(Number))
 	if (i < 0) || (i >= len(a)) {
 		return nil, fmt.Errorf("index %v is out of range [0,%v)", i, len(a))
@@ -170,7 +170,7 @@ func (a Array) At(index Func) (Func, error) { // nolint
 	return a[i], nil
 }
 
-func (a Array) Set(k, v Func) (Func, error) { // nolint
+func (a Array) Set(k, v Func) (Func, error) {
 	i := int(k.(Number))
 	if (i < 0) || (i >= len(a)) {
 		return nil, fmt.Errorf("index %v is out of bounds [0,%v]", i, len(a))
@@ -182,7 +182,7 @@ func (a Array) Set(k, v Func) (Func, error) { // nolint
 	return c, nil
 }
 
-func (a Array) String() string { // nolint
+func (a Array) String() string {
 	var buf strings.Builder
 
 	buf.WriteByte('[')
@@ -197,7 +197,7 @@ func (a Array) String() string { // nolint
 	return buf.String()
 }
 
-func (a Array) Reflect(name string) bool { // nolint
+func (a Array) Reflect(name string) bool {
 	return name == "Array"
 }
 
@@ -219,7 +219,7 @@ type Error struct {
 	Frame Frame
 }
 
-func (e Error) Call(frame Frame, args ...Func) Func { // nolint
+func (e Error) Call(frame Frame, args ...Func) Func {
 	return e
 }
 
@@ -231,7 +231,7 @@ func (e Error) Unwrap() error {
 	return e.Err
 }
 
-func (e Error) Reflect(name string) bool { // nolint
+func (e Error) Reflect(name string) bool {
 	return name == "Error"
 }
 
@@ -239,17 +239,17 @@ func (e Error) Reflect(name string) bool { // nolint
 // itself when called.
 type Bool bool
 
-func (b Bool) Call(frame Frame, args ...Func) Func { // nolint
+func (b Bool) Call(frame Frame, args ...Func) Func {
 	return b
 }
 
-func (b Bool) Compare(other Func) (int, bool) { // nolint
+func (b Bool) Compare(other Func) (int, bool) {
 	if b == other {
 		return 0, false
 	}
 	return -1, false
 }
 
-func (b Bool) Reflect(name string) bool { // nolint
+func (b Bool) Reflect(name string) bool {
 	return name == "Bool"
 }

@@ -59,7 +59,7 @@ func defaultImporter(from string) (*Scope, error) {
 // used as Importers.
 type ImportFunc func(from string) (*Scope, error)
 
-func (f ImportFunc) Import(from string) (*Scope, error) { // nolint
+func (f ImportFunc) Import(from string) (*Scope, error) {
 	return f(from)
 }
 
@@ -337,11 +337,11 @@ func (s *Scope) Known() []ID {
 	return list
 }
 
-func (s *Scope) Call(frame Frame, args ...Func) Func { // nolint
+func (s *Scope) Call(frame Frame, args ...Func) Func {
 	return s
 }
 
-func (s *Scope) At(i Func) (Func, error) { // nolint
+func (s *Scope) At(i Func) (Func, error) {
 	v := s.Get(ID(i.(String)))
 	if v == nil {
 		return nil, fmt.Errorf("%v is not in scope", i)
@@ -349,11 +349,11 @@ func (s *Scope) At(i Func) (Func, error) { // nolint
 	return v, nil
 }
 
-func (s *Scope) Set(k, v Func) (Func, error) { // nolint
+func (s *Scope) Set(k, v Func) (Func, error) {
 	return s.Add(ID(k.(String)), v), nil
 }
 
-func (s *Scope) String() string { // nolint
+func (s *Scope) String() string {
 	var buf strings.Builder
 
 	buf.WriteString("scope(")
@@ -371,7 +371,7 @@ func (s *Scope) String() string { // nolint
 	return buf.String()
 }
 
-func (s *Scope) Reflect(name string) bool { // nolint
+func (s *Scope) Reflect(name string) bool {
 	return name == "Scope"
 }
 
@@ -406,7 +406,7 @@ func (s *Scope) Reflect(name string) bool { // nolint
 // be returned.
 type GoFunc func(frame Frame, args ...Func) Func
 
-func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
+func (f GoFunc) Call(frame Frame, args ...Func) (r Func) {
 	defer func() {
 		if err, ok := recover().(error); ok {
 			r = Error{
@@ -421,7 +421,7 @@ func (f GoFunc) Call(frame Frame, args ...Func) (r Func) { // nolint
 	return f(frame, args...)
 }
 
-func (f GoFunc) String() string { // nolint
+func (f GoFunc) String() string {
 	return "<go func>"
 }
 
@@ -433,7 +433,7 @@ type FuncCall struct {
 	Args []Func
 }
 
-func (f FuncCall) Call(frame Frame, args ...Func) Func { // nolint
+func (f FuncCall) Call(frame Frame, args ...Func) Func {
 	if err := frame.Context().Err(); err != nil {
 		return &Error{
 			Frame: frame,
@@ -449,7 +449,7 @@ func (f FuncCall) Call(frame Frame, args ...Func) Func { // nolint
 	return f.Func.Call(frame).Call(frame, next...)
 }
 
-func (f FuncCall) String() string { // nolint
+func (f FuncCall) String() string {
 	if inner, ok := f.Func.(fmt.Stringer); ok {
 		return inner.String()
 	}
@@ -477,7 +477,7 @@ func (p ChainPiece) Call(frame Frame, args ...Func) Func {
 	return p.Expr.Call(frame, args...)
 }
 
-func (p ChainPiece) String() string { // nolint
+func (p ChainPiece) String() string {
 	if inner, ok := p.Expr.(fmt.Stringer); ok {
 		return inner.String()
 	}
@@ -488,7 +488,7 @@ func (p ChainPiece) String() string { // nolint
 // Chain is an unevaluated chain expression.
 type Chain []*ChainPiece
 
-func (f Chain) Call(frame Frame, args ...Func) Func { // nolint
+func (f Chain) Call(frame Frame, args ...Func) Func {
 	var slotScope *Scope
 	var prev Func
 	for _, cur := range f {
@@ -539,7 +539,7 @@ func (f Chain) String() string {
 // imported function.
 type Sub []Func
 
-func (sub Sub) Call(frame Frame, args ...Func) Func { // nolint
+func (sub Sub) Call(frame Frame, args ...Func) Func {
 	scope := frame.Scope()
 	for _, f := range sub[:len(sub)-1] {
 		next := f.Call(frame.WithScope(frame.Scope().Sub(scope)))
@@ -593,7 +593,7 @@ func (c Compound) Collect(frame Frame) (letScope *Scope, last Func) {
 	return letScope, last
 }
 
-func (c Compound) Call(frame Frame, args ...Func) Func { // nolint
+func (c Compound) Call(frame Frame, args ...Func) Func {
 	s, f := c.Collect(frame)
 	return f.Call(frame.WithScope(frame.Scope().Sub(s)), args...)
 }
@@ -626,7 +626,7 @@ type Switch struct {
 	Cases [][2]Func
 }
 
-func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
+func (s Switch) Call(frame Frame, args ...Func) Func {
 	check := s.Check.Call(frame)
 	if _, ok := check.(error); ok {
 		return check
@@ -650,7 +650,7 @@ func (s Switch) Call(frame Frame, args ...Func) Func { // nolint
 // in the frame that it's given and calls whatever it finds.
 type Var ID
 
-func (v Var) Call(frame Frame, args ...Func) Func { // nolint
+func (v Var) Call(frame Frame, args ...Func) Func {
 	f := frame.Scope().Get(ID(v))
 	if f == nil {
 		return &Error{
@@ -688,7 +688,7 @@ func (lambda *Lambda) original() *Lambda {
 	return lambda.Original
 }
 
-func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
+func (lambda *Lambda) Call(frame Frame, args ...Func) Func {
 	scope := lambda.Scope
 	if scope == nil {
 		scope = frame.Scope()
@@ -718,7 +718,7 @@ func (lambda *Lambda) Call(frame Frame, args ...Func) Func { // nolint
 	return lambda.Expr.Call(frame.WithScope(scope))
 }
 
-func (lambda *Lambda) String() string { // nolint
+func (lambda *Lambda) String() string {
 	var buf strings.Builder
 
 	fmt.Fprintf(&buf, "(@ %v", lambda.ID)

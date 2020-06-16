@@ -14,7 +14,7 @@ type Memo struct {
 	cache memoCache
 }
 
-func (m *Memo) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+func (m *Memo) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	s := frame.Scope()
 
 	check := make([]wdte.Func, 0, len(m.Args))

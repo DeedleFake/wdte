@@ -37,7 +37,7 @@ func main() {
 
 	out := &formatter{w: os.Stdout}
 	if *output != "" {
-		file, err := os.Create(*output) // nolint
+		file, err := os.Create(*output)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating %q: %v", *output, err)
 			os.Exit(1)
