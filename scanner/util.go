@@ -26,9 +26,6 @@ var (
 	}
 
 	keywords = []string{
-		"memo",
-		"rev",
-		"method",
 		"let",
 		"import",
 	}

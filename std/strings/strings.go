@@ -232,11 +232,11 @@ type reader struct {
 	*strings.Reader
 }
 
-func (r reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+func (r reader) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return r
 }
 
-func (r reader) Reflect(name string) bool { // nolint
+func (r reader) Reflect(name string) bool {
 	return name == "Reader"
 }
 

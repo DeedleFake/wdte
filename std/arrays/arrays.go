@@ -137,11 +137,11 @@ func Stream(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return &streamer{a: args[0].(wdte.Array)}
 }
 
-func (a *streamer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+func (a *streamer) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return a
 }
 
-func (a *streamer) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
+func (a *streamer) Next(frame wdte.Frame) (wdte.Func, bool) {
 	if a.i >= len(a.a) {
 		return nil, false
 	}
@@ -151,11 +151,11 @@ func (a *streamer) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
 	return r, true
 }
 
-func (a *streamer) String() string { // nolint
+func (a *streamer) String() string {
 	return "<stream>"
 }
 
-func (a *streamer) Reflect(name string) bool { // nolint
+func (a *streamer) Reflect(name string) bool {
 	return name == "Stream"
 }
 

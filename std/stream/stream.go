@@ -21,19 +21,19 @@ type Stream interface {
 // itself.
 type NextFunc func(frame wdte.Frame) (wdte.Func, bool)
 
-func (n NextFunc) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func { // nolint
+func (n NextFunc) Call(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return n
 }
 
-func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) { // nolint
+func (n NextFunc) Next(frame wdte.Frame) (wdte.Func, bool) {
 	return n(frame)
 }
 
-func (NextFunc) String() string { // nolint
+func (NextFunc) String() string {
 	return "<stream>"
 }
 
-func (NextFunc) Reflect(name string) bool { // nolint
+func (NextFunc) Reflect(name string) bool {
 	return name == "Stream"
 }
 

@@ -207,33 +207,35 @@ func TestBasics(t *testing.T) {
 		},
 		{
 			name:   "Simple/Memo",
-			script: `let memo test n => + n 3; let main => (test 5; test 5); main;`,
+			script: `let (memo) test n => + n 3; let main => (test 5; test 5); main;`,
 			ret:    wdte.Number(8),
 		},
 		{
 			name:   "Simple/Memo/Pattern",
-			script: `let memo test [a b] c => + a b c; (test [1; 2] 3; test [1; 2] 3);`,
+			script: `let (memo) test [a b] c => + a b c; (test [1; 2] 3; test [1; 2] 3);`,
 			ret:    wdte.Number(6),
 		},
 		{
 			name:   "Simple/Memo/Patter/Complex",
-			script: `let memo test [a [b]] c => + a b c; (test [1; [2]] 3; test [1; [2]] 3);`,
+			script: `let (memo) test [a [b]] c => + a b c; (test [1; [2]] 3; test [1; [2]] 3);`,
 			ret:    wdte.Number(6),
 		},
 		{
 			name:   "Simple/Rev",
-			script: `let rev test a b c => [a; b; c]; (test 1 2) 3;`,
+			script: `let (rev) test a b c => [a; b; c]; (test 1 2) 3;`,
 			ret:    wdte.Array{wdte.Number(3), wdte.Number(1), wdte.Number(2)},
 		},
 		{
-			name:   "Simple/Method",
-			script: `let method test r a b => [r; a; b]; 3 -> test 1 2;`,
-			ret:    wdte.Array{wdte.Number(3), wdte.Number(1), wdte.Number(2)},
+			disabled: true,
+			name:     "Simple/Method",
+			script:   `let (method 'r') test a b => [r; a; b]; 3 -> test 1 2;`,
+			ret:      wdte.Array{wdte.Number(3), wdte.Number(1), wdte.Number(2)},
 		},
 		{
-			name:   "Simple/RevMethod",
-			script: `let method rev test r a b c => [r; a; b; c]; 0 -> (test 1 2) 3;`,
-			ret:    wdte.Array{wdte.Number(0), wdte.Number(3), wdte.Number(1), wdte.Number(2)},
+			disabled: true,
+			name:     "Simple/RevMethod",
+			script:   `let (method 'r') (rev) test a b c => [r; a; b; c]; 0 -> (test 1 2) 3;`,
+			ret:      wdte.Array{wdte.Number(0), wdte.Number(3), wdte.Number(1), wdte.Number(2)},
 		},
 		{
 			name:   "Simple/VariableArgs",
@@ -289,7 +291,7 @@ func TestBasics(t *testing.T) {
 			// Wonder why memo exists? Try removing the keyword from this
 			// test script and see what happens.
 			name:   "Fib/Memo",
-			script: `let memo main n => n { <= 1 => n; true => + (main (- n 2)) (main (- n 1)); }; main 38;`,
+			script: `let (memo) main n => n { <= 1 => n; true => + (main (- n 2)) (main (- n 1)); }; main 38;`,
 			ret:    wdte.Number(39088169),
 		},
 		{
@@ -351,7 +353,7 @@ func TestBasics(t *testing.T) {
 		},
 		{
 			name:   "Lambda/Fib/Memo",
-			script: `let test a => a 38; test (@ memo t n => n { <= 1 => n; true => + (t (- n 2)) (t (- n 1)); };);`,
+			script: `let test a => a 38; test (@ (memo) t n => n { <= 1 => n; true => + (t (- n 2)) (t (- n 1)); };);`,
 			ret:    wdte.Number(39088169),
 		},
 		{

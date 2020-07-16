@@ -14,7 +14,7 @@ func (end) Call(wdte.Frame, ...wdte.Func) wdte.Func {
 	return end{}
 }
 
-func (end) Reflect(name string) bool { // nolint
+func (end) Reflect(name string) bool {
 	return name == "End"
 }
 
@@ -223,7 +223,6 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if !ok {
 			return extent
 		}
-		n = n
 
 		i := sort.Search(len(extent), func(i int) bool {
 			return less.Call(frame, n, extent[i]) == wdte.Bool(true)

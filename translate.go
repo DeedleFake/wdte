@@ -31,32 +31,24 @@ func (m *translator) fromScript(script *ast.NTerm) (c Compound, err error) {
 	return Compound(m.fromExprs(script.Children()[0].(*ast.NTerm), nil)), nil
 }
 
-func (m *translator) fromFuncMods(funcMods *ast.NTerm) funcMod {
+func (m *translator) fromFuncMods(funcMods *ast.NTerm, mods Composite) Func {
 	switch mod := funcMods.Children()[0].(type) {
-	case *ast.NTerm:
-		return m.fromFuncMod(mod) | m.fromFuncMods(funcMods.Children()[1].(*ast.NTerm))
+	case *ast.Term:
+		return m.fromFuncMods(
+			funcMods.Children()[4].(*ast.NTerm),
+			append(mods, m.fromExpr(funcMods.Children()[1].(*ast.NTerm), 0, nil)),
+		)
 
 	case *ast.Epsilon:
-		return 0
+		// As odd as this looks, it actually does something because of the
+		// way interfaces work. Don't remove it.
+		if mods == nil {
+			return nil
+		}
+		return mods
 
 	default:
 		panic(fmt.Errorf("Malformed AST with bad <funcmods>: %T", mod))
-	}
-}
-
-func (m *translator) fromFuncMod(funcMod *ast.NTerm) funcMod {
-	switch mod := funcMod.Children()[0].(*ast.Term).Tok().Val; mod {
-	case "memo":
-		return funcModMemo
-
-	case "rev":
-		return funcModRev
-
-	case "method":
-		return funcModMethod
-
-	default:
-		panic(fmt.Errorf("Malformed AST with bad <funcmod>: %v", mod))
 	}
 }
 
@@ -117,15 +109,10 @@ func (m *translator) fromLetExpr(expr *ast.NTerm) Func {
 
 	switch first := assign.Children()[0].(*ast.NTerm); first.Name() {
 	case "funcmods":
-		mods := m.fromFuncMods(first)
+		mods := m.fromFuncMods(first, nil)
 		id := ID(assign.Children()[1].(*ast.Term).Tok().Val.(string))
 		args := m.fromArgDecls(assign.Children()[2].(*ast.NTerm), nil)
 		inner := m.fromExpr(assign.Children()[4].(*ast.NTerm), 0, nil)
-
-		argIDs := make([]ID, 0, len(args))
-		for _, arg := range args {
-			argIDs = append(argIDs, arg.IDs()...)
-		}
 
 		return &LetAssigner{
 			Assigner: SimpleAssigner(id),
@@ -273,49 +260,36 @@ func (m *translator) fromCompound(compound *ast.NTerm) Func {
 	return r
 }
 
-func (m *translator) fromFuncDecl(mods funcMod, id ID, args []Assigner, expr Func) Func {
-	if (mods == 0) && (len(args) == 0) {
-		return expr
-	}
-
-	if mods&funcModMemo != 0 {
-		argIDs := make([]ID, 0, len(args))
-		for _, arg := range args {
-			argIDs = append(argIDs, arg.IDs()...)
+func (m *translator) fromFuncDecl(mods Func, id ID, args []Assigner, expr Func) Func {
+	if len(args) == 0 {
+		if mods == nil {
+			return expr
 		}
 
-		expr = &Memo{
+		return &Modifier{
+			Mods: mods,
 			Func: expr,
-			Args: argIDs,
 		}
 	}
 
-	argSplit := func(assigners []Assigner, args []Func) ([]Assigner, []Assigner) {
-		return assigners[:len(args)], assigners[len(args):]
-	}
-	if mods&funcModRev != 0 {
-		argSplit = func(assigners []Assigner, args []Func) ([]Assigner, []Assigner) {
-			return assigners[len(assigners)-len(args):], assigners[:len(assigners)-len(args)]
-		}
+	lambda := &Lambda{
+		ID:   id,
+		Expr: expr,
+		Args: args,
 	}
 
-	var method Assigner
-	if mods&funcModMethod != 0 {
-		method = args[0]
-		args = args[1:]
+	if mods == nil {
+		return lambda
 	}
 
-	return &Lambda{
-		ID:       id,
-		Expr:     expr,
-		Args:     args,
-		ArgSplit: argSplit,
-		Method:   method,
+	return &Modifier{
+		Mods: mods,
+		Func: lambda,
 	}
 }
 
 func (m *translator) fromLambda(lambda *ast.NTerm) (f Func) {
-	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm))
+	mods := m.fromFuncMods(lambda.Children()[1].(*ast.NTerm), nil)
 	id := ID(lambda.Children()[2].(*ast.Term).Tok().Val.(string))
 	args := m.fromArgDecls(lambda.Children()[3].(*ast.NTerm), nil)
 	expr := Compound(m.fromExprs(lambda.Children()[5].(*ast.NTerm), nil))
@@ -390,11 +364,3 @@ func (m *translator) fromChain(chain *ast.NTerm, acc Chain) Func {
 
 	return m.fromExpr(chain.Children()[1].(*ast.NTerm), flags, acc)
 }
-
-type funcMod uint
-
-const (
-	funcModMemo funcMod = 1 << iota
-	funcModRev
-	funcModMethod
-)
