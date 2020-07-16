@@ -18,7 +18,7 @@ brace.define('ace/mode/wdte', (acequire, exports, module) => {
 				},
 				{
 					token: 'keyword',
-					regex: '(\\b(memo|let|import)\\b)',
+					regex: '(\\b(let|import)\\b)',
 				},
 				{
 					token: 'keyword.operator',
