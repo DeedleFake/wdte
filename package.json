@@ -9,8 +9,8 @@
     "deploy": "run-s -l build gh-pages",
     "clean": "rimraf build public/wdte.wasm",
     "go:build": "GOOS=js GOARCH=wasm go build -v -o public/wdte.wasm ./go",
-    "react:start": "BROWSER=none react-scripts start",
-    "react:build": "react-scripts build",
+    "react:start": "BROWSER=none react-app-rewired start",
+    "react:build": "react-app-rewired build",
     "prettier": "find src public -iname '*.js' -exec prettier --write \\{\\} +"
   },
   "repository": {
@@ -26,13 +26,14 @@
   "devDependencies": {
     "@material-ui/styles": "^4.9.0",
     "brace": "^0.11.1",
-    "gh-pages": "^2.2.0",
+    "gh-pages": "^3.1.0",
     "jss-preset-default": "^10.0.4",
     "npm-run-all": "^4.1.5",
     "pako": "^1.0.11",
-    "prettier": "^1.19.1",
+    "prettier": "^2.0.5",
     "react": "^16.12.0",
-    "react-ace": "^8.0.0",
+    "react-ace": "^9.1.1",
+    "react-app-rewired": "^2.1.6",
     "react-dom": "^16.12.0",
     "react-markdown": "^4.3.1",
     "react-scripts": "^3.4.0",

@@ -1,6 +1,7 @@
 /node_modules/
 /.yarn/unplugged/
 /.yarn/build-state.yml
+/.yarn/cache
 /build/
 
 public/wdte.wasm
