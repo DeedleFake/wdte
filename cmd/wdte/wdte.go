@@ -1,30 +1,22 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"runtime"
-	"runtime/debug"
 	"strings"
+
+	"github.com/DeedleFake/wdte"
+	"github.com/DeedleFake/wdte/std/debug"
 )
 
 func wdteVersion() (string, error) {
-	bi, ok := debug.ReadBuildInfo()
-	if !ok {
-		return "", errors.New("Failed to read build info")
+	v := debug.Version(wdte.F())
+	if err, ok := v.(error); ok {
+		return "", err
 	}
-
-	for _, dep := range bi.Deps {
-		if dep.Path != "github.com/DeedleFake/wdte" {
-			continue
-		}
-
-		return dep.Version, nil
-	}
-
-	return bi.Main.Version, nil
+	return string(v.(wdte.String)), nil
 }
 
 func main() {
