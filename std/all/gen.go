@@ -4,6 +4,7 @@ package all
 
 import (
 	_ "github.com/DeedleFake/wdte/std/arrays"
+	_ "github.com/DeedleFake/wdte/std/debug"
 	_ "github.com/DeedleFake/wdte/std/io"
 	_ "github.com/DeedleFake/wdte/std/io/file"
 	_ "github.com/DeedleFake/wdte/std/math"
