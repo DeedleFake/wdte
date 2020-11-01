@@ -465,7 +465,7 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	ret, err := at.At(i)
 	if err != nil {
-		return &wdte.Error{
+		return wdte.Error{
 			Frame: frame,
 			Err:   err,
 		}
@@ -499,7 +499,7 @@ func Set(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	r, err := s.Set(k, v)
 	if err != nil {
-		return &wdte.Error{
+		return wdte.Error{
 			Frame: frame,
 			Err:   err,
 		}

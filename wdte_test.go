@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/DeedleFake/wdte/scanner"
 	"github.com/DeedleFake/wdte/std"
 	_ "github.com/DeedleFake/wdte/std/arrays"
+	_ "github.com/DeedleFake/wdte/std/debug"
 	wdteio "github.com/DeedleFake/wdte/std/io"
 	_ "github.com/DeedleFake/wdte/std/math"
 	_ "github.com/DeedleFake/wdte/std/rand"
@@ -929,6 +931,28 @@ func TestRand(t *testing.T) {
 			name:   "Stream",
 			script: `let s => import 'stream'; let m => import 'math'; let rand => import 'rand'; rand.gen 1 -> rand.stream 3 -> s.map (* 100) -> s.map m.floor -> s.collect;`,
 			ret:    wdte.Array{wdte.Number(60), wdte.Number(94), wdte.Number(66)},
+		},
+	})
+}
+
+// TODO: Figure out how to test this a bit better.
+func TestDebug(t *testing.T) {
+	runTests(t, []test{
+		{
+			disabled: true,
+			name:     "Version",
+			script:   `let debug => import 'debug'; debug.version;`,
+		},
+		{
+			name:   "GoVersion",
+			script: `let debug => import 'debug'; debug.goVersion;`,
+			ret:    wdte.String(runtime.Version()),
+		},
+		{
+			disabled: true,
+			name:     "Race",
+			script:   `let debug => import 'debug'; debug.race;`,
+			ret:      wdte.Bool(false),
 		},
 	})
 }
