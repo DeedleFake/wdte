@@ -19,7 +19,7 @@ i.print 3;
 
 func im(from string) (*wdte.Scope, error) {
 	return wdte.S().Map(map[wdte.ID]wdte.Func{
-		"print": wdteutil.Func("print", func(v interface{}) interface{} {
+		"print": wdteutil.Func("print", func(v any) any {
 			fmt.Println(v)
 			return v
 		}),

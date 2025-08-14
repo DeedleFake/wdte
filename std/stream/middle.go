@@ -7,7 +7,7 @@ import (
 
 // Map is a WDTE function with the following signature:
 //
-//    (map f) s
+//	(map f) s
 //
 // It returns a Stream which calls f on each element yielded by the
 // Stream s, yielding the return values of f in their place.
@@ -40,7 +40,7 @@ func Map(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 
 // Filter is a WDTE function with the following signature:
 //
-//    (filter f) s
+//	(filter f) s
 //
 // It returns a Stream which yields only those values yielded by the
 // Stream s that (f value) results in true for.
@@ -77,17 +77,17 @@ func Filter(frame wdte.Frame, args ...wdte.Func) (filter wdte.Func) {
 
 // FlatMap is a WDTE function with the following signature:
 //
-//    (flatMap f) s
+//	(flatMap f) s
 //
 // It's identical to Map with one caveat: If a call to f yields a
 // Stream, the elements of that Stream are yielded in turn before
 // continuing the iteration of s. In other words,
 //
-//    range 3 -> flatMap (new 0 1) -> collect
+//	range 3 -> flatMap (new 0 1) -> collect
 //
 // returns
 //
-//    [0; 1; 0; 1; 0; 1]
+//	[0; 1; 0; 1; 0; 1]
 func FlatMap(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 	switch len(args) {
 	case 0:
@@ -135,7 +135,7 @@ func FlatMap(frame wdte.Frame, args ...wdte.Func) (mapper wdte.Func) {
 
 // Enumerate is a WDTE function with the following signature:
 //
-//    enumerate s
+//	enumerate s
 //
 // It returns a Stream which yields values of the form [i; v] where i
 // is the zero-based index of the element v that was yielded by the
@@ -167,13 +167,13 @@ func Enumerate(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Repeat is a WDTE function with the following signature:
 //
-//    repeat s
+//	repeat s
 //
 // Repeat returns a Stream that buffers the elements from the Stream
 // s. Once s has ended, the Stream starts repeating from the begnning
 // of the buffer, looping infinitely. In other words,
 //
-//    range 3 -> repeat
+//	range 3 -> repeat
 //
 // will yield the sequence (0, 1, 2) repeatedly with no end.
 //
@@ -219,7 +219,7 @@ func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Limit is a WDTE function with the following signature:
 //
-//    (limit n) s
+//	(limit n) s
 //
 // Limit returns a Stream that stops after a maximum of n elements
 // from s have been yielded.
@@ -252,7 +252,7 @@ func Limit(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Skip is a WDTE function with the following signature:
 //
-//    (skip n) s
+//	(skip n) s
 //
 // Skip returns a Stream that skips the first n elements of s. In
 // other wotds, the first element of the returned stream will be
@@ -289,19 +289,19 @@ func Skip(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Zip is a WDTE function with the following signatures:
 //
-//    (zip s1) ...
-//    zip ...
+//	(zip s1) ...
+//	zip ...
 //
 // Zip returns a Stream which yields the streams that it is given
 // simultaneuously as arrays. In other words,
 //
-//    zip (a.stream [1; 2; 3]) (a.stream ['a'; 'b'; 'c'])
+//	zip (a.stream [1; 2; 3]) (a.stream ['a'; 'b'; 'c'])
 //
 // will yield
 //
-//    [1; 'a']
-//    [2; 'b']
-//    [3; 'c']
+//	[1; 'a']
+//	[2; 'b']
+//	[3; 'c']
 //
 // The order of the yielded arrays matches the order that the streams
 // are given in. If one of the streams ends before the other ones, End

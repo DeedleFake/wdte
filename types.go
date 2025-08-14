@@ -40,8 +40,8 @@ type Setter interface {
 // A Reflector is a Func that can determine if it can be treated as
 // the named type or not. For example,
 //
-//    s := wdte.String("example")
-//    return s.Reflect("string")
+//	s := wdte.String("example")
+//	return s.Reflect("string")
 //
 // returns true.
 type Reflector interface {

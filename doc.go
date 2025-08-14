@@ -4,7 +4,7 @@
 // primary goal of simplicity of use from the embedding side, which is
 // what this package provides.
 //
-// Quick Language Overview
+// # Quick Language Overview
 //
 // In order to understand how this package works, an overview of the
 // language itself is first necessary. WDTE is functional-ish, with
@@ -24,11 +24,12 @@
 // result of the last expression is returned.
 //
 // Example 1
-//    # Declare a function called print3 that takes no arguments.
-//    let print3 => (
-//      let x => 3;
-//      io.writeln io.stdout x;
-//    );
+//
+//	# Declare a function called print3 that takes no arguments.
+//	let print3 => (
+//	  let x => 3;
+//	  io.writeln io.stdout x;
+//	);
 //
 // There are very few functions built-in in WDTE, but the standard
 // library, found in the std directory and its subdirectories,
@@ -38,31 +39,32 @@
 // possible.
 //
 // Example 2
-//    # Import 'stream' and 'array' and assign them to s and a,
-//    # respectively. Note that an import is a compile-time operation,
-//    # unlike normal functions. As such, it must be passed a string
-//    # literal, not a variable.
-//    let s => import 'stream';
-//    let a => import 'arrays';
 //
-//    # Create a function called flatten that takes one argument,
-//    # array.
-//    let flatten array =>
-//      # Create a new stream that iterates over array.
-//      a.stream array
+//	# Import 'stream' and 'array' and assign them to s and a,
+//	# respectively. Note that an import is a compile-time operation,
+//	# unlike normal functions. As such, it must be passed a string
+//	# literal, not a variable.
+//	let s => import 'stream';
+//	let a => import 'arrays';
 //
-//      # Create a stream from the previous one that performs a flat
-//      # map operation. The (@ name arg => ...) syntax is a lambda
-//      # declaration.
-//      -> s.flatMap (@ f v => v {
-//          # If the current element of the stream, v, is an array,
-//          # recursively flatten it into the stream.
-//          reflect 'Array' => a.stream v -> s.flatMap f;
-//        })
+//	# Create a function called flatten that takes one argument,
+//	# array.
+//	let flatten array =>
+//	  # Create a new stream that iterates over array.
+//	  a.stream array
 //
-//      # Collect the previous stream into an array.
-//      -> s.collect
-//      ;
+//	  # Create a stream from the previous one that performs a flat
+//	  # map operation. The (@ name arg => ...) syntax is a lambda
+//	  # declaration.
+//	  -> s.flatMap (@ f v => v {
+//	      # If the current element of the stream, v, is an array,
+//	      # recursively flatten it into the stream.
+//	      reflect 'Array' => a.stream v -> s.flatMap f;
+//	    })
+//
+//	  # Collect the previous stream into an array.
+//	  -> s.collect
+//	  ;
 //
 // This example also demonstrates "chains" and "switches", some
 // features that seem complicated at first but quickly become second
@@ -74,11 +76,12 @@
 // and the output of the previous section is passed as an argument to
 // the output of the current section. In other words, in the previous
 // example, the chain's execution matches the following pseudocode
-//    r1 = a.stream(array)
-//    r2 = s.flatMap(<lambda>)
-//    r1 = r2(r1)
-//    r2 = s.collect
-//    return r2(r1)
+//
+//	r1 = a.stream(array)
+//	r2 = s.flatMap(<lambda>)
+//	r1 = r2(r1)
+//	r2 = s.collect
+//	return r2(r1)
 //
 // A chain with a use of "--" operates in much the same way, but the
 // output of the piece of the chain immediately following the operator
@@ -101,14 +104,15 @@
 // chain. This identifier is inserted into the scope for the remainder
 // of the chain, allowing manual access to earlier sections of the
 // chain. For example
-//    let io => import 'io';
-//    let file => import 'io/file';
 //
-//    let readFile path =>
-//      file.open path : f
-//      -> io.string
-//      -- io.close f
-//      ;
+//	let io => import 'io';
+//	let file => import 'io/file';
+//
+//	let readFile path =>
+//	  file.open path : f
+//	  -> io.string
+//	  -- io.close f
+//	  ;
 //
 // The aforementioned switch expression is the only conditional
 // provided by WDTE. It looks like an expression followed by a
@@ -120,38 +124,41 @@
 // results in the boolean value true, the right-hand side of that case
 // is returned. If no cases match, the original expression is
 // returned. For example,
-//    func arg1 {
-//      lhs1 arg2 => rhs1 arg3;
-//      lhs2 arg4 => rhs2 arg6;
-//    }
+//
+//	func arg1 {
+//	  lhs1 arg2 => rhs1 arg3;
+//	  lhs2 arg4 => rhs2 arg6;
+//	}
 //
 // This is analogous to the following pseudocode
-//    check = func(arg1)
-//    if lhs := lhs1(arg2); lhs(check) {
-//      return rhs1(arg3)
-//    }
-//    if lhs := lhs2(arg4); lhs(check) {
-//      return rhs2(arg6)
-//    }
-//    return check
+//
+//	check = func(arg1)
+//	if lhs := lhs1(arg2); lhs(check) {
+//	  return rhs1(arg3)
+//	}
+//	if lhs := lhs2(arg4); lhs(check) {
+//	  return rhs2(arg6)
+//	}
+//	return check
 //
 // A few more minor points exist as well:
-//    Array literals are a semicolon list of expression surrounded by
-//    square brackets. Like in compounds and switches, the last
-//    semicolon is optional.
 //
-//    Identifier parsing rules are very loose; essentially, anything
-//    that isn't ambiguous with an existing keyword, operator, or
-//    other syntactic construct is allowed.
+//	Array literals are a semicolon list of expression surrounded by
+//	square brackets. Like in compounds and switches, the last
+//	semicolon is optional.
 //
-//    All strings are essentially heredocs, allowing newlines like
-//    they're any other character. There's no difference between
-//    single-quoted and double-quoted strings.
+//	Identifier parsing rules are very loose; essentially, anything
+//	that isn't ambiguous with an existing keyword, operator, or
+//	other syntactic construct is allowed.
 //
-//    There are no boolean literals, but the standard library provides
-//    true and false functions that are essentially the same thing.
+//	All strings are essentially heredocs, allowing newlines like
+//	they're any other character. There's no difference between
+//	single-quoted and double-quoted strings.
 //
-// Embedding
+//	There are no boolean literals, but the standard library provides
+//	true and false functions that are essentially the same thing.
+//
+// # Embedding
 //
 // As previously mentioned, everything in WDTE is a function. In Go
 // terms, everything in WDTE implements the Func type defined in this
@@ -177,7 +184,7 @@
 // function. This includes the scope in which the Func call should be
 // evaluated. For example, the expression
 //
-//    func arg1 arg2
+//	func arg1 arg2
 //
 // translates to an instance of the FuncCall implementation of Func.
 // When the FuncCall is "called", it must be given a scope which
@@ -190,18 +197,19 @@
 // will be available during the evaluation.
 //
 // Example:
-//    const src = `
-//      let io => import 'io';
-//      io.writeln io.stdout example;
-//    `
 //
-//    c, _ := wdte.Parse(strings.NewReader(src), std.Import)
+//	const src = `
+//	  let io => import 'io';
+//	  io.writeln io.stdout example;
+//	`
 //
-//    scope := std.Scope.Add("example", wdte.String("This is an example."))
-//    r := c.Call(std.F().WithScope(scope))
-//    if err, ok := r.(error); ok {
-//      log.Fatalln(err)
-//    }
+//	c, _ := wdte.Parse(strings.NewReader(src), std.Import)
+//
+//	scope := std.Scope.Add("example", wdte.String("This is an example."))
+//	r := c.Call(std.F().WithScope(scope))
+//	if err, ok := r.(error); ok {
+//	  log.Fatalln(err)
+//	}
 //
 // This will print "This is an example." to stdout.
 //

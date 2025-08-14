@@ -25,16 +25,16 @@ import (
 // passed directly. Types with special handling are as follows:
 //
 // Arguments:
-//    * Arrays and slices. Note that the passed WDTE array's length
-//      must match the expected length of the array in the Go
-//      function's arguments.
+//   - Arrays and slices. Note that the passed WDTE array's length
+//     must match the expected length of the array in the Go
+//     function's arguments.
 //
 // Return types:
-//    * Arrays and slices.
-//    * Pointers.
-//    * Functions that are supported by this function. The functions
-//      will use a frame with the name "<auto>".
-func Func(name string, f interface{}) wdte.Func {
+//   - Arrays and slices.
+//   - Pointers.
+//   - Functions that are supported by this function. The functions
+//     will use a frame with the name "<auto>".
+func Func(name string, f any) wdte.Func {
 	v := reflect.ValueOf(f)
 
 	t := v.Type()

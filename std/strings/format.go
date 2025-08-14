@@ -15,7 +15,7 @@ import (
 
 // Format is a WDTE function with the following signatures:
 //
-//    format tmpl ...
+//	format tmpl ...
 //
 // Format has some special rules for returning a partial function. For
 // more information, see below.
@@ -27,29 +27,29 @@ import (
 // optional flags placed between them. Flags may be any combination of
 // the following:
 //
-//    #<num> The zero-based index of the argument to be inserted.
-//           Subsequent formats will increment from here. In other
-//           words, '{2} {}' will yield the third and fourth
-//           arguments.
-//    q      Place the value in quotes using strconv.Quote.
-//    ?      Mark the value with it's underlying Go type, such as
-//           wdte.Number(3).
+//	#<num> The zero-based index of the argument to be inserted.
+//	       Subsequent formats will increment from here. In other
+//	       words, '{2} {}' will yield the third and fourth
+//	       arguments.
+//	q      Place the value in quotes using strconv.Quote.
+//	?      Mark the value with it's underlying Go type, such as
+//	       wdte.Number(3).
 //
 // Format's rules for returning a partial function are dependant on
 // the value of the first argument. Specifically, if the first
 // argument attempts to substitute in more arguments than were given,
 // a partial function will be returned. For example,
 //
-//    format '' # Returns ''
-//    format '{}' 3 # Returns '3'
-//    format '{}' # Returns a partial function.
-//    (format '{} {}' 3) 'example' # Returns '3 example'
+//	format '' # Returns ''
+//	format '{}' 3 # Returns '3'
+//	format '{}' # Returns a partial function.
+//	(format '{} {}' 3) 'example' # Returns '3 example'
 //
 // Note that the total number of arguments required is the smallest
 // number necessary to perform every substitution specified by the
 // first argument. For example,
 //
-//    format '{3} {}'
+//	format '{3} {}'
 //
 // will return a partial function that requires 5 arguments before it
 // will return the formatted string.
@@ -144,7 +144,7 @@ const (
 	formatType
 )
 
-func (ff formatFlags) Format(val interface{}) string {
+func (ff formatFlags) Format(val any) string {
 	out := fmt.Sprint(val)
 
 	if ff&formatQuote != 0 {

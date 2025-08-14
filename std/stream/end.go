@@ -30,7 +30,7 @@ func End() wdte.Func {
 
 // Collect is a WDTE function with the following signature:
 //
-//    collect s
+//	collect s
 //
 // Iterates through the Stream s, collecting the yielded elements into
 // an array. When the Stream ends, it returns the collected array.
@@ -65,7 +65,7 @@ func Collect(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Drain is a WDTE function with the following signature:
 //
-//    drain s
+//	drain s
 //
 // Drain is the same as Collect, but it simply discards elements as
 // they are yielded by the Stream, returning the empty Stream when
@@ -98,23 +98,23 @@ func Drain(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Reduce is a WDTE function with the following signatures:
 //
-//    reduce s i r
-//    (reduce r) s i
-//    (reduce i r) s
+//	reduce s i r
+//	(reduce r) s i
+//	(reduce i r) s
 //
 // Reduce performs a reduction on the Stream s, resulting in a single
 // value, which is returned. i is the initial value for the reduction,
 // and r is the reducer. r is expected to have the following
 // signature:
 //
-//    r acc n
+//	r acc n
 //
 // r is passed the accumulated value as acc, starting with i, and the
 // latest value yielded by the Stream as n. Whatever value r returns
 // is used as the next value of acc until the Stream is empty, at
 // which point the last value of acc is returned. For example,
 //
-//    range 5 -> reduce 0 +
+//	range 5 -> reduce 0 +
 //
 // returns a summation of the range [0,5).
 func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -140,8 +140,8 @@ func Reduce(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Fold is a WDTE function with the following signatures:
 //
-//    fold s r
-//    (fold r) s
+//	fold s r
+//	(fold r) s
 //
 // Fold is exactly like Reduce, but is uses the first element of the
 // Stream s as its initial element, rather than taking an explicit
@@ -166,10 +166,10 @@ func Fold(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Extent is a WDTE function with the following signatures:
 //
-//    extent s n less
-//    (extent n less) s
-//    (extent less) s n
-//    ((extent less) n) s
+//	extent s n less
+//	(extent n less) s
+//	(extent less) s n
+//	((extent less) n) s
 //
 // It drains the Stream s, building up a list of up to n elements
 // yielded for which less returns true compared to other elements in
@@ -177,7 +177,7 @@ func Fold(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // most less of them. In other words, it returns the n most minimum
 // elements using less to perform the compartison. For example,
 //
-//    range 10 -> extent 3 >
+//	range 10 -> extent 3 >
 //
 // will return [9; 8; 7].
 //
@@ -212,11 +212,7 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		return extent
 	}
 
-	sc := int(length)
-	if sc < 0 {
-		sc = 0
-	}
-
+	sc := max(int(length), 0)
 	extent := make(wdte.Array, 0, sc)
 	for {
 		n, ok := s.Next(frame)
@@ -279,8 +275,8 @@ func Extent(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Any is a WDTE function with the following signatures:
 //
-//    any s f
-//    (any f) s
+//	any s f
+//	(any f) s
 //
 // It iterates over the Stream s, passing each yielded element to f in
 // turn. If any of those calls returns true, then the entire function
@@ -309,8 +305,8 @@ func Any(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // All is a WDTE function with the following signatures:
 //
-//    all s f
-//    (all f) s
+//	all s f
+//	(all f) s
 //
 // It iterates over the Stream s, passing each yielded element to f in
 // turn. If all of those calls return true, then the entire function

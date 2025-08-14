@@ -12,7 +12,7 @@ import (
 // For example, an entry with the key "example" would be available in
 // scanned code as
 //
-//    @example[some input or another]
+//	@example[some input or another]
 //
 // In this example, the string "some input or another" would be passed
 // to the definition. The tokens returned by the macro are inserted
@@ -154,7 +154,7 @@ func (s *Scanner) unread(r rune) {
 	}
 }
 
-func (s *Scanner) setTok(t TokenType, v interface{}) {
+func (s *Scanner) setTok(t TokenType, v any) {
 	switch t {
 	case Keyword:
 		switch v {

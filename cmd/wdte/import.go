@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/DeedleFake/wdte"
@@ -41,10 +42,8 @@ func importer(wd string, blacklist []string, args []string, macros scanner.Macro
 	std.Register("cli", cliScope)
 
 	return wdte.ImportFunc(func(from string) (*wdte.Scope, error) {
-		for _, m := range blacklist {
-			if from == m {
-				return nil, fmt.Errorf("%q is blacklisted", from)
-			}
+		if slices.Contains(blacklist, from) {
+			return nil, fmt.Errorf("%q is blacklisted", from)
 		}
 
 		if strings.HasPrefix(from, ".") || strings.HasPrefix(from, "/") {

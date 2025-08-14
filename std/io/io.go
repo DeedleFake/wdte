@@ -141,9 +141,9 @@ func (w Writer) Reflect(name string) bool {
 
 // Seek is a WDTE function with the following signatures:
 //
-//    seek s n w
-//    (seek w) s n
-//    (seek n w) s
+//	seek s n w
+//	(seek w) s n
+//	(seek n w) s
 //
 // Returns s after seeking s to n, with a relative position denoted by
 // w:
@@ -183,7 +183,7 @@ func Seek(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Close is a WDTE function with the following signatures:
 //
-//    close c
+//	close c
 //
 // Returns c after closing it.
 func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -203,8 +203,8 @@ func Close(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Combine is a WDTE function with the following signatures:
 //
-//    combine a ...
-//    (combine a) ...
+//	combine a ...
+//	(combine a) ...
 //
 // If the arguments passed are readers, it returns a reader that reads
 // each until EOF before continuing to the next, and finally yielding
@@ -244,10 +244,10 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Copy is a WDTE function with the following signatures:
 //
-//    copy w r
-//    (copy w) r
-//    copy r w
-//    (copy r) w
+//	copy w r
+//	(copy w) r
+//	copy r w
+//	(copy r) w
 //
 // Copies from the reader r into the writer w until r yields EOF.
 // Returns whichever argument was given second.
@@ -256,8 +256,8 @@ func Combine(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // the function to be used more easily in chains. For example, both of
 // the following work:
 //
-//    stdout -> copy stdin -> ... # Later elements will be given stdout.
-//    stdin -> copy stdout -> ... # Later elements will be given stdin.
+//	stdout -> copy stdin -> ... # Later elements will be given stdout.
+//	stdin -> copy stdout -> ... # Later elements will be given stdin.
 func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("copy")
 
@@ -289,7 +289,7 @@ func Copy(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // String is a WDTE function with the following signature:
 //
-//    string r
+//	string r
 //
 // Reads the entirety of the reader r and returns the result as a
 // string.
@@ -339,7 +339,7 @@ func (s scanner) Reflect(name string) bool {
 
 // Lines is a WDTE function with the following signature:
 //
-//    lines r
+//	lines r
 //
 // Returns a stream.Stream that yields, as strings, successive lines
 // read from the reader r.
@@ -356,7 +356,7 @@ func Lines(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Words is a WDTE function with the following signature:
 //
-//    words r
+//	words r
 //
 // Returns a stream.Stream that yields, as strings, successive words
 // read from the reader r.
@@ -375,15 +375,15 @@ func Words(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Scan is a WDTE function with the following signatures:
 //
-//    scan r sep
-//    (scan r) sep
-//    scan sep r
-//    (scan sep) r
+//	scan r sep
+//	(scan r) sep
+//	scan sep r
+//	(scan sep) r
 //
 // Returns a stream.Stream that yields sections of the reader r split
 // around the separator string sep. For example,
 //
-//    readString 'this--is--an--example' -> scan '--'
+//	readString 'this--is--an--example' -> scan '--'
 //
 // will return a stream.Stream that will yield 'this', 'is', 'an', and
 // 'example'.
@@ -452,7 +452,7 @@ func (r runeStream) Reflect(name string) bool {
 
 // Runes is a WDTE function with the following signature:
 //
-//    runes r
+//	runes r
 //
 // Returns a stream.Stream that yields individual Unicode characters
 // from the reader r as numbers.
@@ -481,7 +481,7 @@ func Runes(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return runeStream{r: r}
 }
 
-func write(f func(io.Writer, interface{}) error) (gf wdte.Func) {
+func write(f func(io.Writer, any) error) (gf wdte.Func) {
 	return wdte.GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if len(args) < 2 {
 			return wdteutil.SaveArgsReverse(gf, args...)
@@ -508,10 +508,10 @@ func write(f func(io.Writer, interface{}) error) (gf wdte.Func) {
 
 // Write is a WDTE function with the following signatures:
 //
-//    write w d
-//    (write w) d
-//    write d w
-//    (write d) w
+//	write w d
+//	(write w) d
+//	write d w
+//	(write d) w
 //
 // It writes the data d to the writer w in much the same way that Go's
 // fmt.Fprint does. It returns w to allow for easier chaining.
@@ -520,7 +520,7 @@ func write(f func(io.Writer, interface{}) error) (gf wdte.Func) {
 // argument or the outer argument to be w.
 func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("write")
-	return write(func(w io.Writer, v interface{}) error {
+	return write(func(w io.Writer, v any) error {
 		_, err := fmt.Fprint(w, v)
 		return err
 	}).Call(frame, args...)
@@ -528,10 +528,10 @@ func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Writeln is a WDTE function with the following signatures:
 //
-//    writeln w d
-//    (writeln w) d
-//    writeln d w
-//    (writeln d) w
+//	writeln w d
+//	(writeln w) d
+//	writeln d w
+//	(writeln d) w
 //
 // It writes the data d to the writer w in much the same way that Go's
 // fmt.Fprintln does. It returns w to allow for easier chaining.
@@ -540,7 +540,7 @@ func Write(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // argument or the outer argument to be w.
 func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("writeln")
-	return write(func(w io.Writer, v interface{}) error {
+	return write(func(w io.Writer, v any) error {
 		_, err := fmt.Fprintln(w, v)
 		return err
 	}).Call(frame, args...)
@@ -548,10 +548,10 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Panic is a WDTE function with the following signatures:
 //
-//    panic err
-//    panic w err
-//    panic desc err
-//    panic w desc err
+//	panic err
+//	panic w err
+//	panic desc err
+//	panic w desc err
 //
 // Note that, somewhat unusually, Panic accepts its arguments in any order.
 //
@@ -565,7 +565,7 @@ func Writeln(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 // Panic is primarily intended for use with the error chain operator.
 // For example:
 //
-//    + a b -| panic 'Failed to add a and b';
+//   - a b -| panic 'Failed to add a and b';
 func Panic(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("panic")
 
@@ -587,11 +587,7 @@ func Panic(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		}
 	}
 
-	n := 3
-	if len(args) < 3 {
-		n = len(args)
-	}
-
+	n := min(len(args), 3)
 	for i, arg := range args[:n] {
 		args[i] = arg
 		set(args[i])

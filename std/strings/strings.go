@@ -11,8 +11,8 @@ import (
 
 // Contains is a WDTE function with the following signatures:
 //
-//    contains outer inner
-//    (contains inner) outer
+//	contains outer inner
+//	(contains inner) outer
 //
 // Returns true if inner is a substring of outer.
 func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -30,8 +30,8 @@ func Contains(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Prefix is a WDTE function with the following signatures:
 //
-//    prefix s p
-//    (prefix p) s
+//	prefix s p
+//	(prefix p) s
 //
 // Returns true if p is a prefix of s.
 func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -49,8 +49,8 @@ func Prefix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Suffix is a WDTE function with the following signatures:
 //
-//    suffix s p
-//    (suffix p) s
+//	suffix s p
+//	(suffix p) s
 //
 // Returns true if p is a suffix of s.
 func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -68,8 +68,8 @@ func Suffix(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Index is a WDTE function with the following signatures:
 //
-//    index outer inner
-//    (index inner) outer
+//	index outer inner
+//	(index inner) outer
 //
 // It returns the index of the first character of the first instances
 // of inner in outer. If inner is not a substring of outer, it returns
@@ -89,7 +89,7 @@ func Index(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Upper is a WDTE function with the following signatures:
 //
-//    upper s
+//	upper s
 //
 // It returns s converted to uppercase.
 func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -105,7 +105,7 @@ func Upper(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Lower is a WDTE function with the following signature:
 //
-//    lower s
+//	lower s
 //
 // It returns s converted to lowercase.
 func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -121,10 +121,10 @@ func Lower(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Repeat is a WDTE function with the following signatures:
 //
-//    repeat string times
-//    (repeat string) times
-//    repeat times string
-//    (repeat times) string
+//	repeat string times
+//	(repeat string) times
+//	repeat times string
+//	(repeat times) string
 //
 // It returns a new string containing the given string repeated the
 // number of times specified.
@@ -152,11 +152,11 @@ func Repeat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Split is a WDTE function with the following signatures:
 //
-//    split string sep
-//    (split sep) string
-//    split string sep n
-//    (split sep n) string
-//    (split sep) string n
+//	split string sep
+//	(split sep) string
+//	split string sep n
+//	(split sep n) string
+//	(split sep) string n
 //
 // It splits the given string around instances of the given seperator
 // string. If n is provided and is positive, the returned array of
@@ -207,8 +207,8 @@ func Split(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Join is a WDTE function with the following signatures:
 //
-//    join strings sep
-//    (join sep) strings
+//	join strings sep
+//	(join sep) strings
 //
 // It returns a new string containing the strings in the provided
 // array with sep inserted between each.
@@ -242,7 +242,7 @@ func (r reader) Reflect(name string) bool {
 
 // Read is a WDTE function with the following signature:
 //
-//    read s
+//	read s
 //
 // Returns a reader which reads from the string s.
 func Read(frame wdte.Frame, args ...wdte.Func) wdte.Func {

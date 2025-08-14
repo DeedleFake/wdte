@@ -11,16 +11,16 @@ import (
 
 // Concat is a WDTE function with the following signatures:
 //
-//    concat array ...
-//    (concat array) ...
+//	concat array ...
+//	(concat array) ...
 //
 // Returns an array containing the concatonation of all of its arguments, all of which should be arrays, in the order that they were passed to it. For example,
 //
-//    concat [3; 6] [2; 5]
+//	concat [3; 6] [2; 5]
 //
 // returns
 //
-//    [3; 6; 2; 5]
+//	[3; 6; 2; 5]
 func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	frame = frame.Sub("concat")
 
@@ -35,7 +35,7 @@ func Concat(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 	return array
 }
 
-func sorter(sortFunc func(interface{}, func(int, int) bool)) (f wdte.GoFunc) {
+func sorter(sortFunc func(any, func(int, int) bool)) (f wdte.GoFunc) {
 	return func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 		if len(args) < 2 {
 			return wdteutil.SaveArgs(f, args...)
@@ -82,10 +82,10 @@ func sorter(sortFunc func(interface{}, func(int, int) bool)) (f wdte.GoFunc) {
 
 // Sort is a WDTE function with the following signatures:
 //
-//    sort array less
-//    (sort array) less
-//    sort less array
-//    (sort less) array
+//	sort array less
+//	(sort array) less
+//	sort less array
+//	(sort less) array
 //
 // Returns a sorted copy of the given array sorted using the given
 // less function. The less function should take two arguments and
@@ -100,10 +100,10 @@ func Sort(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // SortStable is a WDTE function with the following signatures:
 //
-//    sortStable array less
-//    (sortStable array) less
-//    sortStable less array
-//    (sortStable less) array
+//	sortStable array less
+//	(sortStable array) less
+//	sortStable less array
+//	(sortStable less) array
 //
 // Returns a sorted copy of the given array sorted using the given
 // less function. The less function should take two arguments and
@@ -124,7 +124,7 @@ type streamer struct {
 
 // Stream is a WDTE function with the following signature:
 //
-//    stream a
+//	stream a
 //
 // Returns a stream.Stream that iterates over the array a.
 func Stream(frame wdte.Frame, args ...wdte.Func) wdte.Func {

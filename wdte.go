@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"sort"
+	"iter"
+	"slices"
 	"strings"
 
 	"github.com/DeedleFake/wdte/ast"
@@ -41,11 +42,11 @@ func FromAST(root ast.Node, im Importer) (Compound, error) {
 //
 // When the WDTE import expression
 //
-//    import 'example'
+//	import 'example'
 //
 // is parsed, the associated Importer will be invoked as follows:
 //
-//    im.Import("example")
+//	im.Import("example")
 type Importer interface {
 	Import(from string) (*Scope, error)
 }
@@ -104,10 +105,10 @@ func F() Frame {
 // Under most circumstances, a GoFunc should call this before calling
 // any WDTE functions, as it is useful for debugging. For example:
 //
-//    func Example(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-//        frame = frame.Sub("example")
-//        ...
-//    }
+//	func Example(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+//	    frame = frame.Sub("example")
+//	    ...
+//	}
 func (f Frame) Sub(id ID) Frame {
 	return Frame{
 		id:    id,
@@ -330,9 +331,7 @@ func (s *Scope) Known() []ID {
 		list = append(list, v)
 	}
 
-	sort.Slice(list, func(i1, i2 int) bool {
-		return list[i1] < list[i2]
-	})
+	slices.Sort(list)
 
 	return list
 }
@@ -382,19 +381,19 @@ func (s *Scope) Reflect(name string) bool {
 // For example, to implement a simple, non-type-safe addition
 // function:
 //
-//    GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
-//      frame = frame.Sub("+")
-//      var sum wdte.Number
-//      for _, arg := range(args) {
-//        sum += arg.Call(frame).(wdte.Number)
-//      }
-//      return sum
-//    })
+//	GoFunc(func(frame wdte.Frame, args ...wdte.Func) wdte.Func {
+//	  frame = frame.Sub("+")
+//	  var sum wdte.Number
+//	  for _, arg := range(args) {
+//	    sum += arg.Call(frame).(wdte.Number)
+//	  }
+//	  return sum
+//	})
 //
 // If placed into a scope with the ID "+", this function can then be
 // called from WDTE as follows:
 //
-//    + 3 6 9
+//   - 3 6 9
 //
 // As shown, it is recommended that arguments be passed the given
 // frame when evaluating them. Failing to do so without knowing what
@@ -666,7 +665,7 @@ func (v Var) Call(frame Frame, args ...Func) Func {
 // with itself and its own arguments placed into the scope. In other
 // words, given the lambda
 //
-//    (@ ex x y => + x y)
+//	(@ ex x y => + x y)
 //
 // it will create a new subscope containing itself under the ID "ex",
 // and its first and second arguments under the IDs "x" and "y",
@@ -748,7 +747,7 @@ type Assigner interface {
 	// IDs returns the list of IDs associated with the Assigner. This is
 	// generally the IDs that will be added to a scope via the Assign
 	// method.
-	IDs() []ID
+	IDs() iter.Seq[ID]
 }
 
 // SimpleAssigner is an Assigner that assigns a single variable to a
@@ -762,8 +761,8 @@ func (a SimpleAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Fun
 	return scope.Add(ID(a), f), f
 }
 
-func (a SimpleAssigner) IDs() []ID {
-	return []ID{ID(a)}
+func (a SimpleAssigner) IDs() iter.Seq[ID] {
+	return slices.Values([]ID{ID(a)})
 }
 
 func (a SimpleAssigner) String() string {
@@ -774,21 +773,21 @@ func (a SimpleAssigner) String() string {
 // an Atter under the assumption that the Atter uses integer indices.
 // For example, given
 //
-//    PatternAssigner{
-//      "a",
-//      "b",
-//      "c"
-//    }
+//	PatternAssigner{
+//	  "a",
+//	  "b",
+//	  "c"
+//	}
 //
 // assiging with a value of
 //
-//    wdte.Array{wdte.Number(1), wdte.Number(5), wdte.Number(3)}
+//	wdte.Array{wdte.Number(1), wdte.Number(5), wdte.Number(3)}
 //
 // will result in a subscope with
 //
-//    a = 1
-//    b = 5
-//    c = 3
+//	a = 1
+//	b = 5
+//	c = 3
 type PatternAssigner []Assigner
 
 func (a PatternAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Func) {
@@ -842,12 +841,16 @@ func (a PatternAssigner) Assign(frame Frame, scope *Scope, val Func) (*Scope, Fu
 	}
 }
 
-func (a PatternAssigner) IDs() []ID {
-	ids := make([]ID, 0, len(a))
-	for _, s := range a {
-		ids = append(ids, s.IDs()...)
+func (a PatternAssigner) IDs() iter.Seq[ID] {
+	return func(yield func(ID) bool) {
+		for _, s := range a {
+			for id := range s.IDs() {
+				if !yield(id) {
+					return
+				}
+			}
+		}
 	}
-	return ids
 }
 
 func (a PatternAssigner) String() string {
@@ -892,11 +895,11 @@ func (a LetAssigner) String() string {
 // its components in reverse order on their previous results. In other
 // words,
 //
-//    Composite{func1, func2, func3}.Call(frame, arg1, arg2)
+//	Composite{func1, func2, func3}.Call(frame, arg1, arg2)
 //
 // is the equivalent of
 //
-//    func1 (func2 (func3 arg1 arg2))
+//	func1 (func2 (func3 arg1 arg2))
 type Composite []Func
 
 func (c Composite) Call(frame Frame, args ...Func) Func {

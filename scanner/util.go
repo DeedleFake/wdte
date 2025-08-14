@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"slices"
 	"sort"
 	"strings"
 )
@@ -36,13 +37,7 @@ func init() {
 }
 
 func isKeyword(str string) bool {
-	for _, k := range keywords {
-		if str == k {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(keywords, str)
 }
 
 func symbolicPrefix(str string) (f string) {

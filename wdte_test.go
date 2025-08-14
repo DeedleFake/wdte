@@ -19,7 +19,6 @@ import (
 	_ "github.com/DeedleFake/wdte/std/math"
 	_ "github.com/DeedleFake/wdte/std/rand"
 	"github.com/DeedleFake/wdte/std/stream"
-	_ "github.com/DeedleFake/wdte/std/stream"
 	_ "github.com/DeedleFake/wdte/std/strings"
 )
 
@@ -45,7 +44,6 @@ func runTests(t *testing.T, tests []test) {
 	t.Parallel()
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Helper()
 			t.Parallel()

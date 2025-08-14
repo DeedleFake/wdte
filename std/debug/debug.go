@@ -16,7 +16,7 @@ var (
 
 // Version is a WDTE function with the following signature:
 //
-//    version
+//	version
 //
 // It returns the current version of WDTE, as determined by Go's
 // module system. If reading build info fails, ErrNoBuildInfo is

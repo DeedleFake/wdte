@@ -43,7 +43,7 @@ func (f File) Reflect(name string) bool {
 
 // Open is a WDTE function with the following signature:
 //
-//    open path
+//	open path
 //
 // Opens the file at path and returns it.
 func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -63,7 +63,7 @@ func Open(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Create is a WDTE function with the following signature:
 //
-//    create path
+//	create path
 //
 // Creates the file at path, truncating it if it already exists, and
 // returns it.
@@ -84,7 +84,7 @@ func Create(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Append is a WDTE function with the following signature:
 //
-//    append path
+//	append path
 //
 // Opens the file at path for appending, creating it if it doesn't
 // already exist, and returns it.

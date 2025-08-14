@@ -8,7 +8,7 @@ import (
 type Token struct {
 	Line, Col int
 	Type      TokenType
-	Val       interface{}
+	Val       any
 }
 
 // TokenType is the type of a token.

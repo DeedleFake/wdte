@@ -44,7 +44,7 @@ func newRule(tokens ...Token) (r Rule) {
 	return Rule(tokens)
 }
 
-type Token interface{}
+type Token any
 
 type Term struct {
 	Type    scanner.TokenType

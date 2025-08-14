@@ -19,7 +19,7 @@ const (
 
 // Sin is a WDTE function with the following signature:
 //
-//    sin n
+//	sin n
 //
 // Returns the sine of n.
 func Sin(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -35,7 +35,7 @@ func Sin(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Cos is a WDTE function with the following signature:
 //
-//    cos n
+//	cos n
 //
 // Returns the cosine of n.
 func Cos(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -51,7 +51,7 @@ func Cos(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Tan is a WDTE function with the following signature:
 //
-//    tan n
+//	tan n
 //
 // Returns the tangent of n.
 func Tan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -67,7 +67,7 @@ func Tan(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Floor is a WDTE function with the following signature:
 //
-//    floor n
+//	floor n
 //
 // Returns ⌊n⌋.
 func Floor(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -83,7 +83,7 @@ func Floor(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Ceil is a WDTE function with the following signature:
 //
-//    ceil n
+//	ceil n
 //
 // Returns ⌈n⌉.
 func Ceil(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -99,7 +99,7 @@ func Ceil(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Abs is a WDTE function with the following signature:
 //
-//    abs n
+//	abs n
 //
 // Returns |n|.
 func Abs(frame wdte.Frame, args ...wdte.Func) wdte.Func {

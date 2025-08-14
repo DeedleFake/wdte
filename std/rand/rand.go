@@ -24,7 +24,7 @@ type Source interface {
 
 // Next is a WDTE function with the following signature:
 //
-//    next source
+//	next source
 //
 // It creates and returns the next random number from the given
 // source.
@@ -61,7 +61,7 @@ func (s *source) String() string {
 
 // Gen is a WDTE function with the following signature:
 //
-//    gen seed
+//	gen seed
 //
 // It returns a new Source that starts with the given seed.
 func Gen(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -90,7 +90,7 @@ func (urand) Seed(int64) {}
 
 // UGen is a WDTE function with the following signature:
 //
-//    ugen
+//	ugen
 //
 // It returns a Source that creates numbers from the operating
 // system's cryptographic random number generator.
@@ -101,7 +101,7 @@ func UGen(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Stream is a WDTE function with the following signature:
 //
-//    stream source num
+//	stream source num
 //
 // It returns a Stream that yields the given number of random numbers
 // from the provided Source.

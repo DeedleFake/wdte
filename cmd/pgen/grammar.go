@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -153,13 +154,7 @@ func (g Grammar) Follow(nt NTerm) TokenSet {
 
 func (g Grammar) followWithout(nt NTerm, ignore []NTerm) TokenSet {
 	isIgnored := func(nt NTerm) bool {
-		for _, i := range ignore {
-			if i == nt {
-				return true
-			}
-		}
-
-		return false
+		return slices.Contains(ignore, nt)
 	}
 
 	ts := make(TokenSet)
@@ -210,7 +205,7 @@ func (r Rule) Epsilon() bool {
 // * A non-terminal, which is structure in the grammar's definition.
 // * Epsilon, written as ε, which represents a non-action.
 // * EOF, written as Ω.
-type Token interface{}
+type Token any
 
 // NewToken determines the type of a token from the given string and
 // returns the appropriate token.

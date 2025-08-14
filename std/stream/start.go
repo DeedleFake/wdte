@@ -7,8 +7,8 @@ import (
 
 // New is a WDTE function with the following signature:
 //
-//    new initial next
-//    (new next) initial
+//	new initial next
+//	(new next) initial
 //
 // It returns a new Stream that calls next in order to get the next
 // element in the stream, passing it first initial and then the
@@ -38,17 +38,17 @@ func New(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Range is a WDTE function with the following signatures:
 //
-//    range end
-//    range start end
-//    range start end step
+//	range end
+//	range start end
+//	range start end step
 //
 // It returns a new Stream which iterates from start to end, stepping
 // by step each time. In other words, it's similar to the following
 // pseudo Go code
 //
-//    for i := start; i < end; i += step {
-//      yield i
-//    }
+//	for i := start; i < end; i += step {
+//	  yield i
+//	}
 //
 // but with the difference that if step is negative, then the loop
 // condition is inverted.
@@ -101,8 +101,8 @@ func Range(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Concat is a WDTE function with the following signatures:
 //
-//    concat s ...
-//    (concat s) ...
+//	concat s ...
+//	(concat s) ...
 //
 // It returns a new Stream that yields the values of all of its
 // argument Streams in the order that they were given.

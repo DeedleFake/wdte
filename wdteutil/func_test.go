@@ -22,7 +22,7 @@ func testFunc(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 func TestFunc(t *testing.T) {
 	tests := []struct {
 		name  string
-		f     interface{}
+		f     any
 		args  []wdte.Func
 		ret   wdte.Func
 		calls []wdte.Func

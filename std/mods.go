@@ -1,6 +1,8 @@
 package std
 
 import (
+	"slices"
+
 	"github.com/DeedleFake/wdte"
 	"github.com/DeedleFake/wdte/wdteutil"
 )
@@ -79,7 +81,7 @@ func ModMemo(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 	argIDs := make([]wdte.ID, 0, len(lambda.Args))
 	for _, arg := range lambda.Args {
-		argIDs = append(argIDs, arg.IDs()...)
+		argIDs = append(argIDs, slices.Collect(arg.IDs())...)
 	}
 
 	next := *lambda

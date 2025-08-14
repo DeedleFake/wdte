@@ -10,7 +10,7 @@ import (
 	"github.com/DeedleFake/wdte/scanner"
 	"github.com/DeedleFake/wdte/std"
 	"github.com/peterh/liner"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func printRet(ret wdte.Func) {
@@ -21,7 +21,7 @@ func printRet(ret wdte.Func) {
 	}
 
 	switch k := reflect.Indirect(reflect.ValueOf(ret)).Kind(); k {
-	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Struct, reflect.UnsafePointer:
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.Struct, reflect.UnsafePointer:
 		fmt.Printf(": complex value (%v)\n", k)
 
 	default:
@@ -30,7 +30,7 @@ func printRet(ret wdte.Func) {
 }
 
 func stdin(im wdte.Importer, macros scanner.MacroMap) {
-	if !terminal.IsTerminal(int(os.Stdin.Fd())) {
+	if !term.IsTerminal(int(os.Stdin.Fd())) {
 		file(im, os.Stdin)
 		return
 	}

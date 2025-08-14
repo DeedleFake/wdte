@@ -10,8 +10,8 @@ import (
 
 // Plus is a WDTE function with the following signatures:
 //
-//    + a ...
-//    (+ a) ...
+//   - a ...
+//     (+ a) ...
 //
 // Returns the sum of a and the rest of its arguments.
 func Plus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -33,8 +33,8 @@ func Plus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Minus is a WDTE with the following signatures:
 //
-//    - a b
-//    (- b) a
+//   - a b
+//     (- b) a
 //
 // Returns a minus b.
 func Minus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -59,8 +59,8 @@ func Minus(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Times is a WDTE function with the following signatures:
 //
-//    * a ...
-//    (* a) ...
+//   - a ...
+//     (* a) ...
 //
 // Returns the product of a and its other arguments.
 func Times(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -82,8 +82,8 @@ func Times(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Div is a WDTE function with the following signatures:
 //
-//    / a b
-//    (/ b) a
+//	/ a b
+//	(/ b) a
 //
 // Returns a divided by b.
 func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -108,8 +108,8 @@ func Div(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Mod is a WDTE function with the following signatures:
 //
-//    % a b
-//    (% b) a
+//	% a b
+//	(% b) a
 //
 // Returns a mod b.
 func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -137,8 +137,8 @@ func Mod(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Equals is a WDTE function with the following signatures:
 //
-//    == a b
-//    (== b) a
+//	== a b
+//	(== b) a
 //
 // Returns true if a equals b. If a implements wdte.Comparer, the
 // equality check is done using that implementation. If a does not but
@@ -174,8 +174,8 @@ func Equals(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Less is a WDTE function with the following signatures:
 //
-//    < a b
-//    (< b) a
+//	< a b
+//	(< b) a
 //
 // Returns true if a is less than b. Comparison rules are the same as
 // those used for Equals, with the exception that the argument used
@@ -218,8 +218,8 @@ func Less(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Greater is a WDTE function with the following signatures:
 //
-//    > a b
-//    (> b) a
+//	> a b
+//	(> b) a
 //
 // Returns true if a is greater than b. Comparison rules are the same
 // as those used for Equals, with the exception that the argument used
@@ -262,8 +262,8 @@ func Greater(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // LessEqual is a WDTE function with the following signatures:
 //
-//    <= a b
-//    (<= b) a
+//	<= a b
+//	(<= b) a
 //
 // Returns true if a is less than or equal to b. Comparison rules are
 // the same as those used for Equals, with the exception that the
@@ -306,8 +306,8 @@ func LessEqual(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // GreaterEqual is a WDTE function with the following signatures:
 //
-//    >= a b
-//    (>= b) a
+//	>= a b
+//	(>= b) a
 //
 // Returns true if a is greater than or equal to b. Comparison rules
 // are the same as those used for Equals, with the exception that the
@@ -368,7 +368,7 @@ const (
 
 // And is a WDTE function with the following signature:
 //
-//    && ...
+//	&& ...
 //
 // Returns true if all of its arguments are true.
 func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -390,7 +390,7 @@ func And(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Or is a WDTE function with the following signature:
 //
-//    || ...
+//	|| ...
 //
 // Returns true if any of its arguments are true.
 func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -412,7 +412,7 @@ func Or(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Not is a WDTE function with the following signature:
 //
-//    ! a
+//	! a
 //
 // Returns true if a is not true or false if a is not true.
 func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -428,7 +428,7 @@ func Not(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Len is a WDTE function with the following signature:
 //
-//    len a
+//	len a
 //
 // Returns the length of a if a implements wdte.Lenner, or false if it
 // doesn't.
@@ -449,8 +449,8 @@ func Len(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // At is a WDTE function with the following signatures:
 //
-//    at a i
-//    (at i) a
+//	at a i
+//	(at i) a
 //
 // Returns the ith index of a. a is assumed to implement wdte.Atter.
 func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -476,14 +476,14 @@ func At(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Set is a WDTE function with the following signatures:
 //
-//    set con key val
-//    (set val) con key
-//    (set key val) con
+//	set con key val
+//	(set val) con key
+//	(set key val) con
 //
 // Set uses con's implementation of Setter to produce a new value from
 // con with a key-val mapping applied to it. For example,
 //
-//    set [1; 2; 3] 1 5
+//	set [1; 2; 3] 1 5
 //
 // returns a new Array containing [1; 5; 3].
 func Set(frame wdte.Frame, args ...wdte.Func) wdte.Func {
@@ -509,7 +509,7 @@ func Set(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Known is a WDTE function with the following signature:
 //
-//    known scope
+//	known scope
 //
 // Returns an array containing known identifiers in the given scope
 // sorted alphabetically.
@@ -533,8 +533,8 @@ func Known(frame wdte.Frame, args ...wdte.Func) wdte.Func {
 
 // Reflect is a WDTE function with the following signature:
 //
-//    reflect v type
-//    (reflect type) v
+//	reflect v type
+//	(reflect type) v
 //
 // It provides a simple wrapper around wdte.Reflect, checking
 // underlying type compatability.
