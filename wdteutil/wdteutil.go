@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	arrayType  = reflect.TypeOf(wdte.Array(nil))
-	numberType = reflect.TypeOf(wdte.Number(0))
-	stringType = reflect.TypeOf(wdte.String(""))
+	arrayType  = reflect.TypeFor[wdte.Array]()
+	numberType = reflect.TypeFor[wdte.Number]()
+	stringType = reflect.TypeFor[wdte.String]()
 )
 
 func fromWDTE(frame wdte.Frame, w wdte.Func, expected reflect.Type) reflect.Value {
@@ -79,7 +79,7 @@ func toWDTE(v reflect.Value) wdte.Func {
 	case reflect.Map:
 		panic(errors.New("maps are not yet supported"))
 
-	case reflect.Ptr:
+	case reflect.Pointer:
 		return toWDTE(v.Elem())
 
 	case reflect.String:
